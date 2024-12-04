@@ -16,6 +16,6 @@ const router = createRouter({
       component: NoticePage
     },
   ],
-})
+});
 
 export default router
