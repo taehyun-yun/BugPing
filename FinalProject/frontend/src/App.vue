@@ -1,5 +1,14 @@
-<script setup></script>
+<script setup>
+</script>
+
 <template>
-  <RouterView />
+  <div class="page-content">
+   <RouterView />
+  </div>
 </template>
-<style></style>
+
+<style>
+.page-content {
+    padding-top: 54px; /* 모든 페이지에서 적용 */
+}
+</style>
