@@ -4,6 +4,7 @@ import NoticePage from '../views/notice/NoticePage.vue';
 import Schedule from '../views/Schedule.vue';
 import NoticeCreate from '../views/notice/NoticeCreate.vue';
 import WorkerCommuting from '../views/commute/WorkerCommuting.vue';
+import Contract from '../views/employment/AdministratorContract.vue';
 import NoticeDetail from "../views/notice/NoticeDetail.vue";
 import NoticeMain from "../views/notice/NoticeMain.vue";
 
@@ -44,7 +45,7 @@ routes: [
     {
         path: '/contract',
         name: 'contract',
-        component: contract
+        component: Contract
     },
 ],
 });
