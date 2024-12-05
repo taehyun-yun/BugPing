@@ -1,540 +1,236 @@
 <template>
-  <div class="div">
-    <div class="main-dashboard">
-      <div class="background">
-        <div class="rectangle-8"></div>
-      </div>
-    </div>
-    <div class="div2">
-      <div class="first-card">
-        <div class="background2">
-          <div class="rectangle-9"></div>
-        </div>
-      </div>
-      <div class="div3">
-        <div class="div4">
-          <div class="div5">
-            <div class="div6"></div>
-            <div class="div7">취소</div>
-          </div>
-          <div class="div5">
-            <div class="div8"></div>
-            <div class="div9">작성완료</div>
-          </div>
-        </div>
-        <div class="div10">
-          <div class="rectangle-77"></div>
-          <div class="_50-mb">(문서 파일만 업로드 가능, 파일당 최대 50MB)</div>
-          <img class="add-1-3" src="add-1-30.png" />
-          <div class="div11">파일 첨부</div>
-          <img class="file" src="file0.png" />
-        </div>
-        <div class="line-14"></div>
-        <div class="div12">
-          <div class="rectangle-76"></div>
-          <img class="add-1-2" src="add-1-20.png" />
-          <div class="div13">이미지 첨부</div>
-          <img class="image" src="image0.png" />
-        </div>
-        <div class="div14">
-          <div class="rectangle-75"></div>
-          <div class="div15">입력하세요</div>
-          <div class="div16">
-            <span>
-              <span class="div-16-span">내용</span>
-              <span class="div-16-span2">*</span>
-            </span>
-          </div>
-        </div>
-        <div class="line-15"></div>
-        <div class="div17">
-          <div class="rectangle-74"></div>
-          <div class="div18">입력하세요</div>
-          <div class="div19">
-            <span>
-              <span class="div-19-span">타이틀</span>
-              <span class="div-19-span2">*</span>
-            </span>
-          </div>
-        </div>
-        <div class="div20">
-          <div class="div21">
-            <div class="rectangle-65"></div>
-            <img class="checklist-7" src="checklist-70.png" />
-            <div class="div22">특이사항</div>
-          </div>
-          <div class="div21">
-            <div class="rectangle-652"></div>
-            <img class="checklist-72" src="checklist-71.png" />
-            <div class="div23">매뉴얼</div>
-          </div>
-          <div class="div21">
-            <div class="rectangle-653"></div>
-            <div class="div24">공지</div>
-            <img class="megaphone-4" src="megaphone-40.png" />
-          </div>
-          <div class="div25">카테고리</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+    <div class="page-container">
+      <!-- 사이드바와 헤더 컴포넌트 -->
+      <MainSidebar />
+      <div class="main-content">
+        <MainHeader />
 
-<style scoped>
-.div,
-.div * {
-  box-sizing: border-box;
-}
-.div {
-  height: 1137px;
-  position: relative;
-}
-.main-dashboard {
-  width: 1919px;
-  height: 1137px;
-  position: static;
-}
-.background {
-  width: 1919px;
-  height: 1137px;
-  position: static;
-}
-.rectangle-8 {
-  background: #f8f9fa;
-  width: 1919px;
-  height: 1137px;
-  position: absolute;
-  left: 0px;
-  top: 0px;
-}
-.div2 {
-  width: 1600px;
-  height: 1000px;
-  position: static;
-}
-.first-card {
-  width: 1600px;
-  height: 947px;
-  position: static;
-}
-.background2 {
-  width: 1600px;
-  height: 947px;
-  position: static;
-}
-.rectangle-9 {
-  background: var(--blackandampwhite-white, #ffffff);
-  border-radius: 15px;
-  width: 1600px;
-  height: 947px;
-  position: absolute;
-  left: 293px;
-  top: 106px;
-  box-shadow: 0px 3.5px 5.5px 0px rgba(0, 0, 0, 0.02);
-}
-.div3 {
-  width: 1308.01px;
-  height: 958px;
-  position: static;
-}
-.div4 {
-  width: 224px;
-  height: 31px;
-  position: static;
-}
-.div5 {
-  width: 105px;
-  height: 31px;
-  position: static;
-}
-.div6 {
-  background: #ffffff;
-  border-radius: 20px;
-  border-style: solid;
-  border-color: #c3c3c3;
-  border-width: 1px;
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  width: 105px;
-  height: 31px;
-  position: absolute;
-  left: 848px;
-  top: 1075px;
-}
-.div7 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 14px;
-  line-height: 140%;
-  font-weight: 400;
-  position: absolute;
-  left: 885px;
-  top: 1081px;
-}
-.div8 {
-  background: #3399fe;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  width: 105px;
-  height: 31px;
-  position: absolute;
-  left: 967px;
-  top: 1075px;
-}
-.div9 {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 14px;
-  line-height: 140%;
-  font-weight: 400;
-  position: absolute;
-  left: 996px;
-  top: 1081px;
-}
-.div10 {
-  width: 316px;
-  height: 98px;
-  position: static;
-}
-.rectangle-77 {
-  background: #f5f5f5;
-  width: 170px;
-  height: 30px;
-  position: absolute;
-  left: 335px;
-  top: 972px;
-}
-._50-mb {
-  color: #656565;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 10px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 335px;
-  top: 1008px;
-  width: 316px;
-  height: 32px;
-}
-.add-1-3 {
-  width: 15px;
-  height: 15px;
-  position: absolute;
-  left: 485px;
-  top: 979px;
-  object-fit: cover;
-}
-.div11 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 364px;
-  top: 943px;
-  width: 96px;
-  height: 36px;
-}
-.file {
-  width: 27px;
-  height: 27px;
-  position: absolute;
-  left: 335px;
-  top: 942px;
-  object-fit: cover;
-}
-.line-14 {
-  margin-top: -1px;
-  border-style: solid;
-  border-color: #c3c3c3;
-  border-width: 1px 0 0 0;
-  width: 1307px;
-  height: 0px;
-  position: absolute;
-  left: 1642px;
-  top: 936px;
-  transform-origin: 0 0;
-  transform: rotate(180deg) scale(1, 1);
-}
-.div12 {
-  width: 170px;
-  height: 61px;
-  position: static;
-}
-.rectangle-76 {
-  background: #f5f5f5;
-  width: 170px;
-  height: 30px;
-  position: absolute;
-  left: 335px;
-  top: 892px;
-}
-.add-1-2 {
-  width: 15px;
-  height: 15px;
-  position: absolute;
-  left: 485px;
-  top: 899px;
-  object-fit: cover;
-}
-.div13 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 364px;
-  top: 865px;
-  width: 96px;
-  height: 36px;
-}
-.image {
-  width: 27px;
-  height: 27px;
-  position: absolute;
-  left: 335px;
-  top: 861px;
-  object-fit: cover;
-}
-.div14 {
-  width: 1307px;
-  height: 445px;
-  position: static;
-}
-.rectangle-75 {
-  background: #f5f5f5;
-  width: 1307px;
-  height: 417px;
-  position: absolute;
-  left: 335px;
-  top: 417px;
-}
-.div15 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 353px;
-  top: 429px;
-  width: 223px;
-  height: 43px;
-}
-.div16 {
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 335px;
-  top: 389px;
-  width: 92px;
-  height: 40px;
-}
-.div-16-span {
-  color: #000000;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-}
-.div-16-span2 {
-  color: #ff0000;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-}
-.line-15 {
-  margin-top: -1px;
-  border-style: solid;
-  border-color: #c3c3c3;
-  border-width: 1px 0 0 0;
-  width: 1307px;
-  height: 0px;
-  position: absolute;
-  left: 336px;
-  top: 381px;
-  transform-origin: 0 0;
-  transform: rotate(0.132deg) scale(1, 1);
-}
-.div17 {
-  width: 1307px;
-  height: 80px;
-  position: static;
-}
-.rectangle-74 {
-  background: #f5f5f5;
-  width: 1307px;
-  height: 43px;
-  position: absolute;
-  left: 335px;
-  top: 312px;
-}
-.div18 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 360px;
-  top: 322px;
-  width: 223px;
-  height: 43px;
-}
-.div19 {
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 335px;
-  top: 285px;
-  width: 92px;
-  height: 40px;
-}
-.div-19-span {
-  color: #000000;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-}
-.div-19-span2 {
-  color: #ff0000;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 16px;
-  line-height: 150%;
-  font-weight: 400;
-}
-.div20 {
-  width: 819px;
-  height: 89px;
-  position: static;
-}
-.div21 {
-  width: 229px;
-  height: 44px;
-  position: static;
-}
-.rectangle-65 {
-  background: #f5f5f5;
-  width: 229px;
-  height: 42px;
-  position: absolute;
-  left: 925px;
-  top: 193px;
-}
-.checklist-7 {
-  width: 16.42px;
-  height: 27px;
-  position: absolute;
-  left: 931.91px;
-  top: 201px;
-  object-fit: cover;
-}
-.div22 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 18px;
-  line-height: 140%;
-  font-weight: 400;
-  position: absolute;
-  left: 958px;
-  top: 203px;
-  width: 78px;
-  height: 34px;
-}
-.rectangle-652 {
-  background: #f5f5f5;
-  width: 229px;
-  height: 42px;
-  position: absolute;
-  left: 630px;
-  top: 193px;
-}
-.checklist-72 {
-  width: 16.42px;
-  height: 27px;
-  position: absolute;
-  left: 636.91px;
-  top: 201px;
-  object-fit: cover;
-}
-.div23 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 18px;
-  line-height: 140%;
-  font-weight: 400;
-  position: absolute;
-  left: 662.83px;
-  top: 203px;
-  width: 57.46px;
-  height: 34px;
-}
-.rectangle-653 {
-  background: #f5f5f5;
-  width: 229px;
-  height: 40.66px;
-  position: absolute;
-  left: 335px;
-  top: 193px;
-}
-.div24 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 18px;
-  line-height: 140%;
-  font-weight: 400;
-  position: absolute;
-  left: 371.11px;
-  top: 204.09px;
-  width: 57.25px;
-  height: 32.91px;
-}
-.megaphone-4 {
-  width: 23.33px;
-  height: 24.95px;
-  position: absolute;
-  left: 341.91px;
-  top: 200.39px;
-  object-fit: cover;
-}
-.div25 {
-  color: #000000;
-  text-align: left;
-  font-family: "Inter-Regular", sans-serif;
-  font-size: 20px;
-  line-height: 150%;
-  font-weight: 400;
-  position: absolute;
-  left: 335px;
-  top: 148px;
-  width: 93px;
-  height: 47px;
-}
-</style>
+        <!-- 공지사항 작성 페이지 UI -->
+        <div class="notice-page">
+          <div class="category-main">
+            <h1>카테고리</h1>
+          </div>
+
+          <!-- 카테고리 선택 -->
+          <div class="category-section">
+            <div v-for="category in categories" :key="category.id" class="category-card">
+              <img v-if="category.icon" :src="category.icon" alt="카테고리 아이콘" class="category-icon" />
+              <div class="category-text">{{ category.name }}</div>
+            </div>
+          </div>
+
+          <!-- 제목 입력 -->
+          <div class="input-section">
+            <label class="input-label" for="title">타이틀<span class="required">*</span></label>
+            <input type="text" id="title" v-model="title" placeholder="입력하세요" class="input-field" />
+          </div>
+
+          <!-- 내용 입력 -->
+          <div class="input-section">
+            <label class="input-label" for="content">내용<span class="required">*</span></label>
+            <textarea id="content" v-model="content" placeholder="입력하세요" class="textarea-field"></textarea>
+          </div>
+
+          <!-- 이미지 및 파일 첨부 -->
+          <div class="attachment-section">
+            <div v-for="attachment in attachments" :key="attachment.id" class="attachment-card">
+              <img v-if="attachment.icon" :src="attachment.icon" alt="첨부 아이콘" class="attachment-icon" />
+              <div class="attachment-text">{{ attachment.label }}</div>
+              <div v-if="attachment.info" class="attachment-info">{{ attachment.info }}</div>
+            </div>
+          </div>
+
+          <!-- 버튼 섹션 -->
+          <div class="button-section">
+            <button @click="cancelNotice" class="cancel-button">취소</button>
+            <button @click="submitNotice" class="submit-button">작성완료</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script setup>
+  import MainSidebar from '@/components/MainSidebar.vue';
+  import MainHeader from '@/components/MainHeader.vue';
+  import { ref } from 'vue';
+
+  // 카테고리와 첨부 파일 데이터
+  const categories = ref([
+    { id: 1, name: '공지', icon: '' },
+    { id: 2, name: '매뉴얼', icon: '' },
+    { id: 3, name: '특이사항', icon: '' },
+  ]);
+
+  const attachments = ref([
+    { id: 1, label: '이미지 첨부', icon: '' },
+    { id: 2, label: '파일 첨부', icon: '', info: '(문서 파일만 업로드 가능, 파일당 최대 50MB)' },
+  ]);
+
+  // 필수 입력 항목에 대한 ref 상태 관리
+  const title = ref('');
+  const content = ref('');
+
+  // 작성 취소 버튼 클릭 시 동작
+  const cancelNotice = () => {
+    // 모든 입력 필드를 초기화
+    title.value = '';
+    content.value = '';
+    console.log('작성 취소되었습니다.');
+  };
+
+  // 작성 완료 버튼 클릭 시 동작
+  const submitNotice = () => {
+    // 입력된 데이터로 작성 완료 처리 (예: 백엔드로 데이터 전송)
+    console.log('작성된 제목:', title.value);
+    console.log('작성된 내용:', content.value);
+    alert('공지사항이 작성되었습니다.');
+  };
+  </script>
+
+  <style scoped>
+  .page-container {
+    display: flex;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 20px;
+  }
+
+  .notice-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .category-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .category-card {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .category-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+  }
+
+  .category-text {
+    font-size: 18px;
+    color: #000;
+  }
+
+  .input-section {
+    margin-bottom: 20px;
+  }
+
+  .input-label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .required {
+    color: #ff0000;
+  }
+
+  .input-field {
+    width: 100%;
+    height: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #c3c3c3;
+  }
+
+  .textarea-field {
+    width: 100%;
+    height: 450px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #c3c3c3;
+  }
+
+  .attachment-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .attachment-card {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    width: 200px;
+  }
+
+  .attachment-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .attachment-text {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #000;
+  }
+
+  .attachment-info {
+    font-size: 10px;
+    color: #656565;
+    margin-top: 5px;
+  }
+
+  .button-section {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .cancel-button,
+  .submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .cancel-button {
+    background-color: #ffffff;
+    color: #000;
+    border: 1px solid #c3c3c3;
+  }
+
+  .submit-button {
+    background-color: #3399fe;
+    color: #ffffff;
+  }
+
+  .category-main {
+    padding: 20px 10px; /* 위아래 패딩을 20px로 설정하여 적당한 간격 확보 */
+  }
+
+  .category-main h1 {
+    font-size: 28px; /* 텍스트 크기 키우기 */
+    font-weight: bold; /* 볼드 처리 */
+    margin: 20px 0; /* 위아래 20px의 마진으로 적당한 간격 설정 */
+  }
+  </style>

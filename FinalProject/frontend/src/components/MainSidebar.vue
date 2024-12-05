@@ -38,11 +38,12 @@ import { ref } from 'vue';
 <style scoped>
 .side-menu {
   position: relative;
-  width: 270px;
+  width: 250px;
   height: 100vh; /* 화면 전체 높이에 맞추어 */
   background-color: #ffffff;
   box-shadow: 0px 10px 60px 0px rgba(226, 236, 249, 0.5);
   z-index: 10; /* 다른 요소보다 앞에 있도록 */
+  border-right: 2px solid #d7dae5;
 }
 .menu-item.highlighted {
   background-color: #5932ea;
