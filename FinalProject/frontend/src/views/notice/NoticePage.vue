@@ -2,10 +2,8 @@
   <h1>Notice</h1>
 </template>
 
-<script>
-export default {
+<script setup>
 
-}
 </script>
 
 <style>
