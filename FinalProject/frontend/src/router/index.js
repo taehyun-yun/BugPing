@@ -3,6 +3,8 @@ import CalculatorPage from '../views/CalculatorPage.vue';
 import NoticePage from '../views/notice/NoticePage.vue';
 import NoticeCreate from '../views/notice/NoticeCreate.vue';
 import WorkerCommuting from '../views/commute/WorkerCommuting.vue';
+import NoticeDetail from "@/views/notice/NoticeDetail.vue";
+import NoticeMain from "../views/notice/NoticeMain.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,9 +15,14 @@ const router = createRouter({
       component: CalculatorPage,
     },
     {
-      path: '/notice/no',
-      name: 'notice',
-      component: NoticePage
+      path: "/noticemain",
+      name: "notice",
+      component: NoticeMain,
+    },
+    {
+      path: "/noticedetail",
+      name: "noticedetail",
+      component: NoticeDetail,
     },
     {
       path: '/notice/create',
@@ -30,4 +37,4 @@ const router = createRouter({
   ],
 });
 
-export default router
+export default router;
