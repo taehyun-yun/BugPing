@@ -33,7 +33,7 @@ public class Attendance {
     private String remark;
 
     @Column(name = "userId", nullable = false)
-    private Integer userId;
+    private String userId;
 
     @Column(name = "isNormalAttendance")
     private String isNormalAttendance;
