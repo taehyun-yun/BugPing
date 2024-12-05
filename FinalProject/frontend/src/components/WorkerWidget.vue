@@ -10,7 +10,7 @@
       <div class="conversations">
         <div class="conversation-card" v-for="(conversation, index) in attendanceList" :key="index">
           <div class="conversation-image">
-              <img src="../assets/WorkWidgetImg/userprofile.png" alt="User Profile" class="profile-image" />
+            <img src="../assets/WorkWidgetImg/userprofile.png" alt="User Profile" class="profile-image" />
           </div>
           <div class="conversation-details">
             <div class="conversation-name">{{ conversation.name }}</div>
@@ -35,7 +35,8 @@
           </div>
         </div>
         <div class="status-summary">
-          <div class="summary-item" v-for="(item, index) in summaryList" :key="index" :style="{ backgroundColor: item.color }">
+          <div class="summary-item" v-for="(item, index) in summaryList" :key="index"
+            :style="{ backgroundColor: item.color }">
             <div class="summary-title">{{ item.title }}</div>
             <div class="summary-count">{{ item.count }}</div>
           </div>
@@ -95,7 +96,8 @@ const handleReply = (name) => {
   gap: 50px;
   padding: 20px;
   align-items: flex-start;
-  justify-content: center; /* 가운데 정렬 추가 */
+  justify-content: center;
+  /* 가운데 정렬 추가 */
 }
 
 .attendance-record {
@@ -135,7 +137,8 @@ const handleReply = (name) => {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  width: 450px; /* 너비를 줄임 */
+  width: 450px;
+  /* 너비를 줄임 */
 }
 
 .conversation-card {
@@ -200,7 +203,8 @@ const handleReply = (name) => {
   border-radius: 15px;
   padding: 15px;
   align-items: flex-start;
-  height: 360px; /* 높이 조정 */
+  height: 360px;
+  /* 높이 조정 */
 }
 
 .status-card {
@@ -214,16 +218,19 @@ const handleReply = (name) => {
 
 .status-summary {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 두 개의 컬럼 */
+  grid-template-columns: repeat(2, 1fr);
+  /* 두 개의 컬럼 */
   gap: 15px;
   justify-content: center;
-  height: 100%; /* 부모 컨테이너에 맞추어 높이 조정 */
+  height: 100%;
+  /* 부모 컨테이너에 맞추어 높이 조정 */
   margin: auto;
 }
 
 .summary-item {
   width: 160px;
-  height: 140px; /* 출근율 카드의 높이에 맞추기 위해 높이 조정 */
+  height: 140px;
+  /* 출근율 카드의 높이에 맞추기 위해 높이 조정 */
   border-radius: 16px;
   display: flex;
   flex-direction: column;
