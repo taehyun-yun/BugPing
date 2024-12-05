@@ -35,8 +35,8 @@ public class Schedule {
     @Column(name = "workHour")
     private String workHour;
 
-//    // Relationships
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "contractId", insertable = false, updatable = false)
-//    private Contract contract;
+    // Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contractId", insertable = false, updatable = false)
+    private Contract contract;
 }
