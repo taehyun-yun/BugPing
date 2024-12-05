@@ -28,6 +28,6 @@ const router = createRouter({
       component: WorkerCommuting
     },
   ],
-})
+});
 
 export default router
