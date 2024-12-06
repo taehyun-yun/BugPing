@@ -16,6 +16,7 @@
     <p>아이디/비밀번호 찾기</p>
     <p>회원가입</p>
     </div>
+    <button type="button" @click="getRole">확인용</button>
 </template>
 <script setup>
 import axios from 'axios';
@@ -38,7 +39,13 @@ import { axiosAddress } from '@/stores/axiosAddress';
             alert(err.response.data);
         })
     }
-
+    const getRole = () =>{
+  axios.get(axiosAddress+"/findrole",{withCredentials: true})
+  .then((res)=>{
+    const roles = res.data.roles.map((role) => role.replace('ROLE_', ''));
+    alert(roles);
+  })
+}
 </script>
 <style scoped>
     .login-title {
@@ -75,7 +82,7 @@ import { axiosAddress } from '@/stores/axiosAddress';
         border: none;
         outline: none;
         background: none;
-        width: 100%;
+        width: calc(100% - 60px);
         font-size: 1rem;
     }
 
