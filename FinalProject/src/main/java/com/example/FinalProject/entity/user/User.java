@@ -23,6 +23,5 @@ public class User {
     private LocalDate birth;
     private String gender;
     private String role;
-    @Column(name = "regDate")
     private LocalDate regDate;
 }
