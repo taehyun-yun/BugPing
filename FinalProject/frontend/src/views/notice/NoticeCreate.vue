@@ -1,9 +1,6 @@
 <template>
   <div class="page-container">
-    <!-- 사이드바와 헤더 컴포넌트 -->
-    <MainSidebar />
     <div class="main-content">
-      <MainHeader />
 
       <!-- 공지사항 작성 페이지 UI -->
       <div class="notice-page">
@@ -127,8 +124,6 @@
 </template>
 
 <script setup>
-import MainSidebar from "@/components/MainSidebar.vue";
-import MainHeader from "@/components/MainHeader.vue";
 import { ref } from "vue";
 
 // 카테고리와 첨부 파일 데이터
