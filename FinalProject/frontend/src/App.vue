@@ -1,3 +1,6 @@
+<script setup>
+</script>
+
 <template>
    <div class="app">
       <div v-if="header" class="header">
