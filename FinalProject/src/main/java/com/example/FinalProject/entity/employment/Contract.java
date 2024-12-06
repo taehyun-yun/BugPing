@@ -13,13 +13,16 @@ import java.time.LocalDateTime;
 @Builder
 public class Contract {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
 
-    @Column(name = "workId", nullable = false)
-    private Integer workId;
+//    // Relationships
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "workId", nullable = false) //insertable = false, updatable = false
+//    private Working working;
 
     @Column(name = "hourlyWage")
     private Integer hourlyWage;
@@ -35,8 +38,4 @@ public class Contract {
 
 
 
-//    // Relationships
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "workId", insertable = false, updatable = false)
-//    private Working working;
 }
