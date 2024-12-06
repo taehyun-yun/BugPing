@@ -33,6 +33,8 @@ public class Contract {
     @Column(name = "userId", nullable = false)
     private Integer userId;
 
+
+
 //    // Relationships
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "workId", insertable = false, updatable = false)
