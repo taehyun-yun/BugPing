@@ -1,5 +1,5 @@
 package com.example.FinalProject.entity.commute;
-import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.employment.Contract;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -18,8 +18,9 @@ public class Attendance {
     @Column(name = "attendanceId", nullable = false, updatable = false)
     private Integer attendanceId;
 
-    @Column(name = "contractId", nullable = false)
-    private Integer contractId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contractId", nullable = false)
+    private Contract contract;
 
     @Column(name = "actualStart")
     private LocalDateTime actualStart;
@@ -33,8 +34,8 @@ public class Attendance {
     @Column(name = "remark")
     private String remark;
 
-    @Column(name = "userId", nullable = false)
-    private String userId;
+    //@Column(name = "userId", nullable = false)
+    //private String userId;
 
     @Column(name = "isNormalAttendance")
     private String isNormalAttendance;
@@ -50,7 +51,6 @@ public class Attendance {
 
     @Column(name = "totalHours")
     private LocalDateTime totalHours;
-
 
 //    // Relationships
 //    @ManyToOne(fetch = FetchType.LAZY)

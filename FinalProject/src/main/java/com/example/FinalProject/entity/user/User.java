@@ -15,7 +15,6 @@ import java.time.LocalDate;
 @ToString
 public class User {
     @Id
-    @Column(name = "userId")
     private String userId;
     private String password;
     private String name;
@@ -23,6 +22,5 @@ public class User {
     private LocalDate birth;
     private String gender;
     private String role;
-    @Column(name = "regDate")
     private LocalDate regDate;
 }
