@@ -1,42 +1,42 @@
 <template>
   <div class="container">
-      <div class="sidebar">
-          <MainSidebar />
-      </div>
-      <div class="main-content">
-          <MainHeader />
-          <div class="profile-container">
-                <div class="profile-header-container">
-                    <div class="profile-header">
-                        <div class="avatar-section">
-                            <img class="avatar-image" src="../../assets/WorkerCommutingImg/myImage.png" alt="User Avatar">
-                            <div class="user-info">
-                                <div class="user-name">Esthera Jackson</div>
-                                <div class="user-email">esthera@simmmple.com</div>
-                            </div>
-                            <div class="edit-icon">
-                                <img src="../../assets/WorkerCommutingImg/Icon.png" alt="Edit Profile" class="edit-profile-image" />
-                            </div>
-                        </div>
-                        <div class="navigation-tabs">
-                            <div class="tab overview-tab">
-                                <!-- <img src="overview-icon.png" alt="Overview Icon" class="tab-icon"> -->
-                                <div class="tab-text">OVERVIEW</div>
-                            </div>
-                            <div class="tab teams-tab">
-                                <!-- <img src="teams-icon.png" alt="Teams Icon" class="tab-icon"> -->
-                                <div class="tab-text">TEAMS</div>
-                            </div>
-                            <div class="tab projects-tab">
-                                <!-- <img src="projects-icon.png" alt="Projects Icon" class="tab-icon"> -->
-                                <div class="tab-text">PROJECTS</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="sidebar">
+      <MainSidebar />
+    </div>
+    <div class="main-content">
+      <MainHeader />
+      <div class="profile-container">
+        <div class="profile-header-container">
+          <div class="profile-header">
+            <div class="avatar-section">
+              <img class="avatar-image" src="../../assets/WorkerCommutingImg/myImage.png" alt="User Avatar">
+              <div class="user-info">
+                <div class="user-name">Esthera Jackson</div>
+                <div class="user-email">esthera@simmmple.com</div>
+              </div>
+              <div class="edit-icon">
+                <img src="../../assets/WorkerCommutingImg/Icon.png" alt="Edit Profile" class="edit-profile-image" />
+              </div>
             </div>
-          <WorkerWidget />
+            <div class="navigation-tabs">
+              <div class="tab overview-tab">
+                <!-- <img src="overview-icon.png" alt="Overview Icon" class="tab-icon"> -->
+                <div class="tab-text">OVERVIEW</div>
+              </div>
+              <div class="tab teams-tab">
+                <!-- <img src="teams-icon.png" alt="Teams Icon" class="tab-icon"> -->
+                <div class="tab-text">TEAMS</div>
+              </div>
+              <div class="tab projects-tab">
+                <!-- <img src="projects-icon.png" alt="Projects Icon" class="tab-icon"> -->
+                <div class="tab-text">PROJECTS</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <WorkerWidget />
+    </div>
   </div>
 </template>
 
@@ -48,9 +48,9 @@ import WorkerWidget from '@/components/WorkerWidget.vue';
 export default {
   name: "WorkerCommuting",
   components: {
-      MainSidebar,
-      MainHeader,
-      WorkerWidget,
+    MainSidebar,
+    MainHeader,
+    WorkerWidget,
   },
 };
 </script>

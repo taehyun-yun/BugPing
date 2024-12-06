@@ -4,6 +4,7 @@ import NoticePage from '../views/notice/NoticePage.vue';
 import Schedule from '../views/Schedule.vue';
 import NoticeCreate from '../views/notice/NoticeCreate.vue';
 import WorkerCommuting from '../views/commute/WorkerCommuting.vue';
+import Contract from '../views/employment/AdministratorContract.vue';
 import NoticeDetail from "../views/notice/NoticeDetail.vue";
 import NoticeMain from "../views/notice/NoticeMain.vue";
 
@@ -48,7 +49,7 @@ routes: [
     {
         path: '/contract',
         name: 'contract',
-        component: contract
+        component: Contract
     },
     { path: '/login', name: 'login', component: LoginView },
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
