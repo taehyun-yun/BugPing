@@ -12,13 +12,13 @@
       <img src="../assets/SidebarImg/calendar.png" alt="Calendar Icon" class="icon-calendar" />
       <div class="menu-title">스케줄 관리</div>
     </div>
-    <div class="menu-item">
+    <div class="menu-item" @click="goToCalculatorPage">
       <img src="../assets/SidebarImg/dollar-sign.png" alt="Dollar Icon" class="icon-dollar" />
       <div class="menu-title">급여 관리</div>
     </div>
-    <div class="menu-item">
+    <div class="menu-item" @click="goToWorkerCommuting">
       <img src="../assets/SidebarImg/credit-card.png" alt="Credit Card Icon" class="icon-credit-card" />
-      <div class="menu-title">기타 1.</div>
+      <div class="menu-title">근태 관리</div>
     </div>
     <div class="menu-item">
       <img src="../assets/SidebarImg/edit.png" alt="Edit Icon" class="icon-edit" />
@@ -33,6 +33,17 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const goToCalculatorPage = () => {
+  router.push({ path: '/calculator' });
+};
+
+const goToWorkerCommuting = () => {
+  router.push({ path: '/commute' });
+};
 </script>
 
 <style scoped>

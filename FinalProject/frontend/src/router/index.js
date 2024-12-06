@@ -10,8 +10,8 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/cal',
-      name: 'cal',
+      path: '/calculator',
+      name: 'CalculatorPage',
       component: CalculatorPage,
     },
     {

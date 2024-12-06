@@ -15,7 +15,7 @@
             <div class="conversation-details">
               <div class="conversation-name">{{ conversation.name }}</div>
               <div class="conversation-text">{{ conversation.message }}</div>
-              <div class="reply-button">REPLY</div>
+              <div class="reply-button" @click="handleReply(conversation.name)">REPLY</div>
             </div>
           </div>
         </div>
@@ -49,44 +49,50 @@
   import { ref } from 'vue';
   
   const attendanceList = ref([
-  { name: 'Esthera Jackson', message: '출근하였습니다.', image: 'credits-to-unsplash-com0.png' },
-  { name: 'John Doe', message: '조퇴하였습니다.', image: 'credits-to-unsplash-com1.png' },
-  { name: 'Jane Smith', message: '지각하였습니다.', image: 'credits-to-unsplash-com2.png' },
-  { name: 'Chris Johnson', message: '결근하였습니다.', image: 'credits-to-unsplash-com3.png' }
-]);
+    { name: 'Esthera Jackson', message: '출근하였습니다.', image: 'credits-to-unsplash-com0.png' },
+    { name: 'John Doe', message: '조퇴하였습니다.', image: 'credits-to-unsplash-com1.png' },
+    { name: 'Jane Smith', message: '지각하였습니다.', image: 'credits-to-unsplash-com2.png' },
+    { name: 'Chris Johnson', message: '결근하였습니다.', image: 'credits-to-unsplash-com3.png' }
+  ]);
   
   const monthlyStatus = ref({
-  percentage: '0 %',
-  present: 0,
-  total: 0
-});
+    percentage: '0 %',
+    present: 0,
+    total: 0
+  });
   
   const summaryList = ref([
-  { title: '출근', count: 0, color: '#9a2ac6' },
-  { title: '지각', count: 0, color: '#4dc9aa' },
-  { title: '결근', count: 0, color: '#f44d50' },
-  { title: '조퇴', count: 0, color: '#ffbb00' }
-]);
+    { title: '출근', count: 0, color: '#9a2ac6' },
+    { title: '지각', count: 0, color: '#4dc9aa' },
+    { title: '결근', count: 0, color: '#f44d50' },
+    { title: '조퇴', count: 0, color: '#ffbb00' }
+  ]);
   
   const shiftState = ref(false);
   
   const handleShiftClick = () => {
-  if (!shiftState.value) {
-    alert('출근하였습니다');
-    monthlyStatus.value.present++;
-    monthlyStatus.value.total++;
-    summaryList.value[0].count++;
-  } else {
-    alert('퇴근하였습니다');
-  }
-  shiftState.value = !shiftState.value;
-};
+    if (!shiftState.value) {
+      alert('출근하였습니다');
+      monthlyStatus.value.present++;
+      monthlyStatus.value.total++;
+      summaryList.value[0].count++;
+      attendanceList.value.unshift({ name: '나', message: '출근하였습니다.', image: 'credits-to-unsplash-com0.png' });
+    } else {
+      alert('퇴근하였습니다');
+      monthlyStatus.value.total++;
+    }
+    shiftState.value = !shiftState.value;
+  };
+  
+  const handleReply = (name) => {
+    alert(`${name} 님에게 답장을 보냅니다.`);
+  };
   </script>
   
   <style scoped>
   .dashboard-container {
     display: flex;
-    gap: 100px;
+    gap: 50px;
     padding: 20px;
     align-items: flex-start;
     justify-content: center; /* 가운데 정렬 추가 */
@@ -100,9 +106,9 @@
   }
   
   .attendance-card {
-    width: 280px;
-    height: 340px;
-    margin-right: 20px;
+    width: 250px;
+    height: 320px;
+    margin-right: 15px;
     background: #4fd1c5;
     border-radius: 15px;
     position: relative;
@@ -120,7 +126,7 @@
   .shift-title {
     color: #ffffff;
     font-family: "Aclonica-Regular", sans-serif;
-    font-size: 40px;
+    font-size: 36px;
     line-height: 1.4;
     text-align: center;
   }
@@ -128,14 +134,14 @@
   .conversations {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    width: 600px; /* 너비를 더 늘림 */
+    gap: 15px;
+    width: 450px; /* 너비를 줄임 */
   }
   
   .conversation-card {
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 10px;
     background: #ffffff;
     border-radius: 15px;
     box-shadow: 0 3.5px 5.5px rgba(0, 0, 0, 0.02);
@@ -143,12 +149,12 @@
   
   .conversation-image {
     flex-shrink: 0;
-    margin-right: 15px;
+    margin-right: 10px;
   }
   
   .profile-image {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
   }
@@ -161,14 +167,14 @@
   
   .conversation-name {
     font-family: "Acme-Regular", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     color: #2d3748;
     margin-bottom: 5px;
   }
   
   .conversation-text {
     font-family: "ABeeZee-Regular", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     color: #718096;
   }
   
@@ -189,35 +195,35 @@
   .monthly-attendance-status {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 15px;
     background: #f5f5f5;
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     align-items: flex-start;
-    height: 400px; /* 높이 조정 */
+    height: 360px; /* 높이 조정 */
   }
   
   .status-card {
     position: relative;
-    width: 280px;
-    height: 352px;
+    width: 250px;
+    height: 320px;
     background: #3299fe;
     border-radius: 16px;
-    padding: 20px;
+    padding: 15px;
   }
   
   .status-summary {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* 두 개의 컬럼 */
-    gap: 20px;
+    gap: 15px;
     justify-content: center;
     height: 100%; /* 부모 컨테이너에 맞추어 높이 조정 */
     margin: auto;
   }
   
   .summary-item {
-    width: 185px;
-    height: 160px; /* 출근율 카드의 높이에 맞추기 위해 높이 조정 */
+    width: 160px;
+    height: 140px; /* 출근율 카드의 높이에 맞추기 위해 높이 조정 */
     border-radius: 16px;
     display: flex;
     flex-direction: column;
