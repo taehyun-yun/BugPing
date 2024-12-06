@@ -1,11 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import CalculatorPage from '../views/CalculatorPage.vue';
-import NoticePage from '../views/notice/NoticePage.vue';
-import test from '../views/test.vue';
 import contract from '../views/employment/AdministratorContract.vue';
-import commute from '../views/commute/WorkerCommuting.vue';
 import LoginView from '../views/auth/LoginView.vue';
-import jwt from 'jsonwebtoken';
+import NoticeMain from '@/views/notice/NoticeMain.vue';
+import NoticeDetail from '@/views/notice/NoticeDetail.vue';
+import NoticeCreate from '@/views/notice/NoticeCreate.vue';
+import WorkerCommuting from '@/views/commute/WorkerCommuting.vue';
+import Schedule from '@/views/Schedule.vue';
+import {jwtDecode} from 'jwt-decode';
+import axios from 'axios';
+import { axiosAddress } from '@/stores/axiosAddress';
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +18,7 @@ routes: [
         path: '/cal',
         name: 'cal',
         component: CalculatorPage,
+        //meta : { sidebar : true, requiresAuth: true, title: '지급내역',},
     },
     {
         path: "/noticemain",
@@ -50,12 +55,18 @@ routes: [
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true, roles: ['employer'], } }
   ],
 });
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
+// HttpOnly 쿠키는 읽어올 수 없다
+// function getCookie(name) {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop().split(';').shift();
+//   return null;
+// }
+const getRole = () =>{
+  axios.get(axiosAddress+"/findrole",{withCredentials: true})
+  .then((res)=>{
+    alert(res.data);
+  })
 }
 
 // 전역 가드 설정
@@ -64,17 +75,19 @@ router.beforeEach((to, from, next) => {
 //2 토큰의 시간이 현재 시간보다 많다
 //3 역할이 필요하지 않다 또는 역할을 만족한다
 //전부다 통과해야 로그인되게 짠다.
-  const token = getCookie('jwtToken');
-  if (!to.meta?.requiresAuth) {
+  if (!to?.meta?.requiresAuth) {
     return next(); // 바로 통과
   }
+  getRole;
+  const token = getCookie('jwtToken');
+  alert(token);
   if(token){
-    const decodedtoken = jwt.decode(token);
+    const decodedtoken = jwtDecode(token);
     if(decodedtoken.exp*1000 > Date.now()){
       const userRoles = decodedtoken.role.split(',');
-      const routeRoles = to?.meta.roles || [];
-      const compareRoleResult = routeRoles == [] ||routeRoles.some((role)=>userRoles.includes(role))
-      if(compareRoleResult){
+      const routeRoles = to?.meta?.roles || [];
+      const hasRequireRole = routeRoles.length === 0 || routeRoles.some((role)=>userRoles.includes(role))
+      if(hasRequireRole){
         next();
       }
     }
