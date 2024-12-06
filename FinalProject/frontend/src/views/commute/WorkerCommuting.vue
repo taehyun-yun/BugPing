@@ -40,7 +40,7 @@
 <script>
 import MainSidebar from '@/components/MainSidebar.vue';
 import MainHeader from '@/components/MainHeader.vue';
-import WorkerWidget from '@/components/WorkerWidget.vue';
+import WorkerWidget from '@/components/commute/WorkerWidget.vue';
 
 export default {
   name: "WorkerCommuting",
