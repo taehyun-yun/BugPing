@@ -57,9 +57,8 @@ export default {
 
 <style scoped>
 .container {
-  /* 마진이랑 패딩 넣어야 사이드바 좌측 빈공간이 안생김! 12.05 */
-  margin: 0;
-  padding: 0;
+  margin: 0; /* 모든 마진 초기화 */
+  padding: 0; /* 모든 패딩 초기화 */
   display: flex;
 }
 
