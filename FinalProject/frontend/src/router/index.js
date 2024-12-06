@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import CalculatorPage from '../views/CalculatorPage.vue';
-//import Schedule from '../views/Schedule.vue';
-import NoticeCreate from '../views/notice/NoticeCreate.vue';
-import WorkerCommuting from '../views/commute/WorkerCommuting.vue';
-import NoticeDetail from "../views/notice/NoticeDetail.vue";
-import NoticeMain from "../views/notice/NoticeMain.vue";
+import NoticePage from '../views/notice/NoticePage.vue';
+import test from '../views/test.vue';
 import contract from '../views/employment/AdministratorContract.vue';
+import commute from '../views/commute/WorkerCommuting.vue';
 import LoginView from '../views/auth/LoginView.vue';
 import jwt from 'jsonwebtoken';
 
@@ -37,11 +35,11 @@ routes: [
         name: 'WorkerCommuting',
         component: WorkerCommuting
     },
-    // { 
-    //     path: '/schedule',
-    //     name: 'schedule',
-    //     component: Schedule
-    // },
+    {
+        path: '/schedule',
+        name: 'schedule',
+        component: Schedule
+    },
     {
         path: '/contract',
         name: 'contract',
