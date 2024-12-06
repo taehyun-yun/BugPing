@@ -17,8 +17,9 @@ public class Schedule {
     @Column(name = "scheduleId", nullable = false, updatable = false)
     private Integer scheduleId;
 
-    @Column(name = "contractId", nullable = false)
-    private Integer contractId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contractId", nullable = false)
+    private Contract contract;
 
     @Column(name = "day")
     private Integer day; // 1 = Monday, 7 = Sunday
@@ -35,8 +36,8 @@ public class Schedule {
     @Column(name = "workHour")
     private String workHour;
 
-    // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contractId", insertable = false, updatable = false)
-    private Contract contract;
+//    // Relationships
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "contractId", insertable = false, updatable = false)
+//    private Contract contract;
 }

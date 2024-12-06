@@ -18,8 +18,8 @@ public class Contract {
     @Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
 
-    @Column(name = "workId", nullable = false)
-    private Integer workId;
+    //@Column(name = "workId", nullable = false)
+    //private Integer workId;
 
     @Column(name = "hourlyWage")
     private Integer hourlyWage;

@@ -15,7 +15,7 @@ public class Company {
     private String companyId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
-    private User userId;
+    private User user;
     private String cname;
     private String ctel;
     private String address;
