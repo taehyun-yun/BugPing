@@ -9,14 +9,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 public class JwtController {
@@ -66,7 +68,9 @@ public class JwtController {
         System.out.println("쿠키 생성됨");
     }
 
-    //토큰에서 아이디 가지고오기 --시작-->
+    //토큰에서 아이디 가지고오기
+    //근데 authentication.getName() 이거 쓰면 아래꺼 필요 없음
+    // --시작-->
     @GetMapping("/checkuserid")
     public ResponseEntity<String>checkuserid(String token){
         Claims claims = jwtService.getClaims(token);
@@ -82,4 +86,19 @@ public class JwtController {
         return new ResponseEntity<String>("토큰이 유효하지 않습니다.",HttpStatus.NOT_ACCEPTABLE);
     }
     // <--토큰에서 아이디 가지고 오기 끝--
+
+    //HttpOnly라 클라이언트에서 getCookie를 못하여 여기서 대신 보내줘야함.
+    @GetMapping("/findrole")
+    public Map<String, Object> findRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 권한(Role) 이름만 추출
+        List<String> roles = new ArrayList<>();
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            roles.add(authority.getAuthority());
+        }
+        // 명시적으로 JSON 구조화
+        Map<String, Object> response = new HashMap<>();
+        response.put("roles", roles);
+        return response;
+    }
 }

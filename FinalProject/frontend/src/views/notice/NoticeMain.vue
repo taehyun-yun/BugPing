@@ -1,8 +1,6 @@
 <template>
   <div class="main-wrapper">
-    <MainSidebar />
     <div class="content-wrapper">
-      <MainHeader />
       <div class="notice-main">
         <!-- Tabs -->
         <div class="tabs">
@@ -124,8 +122,6 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import MainSidebar from '@/components/MainSidebar.vue';
-import MainHeader from '@/components/MainHeader.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
