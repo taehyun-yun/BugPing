@@ -1,13 +1,8 @@
 package com.example.FinalProject.controller.commute;
 
 
-import com.example.FinalProject.dto.ContractScheduleDto;
-import com.example.FinalProject.entity.employment.Contract;
-import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.entity.commute.Attendance;
 import com.example.FinalProject.repository.commute.AttendanceRepository;
-import com.example.FinalProject.repository.employment.ContractRepository;
-import com.example.FinalProject.repository.employment.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

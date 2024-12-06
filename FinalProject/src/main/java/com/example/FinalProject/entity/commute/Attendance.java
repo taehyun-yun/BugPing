@@ -1,4 +1,5 @@
 package com.example.FinalProject.entity.commute;
+import com.example.FinalProject.entity.employment.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -49,6 +50,7 @@ public class Attendance {
 
     @Column(name = "totalHours")
     private LocalDateTime totalHours;
+
 
 //    // Relationships
 //    @ManyToOne(fetch = FetchType.LAZY)
