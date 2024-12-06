@@ -20,6 +20,10 @@ routes: [
       path: '/calculator',
       name: 'CalculatorPage',
       component: CalculatorPage,
+      meta: {
+        header: true,
+        sidebar: true,
+      },
     },
     {
         path: "/noticemain",
