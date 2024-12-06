@@ -7,15 +7,15 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @ToString
-public class Payroll {
+public class PayRoll {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer payrollId;
+    private Integer payRollId;
     private LocalDate paymentDate;
     private int monthPayment;
     private int incentive;
