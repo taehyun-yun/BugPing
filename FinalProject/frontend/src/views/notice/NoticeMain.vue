@@ -1,193 +1,217 @@
 <template>
-  <div class="notice-main">
-    <!-- Tabs -->
-    <div class="tabs">
-      <button
-        class="tab"
-        :class="{ active: activeTab === 'all' }"
-        @click="setActiveTab('all')"
-      >
-        전체 게시물
-      </button>
-      <button
-        class="tab"
-        :class="{ active: activeTab === 'my' }"
-        @click="setActiveTab('my')"
-      >
-        내 게시물
-      </button>
-    </div>
+  <div class="main-wrapper">
+    <MainSidebar />
+    <div class="content-wrapper">
+      <MainHeader />
+      <div class="notice-main">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button
+            class="tab"
+            :class="{ active: activeTab === 'all' }"
+            @click="setActiveTab('all')"
+          >
+            전체 게시물
+          </button>
+          <button
+            class="tab"
+            :class="{ active: activeTab === 'my' }"
+            @click="setActiveTab('my')"
+          >
+            내 게시물
+          </button>
+        </div>
 
-    <!-- Categories -->
-    <div class="categories-container">
-      <div class="categories">
-        <button
-          class="category"
-          :class="{ active: activeCategory === '공지' }"
-          @click="setActiveCategory('공지')"
-        >
-          <img
-            src="@/assets/noticeimg/megaphone.png"
-            alt="공지 아이콘"
-            class="category-icon"
-          />
-          공지
-        </button>
-        <button
-          class="category"
-          :class="{ active: activeCategory === '매뉴얼' }"
-          @click="setActiveCategory('매뉴얼')"
-        >
-          <img
-            src="@/assets/noticeimg/checklist.png"
-            alt="매뉴얼 아이콘"
-            class="category-icon"
-          />
-          매뉴얼
-        </button>
-        <button
-          class="category"
-          :class="{ active: activeCategory === '특이사항' }"
-          @click="setActiveCategory('특이사항')"
-        >
-          <img
-            src="@/assets/noticeimg/question-mark.png"
-            alt="특이사항 아이콘"
-            class="category-icon"
-          />
-          특이사항
-        </button>
+        <!-- Categories -->
+        <div class="categories-container">
+          <div class="categories">
+            <button
+              class="category"
+              :class="{ active: activeCategory === '공지' }"
+              @click="setActiveCategory('공지')"
+            >
+              <img
+                src="@/assets/noticeimg/megaphone.png"
+                alt="공지 아이콘"
+                class="category-icon"
+              />
+              공지
+            </button>
+            <button
+              class="category"
+              :class="{ active: activeCategory === '매뉴얼' }"
+              @click="setActiveCategory('매뉴얼')"
+            >
+              <img
+                src="@/assets/noticeimg/checklist.png"
+                alt="매뉴얼 아이콘"
+                class="category-icon"
+              />
+              매뉴얼
+            </button>
+            <button
+              class="category"
+              :class="{ active: activeCategory === '특이사항' }"
+              @click="setActiveCategory('특이사항')"
+            >
+              <img
+                src="@/assets/noticeimg/question-mark.png"
+                alt="특이사항 아이콘"
+                class="category-icon"
+              />
+              특이사항
+            </button>
+          </div>
+          <!-- 공지 작성하기 버튼 -->
+          <button class="create-notice-button" @click="createNotice">
+            공지 작성하기
+          </button>
+        </div>
+
+        <!-- Board Table -->
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="checkbox-action">
+                  <button @click="deleteSelected" class="delete-button">
+                    삭제
+                  </button>
+                  <input type="checkbox" @click="toggleAll" />
+                </div>
+              </th>
+              <th>No.</th>
+              <th>제목</th>
+              <th>작성자</th>
+              <th>보기권한</th>
+              <th>작성 날짜</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in filteredItems" :key="item.id">
+              <td class="checkbox-cell">
+                <input type="checkbox" v-model="selectedItems" :value="item.id" />
+              </td>
+              <td>{{ index + 1 }}</td>
+              <td>{{ item.title }}</td>
+              <td>{{ item.writer }}</td>
+              <td>{{ item.viewers }}</td>
+              <td>{{ item.date }}</td>
+              <td>{{ item.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <button @click="prevPage" :disabled="currentPage === 1">&lt;</button>
+          <span
+            v-for="page in totalPages"
+            :key="page"
+            :class="{ active: currentPage === page }"
+            @click="goToPage(page)"
+            >{{ page }}</span
+          >
+          <button @click="nextPage" :disabled="currentPage === totalPages">
+            &gt;
+          </button>
+        </div>
       </div>
-      <!-- 공지 작성하기 버튼 -->
-      <button class="create-notice-button" @click="createNotice">
-        공지 작성하기
-      </button>
-    </div>
-
-    <!-- Board Table -->
-    <table class="board-table">
-      <thead>
-        <tr>
-          <th>
-            <div class="checkbox-action">
-              <button @click="deleteSelected" class="delete-button">
-                삭제
-              </button>
-              <input type="checkbox" @click="toggleAll" />
-            </div>
-          </th>
-          <th>No.</th>
-          <th>제목</th>
-          <th>작성자</th>
-          <th>보기권한</th>
-          <th>작성 날짜</th>
-          <th>상태</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in filteredItems" :key="item.id">
-          <td class="checkbox-cell">
-            <input type="checkbox" v-model="selectedItems" :value="item.id" />
-          </td>
-          <td>{{ index + 1 }}</td>
-          <td>{{ item.title }}</td>
-          <td>{{ item.writer }}</td>
-          <td>{{ item.viewers }}</td>
-          <td>{{ item.date }}</td>
-          <td>{{ item.status }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">&lt;</button>
-      <span
-        v-for="page in totalPages"
-        :key="page"
-        :class="{ active: currentPage === page }"
-        @click="goToPage(page)"
-        >{{ page }}</span
-      >
-      <button @click="nextPage" :disabled="currentPage === totalPages">
-        &gt;
-      </button>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      activeTab: "all",
-      activeCategory: "공지",
-      items: [
-        {
-          id: 1,
-          title: "공지사항",
-          writer: "강정현",
-          viewers: "1명",
-          date: "2024.11.28(목) 14:15",
-          status: "",
-        },
-      ],
-      currentPage: 1,
-      itemsPerPage: 5,
-      selectedItems: [],
-    };
+<script setup>
+import { ref, computed } from 'vue';
+import MainSidebar from '@/components/MainSidebar.vue';
+import MainHeader from '@/components/MainHeader.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const activeTab = ref('all');
+const activeCategory = ref('공지');
+const items = ref([
+  {
+    id: 1,
+    title: '공지사항',
+    writer: '강정현',
+    viewers: '1명',
+    date: '2024.11.28(목) 14:15',
+    status: '',
   },
-  computed: {
-    filteredItems() {
-      return this.items.slice(
-        (this.currentPage - 1) * this.itemsPerPage,
-        this.currentPage * this.itemsPerPage
-      );
-    },
-    totalPages() {
-      return Math.ceil(this.items.length / this.itemsPerPage);
-    },
-  },
-  methods: {
-    setActiveTab(tab) {
-      this.activeTab = tab;
-    },
-    setActiveCategory(category) {
-      this.activeCategory = category;
-    },
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    goToPage(page) {
-      this.currentPage = page;
-    },
-    toggleAll(event) {
-      this.selectedItems = event.target.checked
-        ? this.items.map((item) => item.id)
-        : [];
-    },
-    deleteSelected() {
-      this.items = this.items.filter(
-        (item) => !this.selectedItems.includes(item.id)
-      );
-      this.selectedItems = [];
-    },
-    createNotice() {
-      alert("공지 작성 페이지로 이동합니다.");
-    },
-  },
+]);
+const currentPage = ref(1);
+const itemsPerPage = ref(5);
+const selectedItems = ref([]);
+
+const filteredItems = computed(() => {
+  return items.value.slice(
+    (currentPage.value - 1) * itemsPerPage.value,
+    currentPage.value * itemsPerPage.value
+  );
+});
+
+const totalPages = computed(() => {
+  return Math.ceil(items.value.length / itemsPerPage.value);
+});
+
+const setActiveTab = (tab) => {
+  activeTab.value = tab;
+};
+
+const setActiveCategory = (category) => {
+  activeCategory.value = category;
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const goToPage = (page) => {
+  currentPage.value = page;
+};
+
+const toggleAll = (event) => {
+  selectedItems.value = event.target.checked
+    ? items.value.map((item) => item.id)
+    : [];
+};
+
+const deleteSelected = () => {
+  items.value = items.value.filter(
+    (item) => !selectedItems.value.includes(item.id)
+  );
+  selectedItems.value = [];
+};
+
+const createNotice = () => {
+  alert('공지 작성 페이지로 이동합니다.');
+  router.push({ path: '/noticecreate' });
 };
 </script>
 
 <style>
+.main-wrapper {
+  display: flex;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  padding: 20px;
+}
+
 .notice-main {
+  max-width: 1400px; /* 최대 너비 설정 */
+  margin: 0 auto; /* 콘텐츠를 중앙으로 정렬 */
   padding: 20px;
 }
 
@@ -224,7 +248,7 @@ export default {
   background-color: #f9f9f9; /* 기본 배경색 */
   cursor: pointer;
   flex-shrink: 0; /* 동일한 크기 유지 */
-  width: 250px; /* 버튼의 고정 너비 */
+  width: 260px; /* 버튼의 고정 너비 */
   height: 50px; /* 버튼의 고정 높이 */
   transition: all 0.2s ease; /* 호버 효과 */
 }

@@ -31,7 +31,7 @@ routes: [
         component: NoticeDetail,
     },
     {
-        path: '/notice/create',
+        path: '/noticecreate',
         name: 'noticeCretate',
         component: NoticeCreate
     },

@@ -57,6 +57,8 @@ export default {
 
 <style scoped>
 .container {
+  margin: 0; /* 모든 마진 초기화 */
+  padding: 0; /* 모든 패딩 초기화 */
   display: flex;
 }
 

@@ -8,7 +8,7 @@
       <img src="../assets/SidebarImg/home.png" alt="Home Icon" class="icon-home" />
       <div class="menu-title">홈</div>
     </div>
-    <div class="menu-item">
+    <div class="menu-item" @click="goToSchedule">
       <img src="../assets/SidebarImg/calendar.png" alt="Calendar Icon" class="icon-calendar" />
       <div class="menu-title">스케줄 관리</div>
     </div>
@@ -20,9 +20,9 @@
       <img src="../assets/SidebarImg/credit-card.png" alt="Credit Card Icon" class="icon-credit-card" />
       <div class="menu-title">근태 관리</div>
     </div>
-    <div class="menu-item">
+    <div class="menu-item" @click="goToNoticeMain">
       <img src="../assets/SidebarImg/edit.png" alt="Edit Icon" class="icon-edit" />
-      <div class="menu-title">기타 2.</div>
+      <div class="menu-title">공지사항</div>
     </div>
     <div class="menu-item">
       <img src="../assets/SidebarImg/alert-circle.png" alt="Help Icon" class="icon-help" />
@@ -43,6 +43,14 @@ const goToCalculatorPage = () => {
 
 const goToWorkerCommuting = () => {
   router.push({ path: '/commute' });
+};
+
+const goToSchedule = () => {
+  router.push({ path: '/schedule' });
+};
+
+const goToNoticeMain = () => {
+  router.push({ path: '/noticemain' });
 };
 </script>
 
@@ -111,7 +119,6 @@ const goToWorkerCommuting = () => {
 .header-item {
   display: flex;
   align-items: center;
-  margin-top: 20px;
   padding: 20px;
 }
 .header-title {
