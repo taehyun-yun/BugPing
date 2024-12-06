@@ -1,42 +1,55 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import CalculatorPage from '../views/CalculatorPage.vue';
-import NoticePage from '../views/notice/NoticePage.vue';
-import test from '../views/test.vue';
+//import Schedule from '../views/Schedule.vue';
+import NoticeCreate from '../views/notice/NoticeCreate.vue';
+import WorkerCommuting from '../views/commute/WorkerCommuting.vue';
+import NoticeDetail from "../views/notice/NoticeDetail.vue";
+import NoticeMain from "../views/notice/NoticeMain.vue";
 import contract from '../views/employment/AdministratorContract.vue';
-import commute from '../views/commute/WorkerCommuting.vue';
 import LoginView from '../views/auth/LoginView.vue';
+import jwt from 'jsonwebtoken';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
+history: createWebHistory(import.meta.env.BASE_URL),
+routes: [
     {
-      path: '/cal',
-      name: 'cal',
-      component: CalculatorPage,
+        path: '/cal',
+        name: 'cal',
+        component: CalculatorPage,
     },
     {
-      path: '/notice/no',
-      name: 'notice',
-      component: NoticePage
+        path: "/noticemain",
+        name: "notice",
+        component: NoticeMain,
     },
     {
-      path: '/test',
-      name: 'test',
-      component: test
+        path: "/noticedetail",
+        name: "noticedetail",
+        component: NoticeDetail,
     },
     {
-      path: '/contract',
-      name: 'contract',
-      component: contract
+        path: '/notice/create',
+        name: 'noticeCretate',
+        component: NoticeCreate
     },
     {
-      path: '/commute',
-      name: 'commute',
-      component: commute
+        path: '/commute',
+        name: 'WorkerCommuting',
+        component: WorkerCommuting
     },
-    { path: '/login', name: 'login', component: LoginView },
+    // { 
+    //     path: '/schedule',
+    //     name: 'schedule',
+    //     component: Schedule
+    // },
+    {
+        path: '/contract',
+        name: 'contract',
+        component: contract
+    },
+    { path: '/login', name: 'login', component: LoginView, meta : { sidebar : false, requiresAuth: false, title: '로그인',} },
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
-    //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true } }
+    //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true, roles: ['employer'], } }
   ],
 });
 
@@ -49,17 +62,30 @@ function getCookie(name) {
 
 // 전역 가드 설정
 router.beforeEach((to, from, next) => {
-  // 로그인 여부를 확인
+//1 로그인이 필요하지 않다 또는 로그인이 되어있다
+//2 토큰의 시간이 현재 시간보다 많다
+//3 역할이 필요하지 않다 또는 역할을 만족한다
+//전부다 통과해야 로그인되게 짠다.
   const token = getCookie('jwtToken');
-  const isAuthenticated = !!token;
-
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    // 인증이 필요한 페이지인데 로그인이 되어 있지 않은 경우 로그인 페이지로 이동
-    next('/login');
-  } else {
-    // 그렇지 않다면 페이지 이동 허용
-    next();
+  if (!to.meta?.requiresAuth) {
+    return next(); // 바로 통과
   }
+  if(token){
+    const decodedtoken = jwt.decode(token);
+    if(decodedtoken.exp*1000 > Date.now()){
+      const userRoles = decodedtoken.role.split(',');
+      const routeRoles = to?.meta.roles || [];
+      const compareRoleResult = routeRoles == [] ||routeRoles.some((role)=>userRoles.includes(role))
+      if(compareRoleResult){
+        next();
+      }
+    }
+  }
+  next('/login');
+});
+router.afterEach((to) => {
+  const defaultTitle = '운영의 달인';
+  document.title = to.meta.title || defaultTitle;
 });
 
 export default router
