@@ -1,8 +1,6 @@
 <template>
     <div class="app-container">
-        <MainSidebar />
         <div class="main-content">
-            <MainHeader />
             <div class="calendar-and-schedule">
                 <div class="calendar-container">
                     <FullCalendar :options="calendarOptions" />
@@ -39,8 +37,6 @@ import dayGridPlugin from '@fullcalendar/daygrid'; // 일별 그리드
 import interactionPlugin from '@fullcalendar/interaction'; // 상호작용  (드래그 안드 듣, 클릭 등).
 import timeGridPlugin from '@fullcalendar/timegrid'; // 시간별 
 import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 스타일시트를 가져옵니다.
-import MainSidebar from '../components/MainSidebar.vue';
-import MainHeader from '../components/MainHeader.vue';
 import { ref, onMounted } from 'vue';
 
 // 예시 데이터 및 상태 정의

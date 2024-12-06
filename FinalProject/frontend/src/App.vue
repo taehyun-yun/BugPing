@@ -34,7 +34,7 @@ const sidebar = computed(()=>route.meta.sidebar === true)
       display: flex;
    }
    .header{
-      padding : 15px;
+      padding : 25px;
       display: inline-block;
    }
    .sidebar-container{

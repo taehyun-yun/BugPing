@@ -31,9 +31,9 @@
   const router = useRouter();
 
   // 헤더 컴포넌트가 로드되면 body에 padding-top 추가하여 모든 페이지에서 여백을 맞춤
-  onMounted(() => {
-    document.body.style.paddingTop = '54px';
-  });
+  // onMounted(() => {
+  //   document.body.style.paddingTop = '54px';
+  // });
 
   // 로그인 페이지로 이동하는 함수
   const goToLoginPage = () => {
