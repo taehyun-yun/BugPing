@@ -22,4 +22,5 @@ public class PayRoll {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workId")
     private Work work;
+
 }
