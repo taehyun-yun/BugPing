@@ -18,39 +18,45 @@ routes: [
         path: '/cal',
         name: 'cal',
         component: CalculatorPage,
-        //meta : { sidebar : true, requiresAuth: true, title: '지급내역',},
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '지급내역',},
     },
     {
         path: "/noticemain",
         name: "notice",
         component: NoticeMain,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '알림',},
     },
     {
         path: "/noticedetail",
         name: "noticedetail",
         component: NoticeDetail,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '알림',},
     },
     {
         path: '/notice/create',
         name: 'noticeCretate',
-        component: NoticeCreate
+        component: NoticeCreate,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '알림',},
     },
     {
         path: '/commute',
         name: 'WorkerCommuting',
-        component: WorkerCommuting
+        component: WorkerCommuting,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '근태',},
     },
     {
         path: '/schedule',
         name: 'schedule',
-        component: Schedule
+        component: Schedule,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '스케쥴',},
     },
     {
         path: '/contract',
         name: 'contract',
-        component: contract
+        component: contract,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '계약',},
     },
-    { path: '/login', name: 'login', component: LoginView, meta : { sidebar : false, requiresAuth: false, title: '로그인',} },
+    { path: '/login', name: 'login', component: LoginView, meta : { header : false, sidebar : false, requiresAuth: false, title: '로그인',} },
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true, roles: ['employer'], } }
   ],

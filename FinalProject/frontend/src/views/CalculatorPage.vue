@@ -1,8 +1,8 @@
 <template>
   <div class="calculator-page">
     <!-- 사이드바 컴포지트 -->
-    <MainSidebar />
-    <MainHeader />
+    <!-- <MainSidebar />
+    <MainHeader /> -->
 
     <!-- 급여 계산 영역 -->
     <div class="payroll-calculator">

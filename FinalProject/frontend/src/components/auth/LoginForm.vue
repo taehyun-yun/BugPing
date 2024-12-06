@@ -82,7 +82,7 @@ import { axiosAddress } from '@/stores/axiosAddress';
         border: none;
         outline: none;
         background: none;
-        width: 100%;
+        width: calc(100% - 60px);
         font-size: 1rem;
     }
 

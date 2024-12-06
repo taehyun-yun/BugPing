@@ -8,7 +8,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Getter@Setter@ToString@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
 public class Company {
     @Id
     @Column(name = "companyId")
