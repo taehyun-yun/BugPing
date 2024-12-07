@@ -15,7 +15,8 @@ import java.time.LocalDate;
 public class Work {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer workingId;
+    @JoinColumn(name = "work_id")
+    private Integer workId;
     @ManyToOne
     @JoinColumn(name = "userId")
     private User user;

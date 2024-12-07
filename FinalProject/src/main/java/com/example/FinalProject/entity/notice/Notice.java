@@ -16,7 +16,7 @@ public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer noticeId;
-    @JoinColumn(name = "workId")
+    @JoinColumn(name = "work_id")
     @ManyToOne
     private Work work;
     private String title;
