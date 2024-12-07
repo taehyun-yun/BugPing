@@ -13,10 +13,13 @@ import lombok.*;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer FileId;
+    @Column(name = "file_id")
+    private int fileId;
+
     @ManyToOne
     @JoinColumn(name = "notice_id")
     private Notice notice;
+
     private String filePath;
     private String fileType;
 }
