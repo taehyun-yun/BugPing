@@ -17,7 +17,8 @@ routes: [
       path: '/calculator',
       name: 'CalculatorPage',
       component: CalculatorPage,
-      meta : { header : true, sidebar : true, requiresAuth: false, title: '지급내역',},
+      meta : { header : true, sidebar : true, requiresAuth: false, roles : ["employer"], title: '지급내역',},
+      //meta : { header : true, sidebar : true, requiresAuth: true, roles : ["employer"], title: '지급내역',},
     },
     {
         path: "/noticemain",
@@ -60,44 +61,40 @@ routes: [
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true, roles: ['employer'], } }
   ],
 });
-// HttpOnly 쿠키는 읽어올 수 없다
-// function getCookie(name) {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop().split(';').shift();
-//   return null;
-// }
-const getRole = () =>{
-  axios.get(axiosAddress+"/findrole",{withCredentials: true})
+
+const getRole = async() =>{
+  let roles;
+  await axios.get(axiosAddress+"/findrole",{withCredentials: true})
   .then((res)=>{
-    alert(res.data);
-  })
+  roles = res.data.roles.map((role) => role.replace('ROLE_', ''));
+  });
+  if(roles[0] == 'ANONYMOUS'){
+    return [false,roles];
+  }
+  return [true,roles];
 }
 
 // 전역 가드 설정
-router.beforeEach((to, from, next) => {
-//1 로그인이 필요하지 않다 또는 로그인이 되어있다
-//2 토큰의 시간이 현재 시간보다 많다
-//3 역할이 필요하지 않다 또는 역할을 만족한다
-//전부다 통과해야 로그인되게 짠다.
+router.beforeEach(async(to, from, next) => {
   if (!to?.meta?.requiresAuth) {
     return next(); // 바로 통과
   }
-  getRole;
-  const token = getCookie('jwtToken');
-  alert(token);
-  if(token){
-    const decodedtoken = jwtDecode(token);
-    if(decodedtoken.exp*1000 > Date.now()){
-      const userRoles = decodedtoken.role.split(',');
-      const routeRoles = to?.meta?.roles || [];
-      const hasRequireRole = routeRoles.length === 0 || routeRoles.some((role)=>userRoles.includes(role))
-      if(hasRequireRole){
-        next();
-      }
-    }
+  //로그인이 필요할 때
+  let auth = await getRole();
+  alert(auth[0]);
+  if(to?.meta?.requiresAuth && auth[0]){
+    return next();
   }
-  next('/login');
+  //역할까지 분리해야한다면
+  const userRoles = auth[1];
+  alert(userRoles);
+  const routeRoles = to?.meta?.roles || [];
+  const hasRequireRole = routeRoles.length === 0 || routeRoles.some((role)=>userRoles.includes(role))
+  if(hasRequireRole){
+    next();
+  } else {
+    next('/login');
+  }
 });
 router.afterEach((to) => {
   const defaultTitle = '운영의 달인';
