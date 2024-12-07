@@ -11,7 +11,7 @@
             <MainSidebar></MainSidebar>
          </div>
          <div class="routerview-container">
-            <RouterView />
+            <RouterView :key="$route.fullPath"/>
          </div>
       </div>
    </div>
@@ -24,9 +24,9 @@ import MainSidebar from './components/MainSidebar.vue';
 import { useRoute } from 'vue-router';
 const route = useRoute();
 
-const header = computed(()=>route.meta.header === true)
+const header = computed(()=>route?.meta?.header === true)
 
-const sidebar = computed(()=>route.meta.sidebar === true)
+const sidebar = computed(()=>route?.meta?.sidebar === true)
 </script>
 
 <style scoped>
