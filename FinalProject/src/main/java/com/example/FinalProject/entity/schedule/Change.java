@@ -16,7 +16,7 @@ public class Change {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer changeId;
-    @JoinColumn(name = "scheduleId")
+    @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
     private LocalDate changeDate;

@@ -17,7 +17,7 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer contractId;
     @ManyToOne
-    @JoinColumn(name = "workId")
+    @JoinColumn(name = "work_id")
     private Work work;
     private int houlyWage;
     private LocalDate contractStart;

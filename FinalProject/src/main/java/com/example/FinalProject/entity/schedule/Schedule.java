@@ -16,7 +16,7 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer scheduleId;
-    @JoinColumn(name = "contractId")
+    @JoinColumn(name = "contract_id")
     @ManyToOne
     private Contract contract;
     private Integer day; // Monday == 1 , Sunday == 7

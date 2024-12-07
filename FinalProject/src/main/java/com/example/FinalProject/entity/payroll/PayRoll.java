@@ -20,7 +20,7 @@ public class PayRoll {
     private int monthPayment;
     private int incentive;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workId")
+    @JoinColumn(name = "work_id")
     private Work work;
 
 }

@@ -17,7 +17,7 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer attendanceId;
     @ManyToOne
-    @JoinColumn(name = "contractId")
+    @JoinColumn(name = "contract_id")
     private Contract contract;
     private LocalTime actualStart;
     private LocalTime actualEnd;

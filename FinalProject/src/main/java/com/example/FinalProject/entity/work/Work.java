@@ -17,7 +17,7 @@ public class Work {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer workId;
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
     private LocalDate hireDate;
     private LocalDate resignDate;
