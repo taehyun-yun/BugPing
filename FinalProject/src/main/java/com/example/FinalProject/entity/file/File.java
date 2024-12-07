@@ -15,7 +15,7 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer FileId;
     @ManyToOne
-    @JoinColumn(name = "Notice_id")
+    @JoinColumn(name = "notice_id")
     private Notice notice;
     private String filePath;
     private String fileType;
