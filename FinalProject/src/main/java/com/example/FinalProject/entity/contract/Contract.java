@@ -1,6 +1,6 @@
 package com.example.FinalProject.entity.contract;
 
-import com.example.FinalProject.entity.working.Work;
+import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
 
