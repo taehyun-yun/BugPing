@@ -9,6 +9,7 @@ import NoticeCreate from '@/views/notice/NoticeCreate.vue';
 import Schedule from '@/views/Schedule.vue';
 import axios from 'axios';
 import { axiosAddress } from '@/stores/axiosAddress';
+import SignUpView from '@/views/auth/SignUpView.vue';
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,7 +19,6 @@ routes: [
       name: 'CalculatorPage',
       component: CalculatorPage,
       meta : { header : true, sidebar : true, requiresAuth: false, roles : ["employer"], title: '지급내역',},
-      //meta : { header : true, sidebar : true, requiresAuth: true, roles : ["employer"], title: '지급내역',},
     },
     {
         path: "/noticemain",
@@ -56,9 +56,11 @@ routes: [
         component: Contract,
         meta : { header : true, sidebar : true, requiresAuth: false, title: '계약',},
     },
-    { path: '/login', name: 'login', component: LoginView, meta : { header : false, sidebar : false, requiresAuth: false, title: '로그인',} },
+    { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'} },
+    { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'}}
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
-    //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: {requiresAuth: true, roles: ['employer'], } }
+    //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: { header : true, sidebar : true, requiresAuth: true, roles: ['employer'], } }
+    //{ path: '/unprotected', name: 'UnProtected', component: UnProtectedPage, }
   ],
 });
 
@@ -76,6 +78,14 @@ const getRole = async() =>{
 
 // 전역 가드 설정
 router.beforeEach(async(to, from, next) => {
+  //부모 meta 상속하기
+  if(to.matched.length>0){
+    const mergeMeta = to.matched.reduce((meta, record) =>{
+      return { ...meta , ...(record.meta ?? {} )};
+    },{});
+    to.meta = mergeMeta;
+  }
+
   if (!to?.meta?.requiresAuth) {
     return next(); // 바로 통과
   }

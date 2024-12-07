@@ -70,8 +70,7 @@ public class JwtController {
     }
 
     //토큰에서 아이디 가지고오기
-    // 근데 필터에서 authentication을 선언해주었기 때문에
-    // authentication.getName() 이거 쓰면 token 가져올 필요도 없음.
+    // 근데 필터에서 authentication을 선언해주었기 때문에 authentication.getName() 이거 쓰면 이 매서드쓸 필요 없음.
     // --시작-->
     @GetMapping("/checkuserid")
     public ResponseEntity<String>checkuserid(String token){
