@@ -7,18 +7,18 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Change")
+@Table(name = "WorkChange")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Change {
+public class WorkChange {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "changeId", nullable = false, updatable = false)
-    private Integer changeId; // Primary Key
+    @Column(name = "WorkChangeId", nullable = false, updatable = false)
+    private Integer WorkChangeId; // Primary Key
 
     @Column(name = "scheduleId", nullable = false, updatable = false)
     private Integer scheduleId;
@@ -29,8 +29,8 @@ public class Change {
     @Column(name="changedate", nullable = false)
     private LocalDate changedate;
 
-    @Column(name = "inout", nullable = false)
-    private Boolean inout; // true = 근무 있음, false = 근무 없음
+    @Column(name = "changeType", nullable = false)
+    private Boolean changeType; // true = 근무 있음, false = 근무 없음
 
     // Relationships
     @ManyToOne(fetch = FetchType.LAZY)

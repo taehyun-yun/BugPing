@@ -1,7 +1,7 @@
 package com.example.FinalProject.dto;
 
-import com.example.FinalProject.entity.employment.Change;
 import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.employment.WorkChange;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,5 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class ScheduleAndChangeDTO {
     private List<Schedule> schedules;
-    private List<Change> changes;
+    private List<WorkChange> workChanges;
 }
