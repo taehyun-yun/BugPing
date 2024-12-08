@@ -72,33 +72,67 @@ const calendarOptions = ref({
             if (newEventStartTime) {
                 const newEventEndTime = prompt('종료 시간을 입력하세요 (HH:MM 형식)', '10:00'); // 종료 시간 입력
                 if (newEventEndTime) {
-                    if (calendarRef.value) {
-                    const calendarApi = calendarRef.value.getApi(); // FullCalendar API 인스턴스 가져오기
-                    calendarApi.addEvent({
-                        id: Date.now().toString(), // 고유한 ID로 이벤트를 추가
-                        title: newEventTitle, // 입력한 제목으로 이벤트 생성
-                        start: `${info.dateStr}T${newEventStartTime}`, // 시작 날짜와 시간
-                        end: `${info.dateStr}T${newEventEndTime}`, // 종료 날짜와 시간
-                        allDay: false // 특정 시간 이벤트로 설정
-                    });
-                } else {
-                    console.error("캘린더 인스턴스 참조 못함");
-                }
+                    const schedule = {
+                        day: new Date(info.dateStr).getDay(),
+                        officialStart: `${info.dateStr}T${newEventStartTime}`,
+                        officialEnd: `${info.dateStr}T${newEventEndTime}`,
+                        breakHour: '1',
+                        workHour: '8',
+                        contract: null,
+                    };
+                    saveScheduleToDB(schedule); // 일정 저장 함수 호출
                 }
             }
-        }
+        }5
     }
 });
 
-// 일정 편집 함수 (임시로 콘솔에 출력만 하도록 구현)
-const editScheduleItem = (item) => {
-    console.log('일정 수정:', item);
+// 일정 저장 함수
+const saveScheduleToDB = async (schedule) => {
+    try {
+        const response = await axios.post('http://localhost:8707/api/schedules', schedule);
+        console.log('일정 저장 성공:', response.data);
+
+        // UI에 저장된 일정 추가
+        scheduleItems.value.push(response.data);
+
+        if(calendarRef.value) {
+            const calendarApi = calendarRef.value.getApi();
+            calendarApi.addEvent({
+                id: response.data.scheduleId,
+                title: '새 일정',
+                start: response.data.officialStart,
+                end: response.data.officialEnd,
+                allDay: false,
+            });
+        }
+        alert('일정이 저장되었습니다');
+    } catch (error) {
+        console.error('일정 저장 중 오류 발생:', error);
+        alert('일정을 저장하는 중 문제 발생.');
+    }
 };
 
-// 서버에서 데이터 가져오기
+// 일정 편집 함수
+const editScheduleItem = (item) => {
+    const schedule ={
+        day: new Date(item.time).getDay(),  // 요일 계산
+        officialStart: item.time,  //시작 시간
+        officialEnd: new Date(new Date(item.time).getTime() + 60*60*1000).toISOString(), // 종료 시간
+        breakHour: '1',
+        workHour: '8',
+        contract: null,
+    };
+
+    saveScheduleToDB(schedule);
+};
+
+
+// 나중에 교대 확인
+/* // 서버에서 데이터 가져오기
 const fetchSchedulesAndRequests = async () => {
     try {
-        const response = await axios.get('/api/scheduleRequests'); // 서버에서 일정 및 근무 변경 요청 데이터를 가져옵니다.
+        const response = await axios.get('http://localhost:8707/api/scheduleRequests'); // 서버에서 일정 및 근무 변경 요청 데이터를 가져옵니다.
         console.log(response.data);
         const { schedules, changes } = response.data;
 
@@ -127,7 +161,7 @@ const fetchSchedulesAndRequests = async () => {
 
 onMounted(() => {
     fetchSchedulesAndRequests();
-});
+}); */
 </script>
 
 <style scoped>
