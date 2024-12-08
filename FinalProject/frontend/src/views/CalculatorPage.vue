@@ -1,8 +1,5 @@
 <template>
   <div class="calculator-page">
-    <!-- 사이드바 컴포지트 -->
-    <MainSidebar />
-    <MainHeader />
 
     <!-- 급여 계산 영역 -->
     <div class="payroll-calculator">
@@ -153,8 +150,6 @@
 </template>
 
 <script setup>
-import MainSidebar from '@/components/MainSidebar.vue';
-import MainHeader from '@/components/MainHeader.vue';
 import { ref } from 'vue';
 
 const employees = ref([

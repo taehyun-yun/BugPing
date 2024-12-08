@@ -1,10 +1,7 @@
 <template>
   <div class="container">
-    <div class="sidebar">
-      <MainSidebar />
-    </div>
     <div class="main-content">
-      <MainHeader />
+
       <div class="profile-container">
         <div class="profile-header-container">
           <div class="profile-header">

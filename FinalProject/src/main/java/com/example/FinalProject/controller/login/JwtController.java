@@ -5,18 +5,21 @@ import com.example.FinalProject.repository.user.UserRepository;
 import com.example.FinalProject.service.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 public class JwtController {
@@ -61,17 +64,19 @@ public class JwtController {
         //cookie.setSecure(true);
         cookie.setSecure(false);
         cookie.setPath("/");//애플리케이션 전체에서 쿠키 사용가능
-        cookie.setMaxAge(3*60*60);//3시간
+        cookie.setMaxAge(3 * 60 * 60);//3시간
         response.addCookie(cookie);
         System.out.println("쿠키 생성됨");
     }
 
-    //토큰에서 아이디 가지고오기 --시작-->
+    //토큰에서 아이디 가지고오기
+    // 근데 필터에서 authentication을 선언해주었기 때문에 authentication.getName() 이거 쓰면 이 매서드쓸 필요 없음.
+    // --시작-->
     @GetMapping("/checkuserid")
     public ResponseEntity<String>checkuserid(String token){
         Claims claims = jwtService.getClaims(token);
         if(claims != null){
-            String userid = claims.get("id").toString();
+            String userid = claims.get("userId").toString();
             Optional<User> user = userRepository.findById(userid);
             if (user.isEmpty()){
                 return new ResponseEntity<String>("유저를 찾을 수 없습니다",HttpStatus.NOT_FOUND);
@@ -82,4 +87,33 @@ public class JwtController {
         return new ResponseEntity<String>("토큰이 유효하지 않습니다.",HttpStatus.NOT_ACCEPTABLE);
     }
     // <--토큰에서 아이디 가지고 오기 끝--
+
+    //HttpOnly라 클라이언트에서 getCookie를 못하여 서버에서 해독해서 보내줘야함.
+    @GetMapping("/findrole")
+    public Map<String, Object> findRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 권한(Role) 이름만 추출
+        List<String> roles = new ArrayList<>();
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            roles.add(authority.getAuthority());
+        }
+        // 명시적으로 JSON 구조화
+        Map<String, Object> response = new HashMap<>();
+        response.put("roles", roles);
+        return response;
+    }
+    //쿠키에서 값 가져오기
+    //jwtToken으로 만든 쿠키는 필터에서 매번 authentic을 선언해주니까 상관 없지만,
+    //그 이외의 특정 쿠키를 가지고 오고 싶을 때 사용하면 된다.
+    @GetMapping("/getCookie")
+    public Map<String, Object> findRole(HttpServletRequest request) {
+        String token = null;
+        Map<String, Object> response = new HashMap<>();
+        for(Cookie cookie:request.getCookies()){
+            if("토큰이름".equals(cookie.getName())){
+                token = cookie.getValue();
+            }
+        }
+        return response;
+    }
 }

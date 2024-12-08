@@ -8,13 +8,15 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Getter@Setter@ToString@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
 public class Company {
     @Id
-    @Column(name = "companyId")
     private String companyId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
     private String cname;
     private String ctel;
