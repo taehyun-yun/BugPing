@@ -1,5 +1,6 @@
-package com.example.FinalProject.entity.notice;
+package com.example.FinalProject.entity.file;
 
+import com.example.FinalProject.entity.notice.Notice;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,10 +13,13 @@ import lombok.*;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer fileId;
+    @Column(name = "file_id")
+    private int fileId;
+
     @ManyToOne
-    @JoinColumn(name = "noticeId")
+    @JoinColumn(name = "notice_id")
     private Notice notice;
-    private String filepath;
-    private String filetype;
+
+    private String filePath;
+    private String fileType;
 }

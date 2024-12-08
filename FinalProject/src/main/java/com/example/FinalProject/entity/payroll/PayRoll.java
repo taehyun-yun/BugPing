@@ -1,6 +1,6 @@
 package com.example.FinalProject.entity.payroll;
 
-import com.example.FinalProject.entity.working.Work;
+import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +20,7 @@ public class PayRoll {
     private int monthPayment;
     private int incentive;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workId")
+    @JoinColumn(name = "work_id")
     private Work work;
 
 }
