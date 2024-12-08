@@ -72,12 +72,29 @@ const calendarOptions = ref({
             if (newEventStartTime) {
                 const newEventEndTime = prompt('종료 시간을 입력하세요 (HH:MM 형식)', '10:00'); // 종료 시간 입력
                 if (newEventEndTime) {
+
+                    // 시작, 종료 시간 계산
+                    const startDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
+                    const endDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
+
+                    // 총 근무 시간 (초 -> 시간)
+                    const totalWorkHours = (endDateTiem - startDateTime) / (1000 * 60 * 60);
+
+                    // 휴식 시간 
+                    let breakHour = 0;
+                    if (totalWorkHours >= 0.5 && totalWorkHours < 4) {
+                        breakHour = 0.5;
+                    } else if (totalWorkHours > 4) {
+                        breakHour = 1;
+                    }
+
+
                     const schedule = {
                         day: new Date(info.dateStr).getDay(),
                         officialStart: `${info.dateStr}T${newEventStartTime}`,
                         officialEnd: `${info.dateStr}T${newEventEndTime}`,
-                        breakHour: '1',
-                        workHour: '8',
+                        breakHour: breakHour,  // 휴식 시간
+                        workHour: totalWorkHours - breakHour,  // 총 근무 시간
                         contract: null,
                     };
                     saveScheduleToDB(schedule); // 일정 저장 함수 호출

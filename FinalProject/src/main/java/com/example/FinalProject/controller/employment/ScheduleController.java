@@ -1,8 +1,8 @@
 package com.example.FinalProject.controller.employment;
 
 import com.example.FinalProject.dto.ScheduleAndChangeDTO;
-import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.entity.employment.WorkChange;
+import com.example.FinalProject.entity.schedule.Schedule;
 import com.example.FinalProject.repository.employment.WorkChangeRepository;
 import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
