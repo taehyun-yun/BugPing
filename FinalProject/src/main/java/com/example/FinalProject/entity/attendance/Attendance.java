@@ -19,14 +19,14 @@ public class Attendance {
     @ManyToOne
     @JoinColumn(name = "contract_id")
     private Contract contract;
-    private LocalTime actualStart;
-    private LocalTime actualEnd;
-    private String commuteStatus;
+    private LocalTime actualStart; // 출근 시간
+    private LocalTime actualEnd; // 퇴근 시간
+    private String commuteStatus;  // 근무 상태
     @Column(length = 5000)
     private String remark; //특이사항
-    private String isNormalAttendace;
-    private LocalTime recognizedworkHour;
-    private String overtimeStatus;
-    private LocalTime overtimeHours;
-    private LocalTime totaltime;
+    private String isNormalAttendace; // 정상 출근 여부
+    private LocalTime recognizedworkHour; // 인정 근무 시간
+    private String overtimeStatus; // 추가 근무 상태
+    private LocalTime overtimeHours; // 추가 근무 시간
+    private LocalTime totaltime; // 총 근무 시간
 }

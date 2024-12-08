@@ -21,5 +21,4 @@ public class Work {
     private User user;
     private LocalDate hireDate;
     private LocalDate resignDate;
-
 }

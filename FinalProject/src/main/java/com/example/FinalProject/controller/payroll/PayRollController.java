@@ -1,25 +1,22 @@
 package com.example.FinalProject.controller.payroll;
 
-import com.example.FinalProject.entity.payroll.PayRoll;
-import com.example.FinalProject.service.payroll.PayRollService;
+import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
+import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
+import com.example.FinalProject.service.payroll.PayrollService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/payroll")
+@RequestMapping("/calculator")
 public class PayRollController {
 
     @Autowired
-    private PayRollService payRollService;
+    private PayrollService payrollService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<PayRoll>> getAllPayRolls() {
-        List<PayRoll> payRolls = payRollService.getAllPayRolls();
-        return ResponseEntity.ok(payRolls);
+    @PostMapping("/calculate")
+    public ResponseEntity<PayrollResponseDTO> calculatePayroll(@RequestBody PayrollRequestDTO request) {
+        PayrollResponseDTO response = payrollService.calculatePayroll(request);
+        return ResponseEntity.ok(response);
     }
 }

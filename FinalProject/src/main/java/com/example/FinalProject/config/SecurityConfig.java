@@ -68,6 +68,6 @@ public class SecurityConfig {
                         .logoutUrl("http://localhost:5173/logout")
                         .logoutSuccessUrl("/")
                 );
-     return http.build();
+    return http.build();
     }
 }
