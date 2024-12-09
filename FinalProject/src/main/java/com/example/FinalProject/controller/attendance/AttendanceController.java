@@ -22,9 +22,9 @@ public class AttendanceController {
     }
 
     // WorkChange ID로 출석 정보를 가져옵니다
-    @GetMapping("/workchanges/{changeId}/attendances")
-    public List<Attendance> getAttendancesByWorkChange(@PathVariable Integer changeId) {
-        return attendanceRepository.findByWorkChangeChangeId(changeId);
+    @GetMapping("/workchanges/{workChangeId}/attendances")
+    public List<Attendance> getAttendancesByWorkChange(@PathVariable Integer workChangeId) {
+        return attendanceRepository.findByWorkChangeWorkChangeId(workChangeId);
     }
 
     // 새로운 출석을 생성합니다

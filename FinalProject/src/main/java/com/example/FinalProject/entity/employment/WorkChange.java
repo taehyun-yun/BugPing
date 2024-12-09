@@ -15,7 +15,7 @@ import java.time.LocalTime;
 public class WorkChange {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer changeId;
+    private Integer workChangeId;
     @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
