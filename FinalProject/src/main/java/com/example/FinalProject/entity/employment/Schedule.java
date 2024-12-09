@@ -1,6 +1,6 @@
 package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.contract.Contract;
+import com.example.FinalProject.entity.employment.Contract;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class Schedule {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Integer scheduleId;
 
 
