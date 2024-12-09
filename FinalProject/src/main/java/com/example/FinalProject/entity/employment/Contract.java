@@ -1,4 +1,4 @@
-package com.example.FinalProject.entity.contract;
+package com.example.FinalProject.entity.employment;
 
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.work.Work;

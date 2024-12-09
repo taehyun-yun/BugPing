@@ -21,7 +21,7 @@ public class ScheduleController {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    @PostMapping("/api/schedules")
+    @PostMapping("/schedules")
     public ResponseEntity<Schedule> saveSchedule(@RequestBody Schedule schedule) {
         System.out.println("받은 데이터: " + schedule); // 요청 데이터 확인
         Schedule savedSchedule = scheduleRepository.save(schedule);

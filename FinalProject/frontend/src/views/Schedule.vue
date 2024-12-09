@@ -5,7 +5,7 @@
         </div>
         <div class="schedule-list">
             <h3>일정 목록</h3>
-            <div v-for="(item, index) in scheduleItems" :key="index" class="schedule-item"
+            <div v-for="(item) in scheduleItems" :key="item.scheduleId" class="schedule-item"
                 @click="editScheduleItem(item)">
                 <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
                 <div class="schedule-details">
@@ -76,7 +76,7 @@ const calendarOptions = ref({
 
                     // 휴식 시간 
                     let breakHour = 0;
-                    if (totalWorkHours >= 0.5 && totalWorkHours < 4) {
+                    if (totalWorkHours >= 0.5 && totalWorkHours <= 4) {
                         breakHour = 0.5;
                     } else if (totalWorkHours > 4) {
                         breakHour = 1;
@@ -85,25 +85,28 @@ const calendarOptions = ref({
 
                     const schedule = {
                         day: new Date(info.dateStr).getDay(),
-                        officialStart: `${info.dateStr}T${newEventStartTime}`,
-                        officialEnd: `${info.dateStr}T${newEventEndTime}`,
-                        breakHour: breakHour,  // 휴식 시간
+                        officialStart: newEventStartTime,
+                        officialEnd: newEventEndTime,
+                        breakHour: breakHour * 60,  // 휴식 시간
                         workHour: totalWorkHours - breakHour,  // 총 근무 시간
                         contract: null,
                     };
-                    saveScheduleToDB(schedule); // 일정 저장 함수 호출
+                    saveScheduleToDB(schedule, info.dateStr); // 일정 저장 함수 호출
                 }
             }
-        } 5
+        } 
     }
 });
 
 // 일정 저장 함수
-const saveScheduleToDB = async (schedule) => {
+const saveScheduleToDB = async (schedule, dateStr) => {
     try {
         const response = await axios.post('http://localhost:8707/api/schedules', schedule,
             {
-                header: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
             }
         );
         console.log('응답 상태:', response.status); //상태 코드 확인
@@ -118,8 +121,8 @@ const saveScheduleToDB = async (schedule) => {
             calendarApi.addEvent({
                 id: response.data.scheduleId,
                 title: '새 일정',
-                start: response.data.officialStart,
-                end: response.data.officialEnd,
+                start: `${dateStr}T${response.data.officialStart}`,
+                end: `${dateStr}T${response.data.officialEnd}`,
                 allDay: false,
             });
         }

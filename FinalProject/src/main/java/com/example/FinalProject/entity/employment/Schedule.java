@@ -1,6 +1,6 @@
 package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.contract.Contract;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +18,7 @@ public class Schedule {
     private Integer scheduleId;
     @JoinColumn(name = "contract_id")
     @ManyToOne
+    @JsonIgnore
     private Contract contract;
     private Integer day; // Monday == 1 , Sunday == 7
     private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
