@@ -19,11 +19,6 @@ public class Contract {
     //@Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
 
-    //이거 왜 있는 건지 다시 확인!
-//    @ManyToOne
-//    @JoinColumn(name = "company_id")
-//    private Company company;
-
     @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
     private Work work;
