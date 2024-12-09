@@ -1,12 +1,11 @@
 package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.contract.Contract;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
 
-@Entity
+//@Entity
 @Getter
 @Setter
 @ToString

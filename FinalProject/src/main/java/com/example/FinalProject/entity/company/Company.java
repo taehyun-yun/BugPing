@@ -14,9 +14,10 @@ import lombok.ToString;
 @AllArgsConstructor
 public class Company {
     @Id
+    @Column(name = "companyId")
     private String companyId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     private User user;
     private String cname;
     private String ctel;
