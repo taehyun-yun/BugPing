@@ -39,12 +39,14 @@ import { axiosAddress } from '@/stores/axiosAddress';
             alert(err.response.data);
         })
     }
-    const getRole = () =>{
-  axios.get(axiosAddress+"/findrole",{withCredentials: true})
-  .then((res)=>{
-    const roles = res.data.roles.map((role) => role.replace('ROLE_', ''));
+const getRole = async() =>{
+    let roles;
+    await axios.get(axiosAddress+"/findrole",{withCredentials: true})
+    .then((res)=>{
+    roles = res.data.roles.map((role) => role.replace('ROLE_', ''));
+    });
     alert(roles);
-  })
+    //return roles;
 }
 </script>
 <style scoped>

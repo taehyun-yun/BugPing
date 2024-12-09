@@ -1,40 +1,30 @@
 package com.example.FinalProject.entity.employment;
+
+import com.example.FinalProject.entity.contract.Contract;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "Schedule")
 @Getter
 @Setter
-@NoArgsConstructor
+@ToString
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class Schedule {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "scheduleId", nullable = false, updatable = false)
     private Integer scheduleId;
-
-    // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contractId", nullable = false) //insertable = false, updatable = false
+    @JoinColumn(name = "contract_id")
+    @ManyToOne
     private Contract contract;
-
-    @Column(name = "day")
-    private Integer day; // 1 = Monday, 7 = Sunday
-
-    @Column(name = "officialStart")
-    private LocalDateTime officialStart;
-
-    @Column(name = "officialEnd")
-    private LocalDateTime officialEnd;
-
-    @Column(name = "breakHour")
-    private String breakHour;
-
-    @Column(name = "workHour")
-    private String workHour;
+    private Integer day; // Monday == 1 , Sunday == 7
+    private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
+    private LocalTime officialEnd;
+    //참고용. 분 단위로 결과 얻기
+    //Duration duration = Duration.between(b, a);
+    //long minutes = duration.toMinutes();
+    private Integer breakMinute; // 1 = 1분
 
 }

@@ -15,10 +15,6 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-  },
   // https할 땐 아래 꺼.
   // server: {
   //   port: 5173,
