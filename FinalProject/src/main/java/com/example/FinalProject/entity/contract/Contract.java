@@ -18,12 +18,9 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer contractId;
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
-    @ManyToOne
     @JoinColumn(name = "work_id")
     private Work work;
-    private int houlyWage;
+    private int hourlyWage;
     private LocalDate contractStart;
     private LocalDate contractEnd;
 }
