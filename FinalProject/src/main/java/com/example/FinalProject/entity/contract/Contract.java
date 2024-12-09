@@ -1,5 +1,6 @@
 package com.example.FinalProject.entity.contract;
 
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,7 @@ public class Contract {
     @ManyToOne
     @JoinColumn(name = "work_id")
     private Work work;
-    private int houlyWage;
+    private int hourlyWage;
     private LocalDate contractStart;
     private LocalDate contractEnd;
 }

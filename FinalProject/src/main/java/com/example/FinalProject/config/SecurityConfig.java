@@ -48,6 +48,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults()) //명시적으로 cors 활성화
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth //페이지별 로그인 필수 페이지와, 아이디에 따라 접근 가능한 페이지 할당
                         .requestMatchers("/api/**").hasAnyRole("employer","employee","admin")
