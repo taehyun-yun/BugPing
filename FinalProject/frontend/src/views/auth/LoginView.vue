@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="right-section">
-            <img src="/src/assets/Loginimg/pinkchair.png" alt="로고" />
+            <img src="/src/assets/Loginimg/instancelogo2.png" alt="로고" draggable="false">
         </div>
     </div>
 </template>
@@ -36,8 +36,9 @@ import LoginForm from '@/components/auth/LoginForm.vue';
 }
 .right-section img{
     position:absolute;
-    top:45%;
-    left:45%;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
 }
 .loginform{
     padding-left :50px;
