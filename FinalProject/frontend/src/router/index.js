@@ -11,22 +11,24 @@ import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
 import NoticeEdit from "@/views/notice/NoticeEdit.vue";
 import SignUpView from '@/views/auth/SignUpView.vue';
-
+import SU1 from '@/components/auth/SU1.vue';
+import SU2 from '@/components/auth/SU2.vue';
+import SU3 from '@/components/auth/SU3.vue';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
+history: createWebHistory(import.meta.env.BASE_URL),
+routes: [
     {
-      path: "/calculator",
-      name: "CalculatorPage",
+      path: '/calculator',
+      name: 'CalculatorPage',
       component: CalculatorPage,
       meta : { header : true, sidebar : true, requiresAuth: false, roles : ["employer"], title: '지급내역',},
     },
     {
-      path: "/noticemain",
-      name: "notice",
-      component: NoticeMain,
-      meta: { header: true, sidebar: true, requiresAuth: false, title: "알림" },
+        path: "/noticemain",
+        name: "notice",
+        component: NoticeMain,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '알림',},
     },
     {
       path: "/noticedetail/:id",
@@ -74,25 +76,19 @@ const router = createRouter({
       },
     },
     {
-      path: "/contract",
-      name: "contract",
-      component: Contract,
-      meta: { header: true, sidebar: true, requiresAuth: false, title: "계약" },
+        path: '/contract',
+        name: 'contract',
+        component: Contract,
+        meta : { header : true, sidebar : true, requiresAuth: false, title: '계약',},
     },
-    {
-      path: "/login",
-      name: "login",
-      component: LoginView,
-      meta: {
-        header: false,
-        sidebar: false,
-        requiresAuth: false,
-        title: "로그인",
-      },
-    },
-    { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'} },
-    { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'}}
-
+    { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'}, },
+    { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'},
+      children : [
+        {path: 'su1', name : 'su1', component : SU1},
+        {path: 'su2', name : 'su2', component : SU2},
+        {path: 'su3', name : 'su3', component : SU3},
+      ],
+       }
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: { header : true, sidebar : true, requiresAuth: true, roles: ['employer'], } }
     //{ path: '/unprotected', name: 'UnProtected', component: UnProtectedPage, }
@@ -141,9 +137,8 @@ router.beforeEach(async(to, from, next) => {
   }
 });
 router.afterEach((to) => {
-  const defaultTitle = "운영의 달인";
+  const defaultTitle = '운영의 달인';
   document.title = to.meta.title || defaultTitle;
 });
 
-
-export default router;
+export default router

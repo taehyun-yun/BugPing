@@ -21,6 +21,6 @@ public class PayRoll {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "work_id")
     private Work work;
-    private boolean getPaid;
+    private boolean isPaid;
 }
 
