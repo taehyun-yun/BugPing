@@ -3,6 +3,7 @@ package com.example.FinalProject.entity.employment;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -21,8 +22,8 @@ public class Schedule {
     private Contract contract;
 
     private Integer day; // Monday == 1 , Sunday == 7
-    private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
-    private LocalTime officialEnd;
+    private LocalDateTime officialStart; //LocalTime.of(12,30) 12시 30분
+    private LocalDateTime officialEnd;
     //참고용. 분 단위로 결과 얻기
     //Duration duration = Duration.between(b, a);
     //long minutes = duration.toMinutes();

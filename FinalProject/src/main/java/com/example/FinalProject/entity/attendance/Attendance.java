@@ -7,6 +7,7 @@ import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -36,8 +37,8 @@ public class Attendance {
 //    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
 //    private Work work;
 
-    private LocalTime actualStart;
-    private LocalTime actualEnd;
+    private LocalDateTime actualStart;
+    private LocalDateTime actualEnd;
     private String commuteStatus;
 
     @Column(length = 5000)
