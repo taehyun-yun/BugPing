@@ -1,5 +1,6 @@
-package com.example.FinalProject.entity.schedule;
+package com.example.FinalProject.entity.employment;
 
+import com.example.FinalProject.entity.employment.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
