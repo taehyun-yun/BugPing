@@ -7,7 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-//@Entity
+@Entity
 @Getter
 @Setter
 @ToString
@@ -16,14 +16,19 @@ import java.time.LocalDate;
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
-    @ManyToOne
-    @JoinColumn(name = "work_id")
+
+    //이거 왜 있는 건지 다시 확인!
+//    @ManyToOne
+//    @JoinColumn(name = "company_id")
+//    private Company company;
+
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
     private Work work;
-    private int houlyWage;
+
+    private int hourlyWage; //오타수정
     private LocalDate contractStart;
     private LocalDate contractEnd;
 }

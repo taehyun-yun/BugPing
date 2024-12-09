@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.time.LocalTime;
 
-//@Entity
+@Entity
 @Getter
 @Setter
 @ToString
@@ -15,18 +15,23 @@ import java.time.LocalTime;
 public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "attendanceId", nullable = false, updatable = false)
     private Integer attendanceId;
-    @ManyToOne
-    @JoinColumn(name = "contract_id")
+
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")//, nullable = false, insertable = false, updatable = false
     private Contract contract;
+
     private LocalTime actualStart;
     private LocalTime actualEnd;
     private String commuteStatus;
+
     @Column(length = 5000)
     private String remark; //특이사항
-    private String isNormalAttendace;
-    private LocalTime recognizedworkHour;
+
+    private String isNormalAttendance;//오타수정
+    private LocalTime recognizedWorkHours;//오타수정
     private String overtimeStatus;
     private LocalTime overtimeHours;
-    private LocalTime totaltime;
+    private LocalTime totalTime;//오타수정
 }
