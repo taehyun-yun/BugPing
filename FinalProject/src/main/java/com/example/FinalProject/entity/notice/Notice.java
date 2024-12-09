@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Notice 엔티티는 공지사항 정보를 저장합니다.
@@ -34,8 +35,8 @@ public class Notice {
     @Column(length = 10000)
     private String content; // 공지사항 내용
 
-    private LocalDate createdAt; // 생성 날짜
-    private LocalDate updatedAt; // 수정 날짜
+    private LocalDateTime createdAt; // 생성 날짜
+    private LocalDateTime updatedAt; // 수정 날짜
 
     private String status; // 공지사항 상태 (VISIBLE, DRAFT, WITHDRAWN)
     private String type; // 공지사항 타입 (NOTICE, MANUAL, SPECIAL)
@@ -45,8 +46,8 @@ public class Notice {
      */
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDate.now();
-        this.updatedAt = LocalDate.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -54,6 +55,6 @@ public class Notice {
      */
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }

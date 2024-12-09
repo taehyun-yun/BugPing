@@ -80,7 +80,7 @@ public class NoticeServiceImpl implements NoticeService {
      * @return 업데이트된 공지사항 객체
      */
     @Override
-    public Notice updateNotice(Notice notice) {
+    public Notice updatedNotice(Notice notice) {
         return noticeRepository.save(notice);
     }
 }
