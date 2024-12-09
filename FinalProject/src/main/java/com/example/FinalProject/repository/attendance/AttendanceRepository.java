@@ -1,7 +1,7 @@
 package com.example.FinalProject.repository.attendance;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.FinalProject.entity.commute.Attendance;
+import com.example.FinalProject.entity.attendance.Attendance;
 
 import java.util.List;
 
