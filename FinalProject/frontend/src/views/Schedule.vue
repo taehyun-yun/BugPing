@@ -1,33 +1,27 @@
 <template>
-    <div class="app-container">
-        <MainSidebar />
-        <div class="main-content">
-            <MainHeader />
-            <div class="calendar-and-schedule">
-                <div class="calendar-container">
-                    <FullCalendar ref="calendarRef" :options="calendarOptions" />
+    <div class="calendar-and-schedule">
+        <div class="calendar-container">
+            <FullCalendar ref="calendarRef" :options="calendarOptions" />
+        </div>
+        <div class="schedule-list">
+            <h3>일정 목록</h3>
+            <div v-for="(item, index) in scheduleItems" :key="index" class="schedule-item"
+                @click="editScheduleItem(item)">
+                <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
+                <div class="schedule-details">
+                    <div class="schedule-type">{{ item.type }}</div>
+                    <div class="schedule-time">{{ item.time }}</div>
+                    <div class="schedule-duration">{{ item.duration }}</div>
+                    <div class="schedule-creator">{{ item.creator }}</div>
                 </div>
-                <div class="schedule-list">
-                    <h3>일정 목록</h3>
-                    <div v-for="(item, index) in scheduleItems" :key="index" class="schedule-item"
-                        @click="editScheduleItem(item)">
-                        <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
-                        <div class="schedule-details">
-                            <div class="schedule-type">{{ item.type }}</div>
-                            <div class="schedule-time">{{ item.time }}</div>
-                            <div class="schedule-duration">{{ item.duration }}</div>
-                            <div class="schedule-creator">{{ item.creator }}</div>
-                        </div>
-                    </div>
-                    <h3>근무 변경 요청 목록</h3>
-                    <div v-for="(item, index) in changeRequests" :key="index" class="schedule-item">
-                        <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
-                        <div class="schedule-details">
-                            <div class="schedule-type">{{ item.type }}</div>
-                            <div class="schedule-time">{{ item.time }}</div>
-                            <div class="schedule-creator">{{ item.requestor }}</div>
-                        </div>
-                    </div>
+            </div>
+            <h3>근무 변경 요청 목록</h3>
+            <div v-for="(item, index) in changeRequests" :key="index" class="schedule-item">
+                <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
+                <div class="schedule-details">
+                    <div class="schedule-type">{{ item.type }}</div>
+                    <div class="schedule-time">{{ item.time }}</div>
+                    <div class="schedule-creator">{{ item.requestor }}</div>
                 </div>
             </div>
         </div>
@@ -78,7 +72,7 @@ const calendarOptions = ref({
                     const endDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
 
                     // 총 근무 시간 (초 -> 시간)
-                    const totalWorkHours = (endDateTiem - startDateTime) / (1000 * 60 * 60);
+                    const totalWorkHours = (endDateTime - startDateTime) / (1000 * 60 * 60);
 
                     // 휴식 시간 
                     let breakHour = 0;
@@ -100,20 +94,26 @@ const calendarOptions = ref({
                     saveScheduleToDB(schedule); // 일정 저장 함수 호출
                 }
             }
-        }5
+        } 5
     }
 });
 
 // 일정 저장 함수
 const saveScheduleToDB = async (schedule) => {
     try {
-        const response = await axios.post('http://localhost:8707/api/schedules', schedule);
+        const response = await axios.post('http://localhost:8707/api/schedules', schedule,
+            {
+                header: { 'Content-Type': 'application/json' },
+            }
+        );
+        console.log('응답 상태:', response.status); //상태 코드 확인
+        console.log('응답 데이터:', response.data); // 응답 데이터
         console.log('일정 저장 성공:', response.data);
 
         // UI에 저장된 일정 추가
         scheduleItems.value.push(response.data);
 
-        if(calendarRef.value) {
+        if (calendarRef.value) {
             const calendarApi = calendarRef.value.getApi();
             calendarApi.addEvent({
                 id: response.data.scheduleId,
@@ -132,10 +132,10 @@ const saveScheduleToDB = async (schedule) => {
 
 // 일정 편집 함수
 const editScheduleItem = (item) => {
-    const schedule ={
+    const schedule = {
         day: new Date(item.time).getDay(),  // 요일 계산
         officialStart: item.time,  //시작 시간
-        officialEnd: new Date(new Date(item.time).getTime() + 60*60*1000).toISOString(), // 종료 시간
+        officialEnd: new Date(new Date(item.time).getTime() + 60 * 60 * 1000).toISOString(), // 종료 시간
         breakHour: '1',
         workHour: '8',
         contract: null,

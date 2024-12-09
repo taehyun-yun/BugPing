@@ -1,44 +1,26 @@
 package com.example.FinalProject.entity.employment;
 
-
-import com.example.FinalProject.entity.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "WorkChange")
 @Getter
 @Setter
-@NoArgsConstructor
+@ToString
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class WorkChange {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "WorkChangeId", nullable = false, updatable = false)
-    private Integer WorkChangeId; // Primary Key
-
-    @Column(name = "scheduleId", nullable = false, updatable = false)
-    private Integer scheduleId;
-
-    @Column(name = "contractId", nullable = false)
-    private Integer contractId;
-
-    @Column(name="changedate", nullable = false)
-    private LocalDate changedate;
-
-    @Column(name = "changeType", nullable = false)
-    private Boolean changeType; // true = 근무 있음, false = 근무 없음
-
-    // Relationships
+    private Integer changeId;
+    @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scheduleId", insertable = false, updatable = false)
     private Schedule schedule;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "contractId", insertable = false, updatable = false)
-//    private Contract contract; // Contract와의 관계를 명시적으로 설정할 경우 사용
+    private LocalDate changeDate;
+    private LocalTime changeStartTime;
+    private LocalTime changeEndTime;
+    private String inOut;
 }

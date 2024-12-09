@@ -1024,125 +1024,137 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
     </column>
     <column id="307" parent="279" name="contract_end">
       <Position>2</Position>
-      <StoredType>datetime(6)|0s</StoredType>
+      <StoredType>date|0s</StoredType>
     </column>
     <column id="308" parent="279" name="contract_start">
       <Position>3</Position>
-      <StoredType>datetime(6)|0s</StoredType>
+      <StoredType>date|0s</StoredType>
     </column>
-    <column id="309" parent="279" name="hourly_wage">
+    <column id="309" parent="279" name="houly_wage">
+      <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="310" parent="279" name="user_id">
-      <NotNull>1</NotNull>
+    <column id="310" parent="279" name="work_id">
       <Position>5</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="311" parent="279" name="work_id">
-      <NotNull>1</NotNull>
+    <column id="311" parent="279" name="company_id">
       <Position>6</Position>
-      <StoredType>int(11)|0s</StoredType>
+      <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <index id="312" parent="279" name="PRIMARY">
+    <foreign-key id="312" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
+      <ColNames>work_id</ColNames>
+      <RefColNames>work_id</RefColNames>
+      <RefTableName>work</RefTableName>
+    </foreign-key>
+    <foreign-key id="313" parent="279" name="FKm8jvj0jm2ihmy0fvrupie0ndk">
+      <ColNames>company_id</ColNames>
+      <RefColNames>company_id</RefColNames>
+      <RefTableName>company</RefTableName>
+    </foreign-key>
+    <index id="314" parent="279" name="PRIMARY">
       <ColNames>contract_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="313" parent="279" name="PRIMARY">
+    <index id="315" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
+      <ColNames>work_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="316" parent="279" name="FKm8jvj0jm2ihmy0fvrupie0ndk">
+      <ColNames>company_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="317" parent="279" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="314" parent="280" name="schedule_id">
+    <column id="318" parent="280" name="schedule_id">
       <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="315" parent="280" name="break_hour">
+    <column id="319" parent="280" name="break_minute">
       <Position>2</Position>
-      <StoredType>varchar(255)|0s</StoredType>
+      <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="316" parent="280" name="day">
+    <column id="320" parent="280" name="day">
       <Position>3</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="317" parent="280" name="official_end">
+    <column id="321" parent="280" name="official_end">
       <Position>4</Position>
-      <StoredType>datetime(6)|0s</StoredType>
+      <StoredType>time(6)|0s</StoredType>
     </column>
-    <column id="318" parent="280" name="official_start">
+    <column id="322" parent="280" name="official_start">
       <Position>5</Position>
-      <StoredType>datetime(6)|0s</StoredType>
+      <StoredType>time(6)|0s</StoredType>
     </column>
-    <column id="319" parent="280" name="work_hour">
+    <column id="323" parent="280" name="contract_id">
       <Position>6</Position>
-      <StoredType>varchar(255)|0s</StoredType>
-    </column>
-    <column id="320" parent="280" name="contract_id">
-      <NotNull>1</NotNull>
-      <Position>7</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="321" parent="280" name="FKng1nems486b748eu4mdr807n6">
+    <foreign-key id="324" parent="280" name="FKng1nems486b748eu4mdr807n6">
       <ColNames>contract_id</ColNames>
       <RefColNames>contract_id</RefColNames>
       <RefTableName>contract</RefTableName>
     </foreign-key>
-    <index id="322" parent="280" name="PRIMARY">
+    <index id="325" parent="280" name="PRIMARY">
       <ColNames>schedule_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="323" parent="280" name="FKng1nems486b748eu4mdr807n6">
+    <index id="326" parent="280" name="FKng1nems486b748eu4mdr807n6">
       <ColNames>contract_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="324" parent="280" name="PRIMARY">
+    <key id="327" parent="280" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="325" parent="281" name="user_id">
+    <column id="328" parent="281" name="user_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="326" parent="281" name="birth">
+    <column id="329" parent="281" name="birth">
       <Position>2</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="327" parent="281" name="gender">
+    <column id="330" parent="281" name="gender">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="328" parent="281" name="name">
+    <column id="331" parent="281" name="name">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="329" parent="281" name="password">
+    <column id="332" parent="281" name="password">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="330" parent="281" name="reg_date">
+    <column id="333" parent="281" name="reg_date">
       <Position>6</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="331" parent="281" name="role">
+    <column id="334" parent="281" name="role">
       <Position>7</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="332" parent="281" name="tel">
+    <column id="335" parent="281" name="tel">
       <Position>8</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <index id="333" parent="281" name="PRIMARY">
+    <index id="336" parent="281" name="PRIMARY">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="334" parent="281" name="PRIMARY">
+    <key id="337" parent="281" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
