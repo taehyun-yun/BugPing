@@ -30,8 +30,8 @@ public class Attendance {
     private String remark; //특이사항
 
     private String isNormalAttendance;//오타수정
-    private LocalTime recognizedWorkHours;//오타수정
+    private int recognizedWorkMinute;//오타수정, int로 변경
     private String overtimeStatus;
-    private LocalTime overtimeHours;
-    private LocalTime totalTime;//오타수정
+    private int overtimeMinute;//int로 변경
+    private int totalMinute;//오타수정, int로 변경
 }
