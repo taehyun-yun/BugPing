@@ -1,7 +1,6 @@
 <template>
   <div class="page-container">
     <div class="main-content">
-
       <!-- 공지사항 작성 페이지 UI -->
       <div class="notice-page">
         <div class="category-main">
@@ -14,6 +13,8 @@
             v-for="category in categories"
             :key="category.id"
             class="category-card"
+            :class="{ selected: selectedCategory === category.name }"
+            @click="selectCategory(category.name)"
           >
             <img
               v-if="category.icon"
@@ -125,12 +126,19 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import megaphoneIcon from "@/assets/noticeimg/megaphone.png";
+import checklistIcon from "@/assets/noticeimg/checklist.png";
+import questionMarkIcon from "@/assets/noticeimg/question-mark.png";
+
+const router = useRouter();
 
 // 카테고리와 첨부 파일 데이터
 const categories = ref([
-  { id: 1, name: "공지", icon: "" },
-  { id: 2, name: "매뉴얼", icon: "" },
-  { id: 3, name: "특이사항", icon: "" },
+  { id: 1, name: "공지", icon: megaphoneIcon },
+  { id: 2, name: "매뉴얼", icon: checklistIcon },
+  { id: 3, name: "특이사항", icon: questionMarkIcon },
 ]);
 
 const attachments = ref([
@@ -147,20 +155,62 @@ const attachments = ref([
 const title = ref("");
 const content = ref("");
 
+// 카테고리 선택 상태
+const selectedCategory = ref(categories.value[0].name); // 기본값: 첫 번째 카테고리 이름
+
+// 예시로 현재 사용자의 workId를 하드코딩 (실제 프로젝트에서는 인증을 통해 동적으로 가져와야 함)
+const workId = ref(1);
+
+// 카테고리 선택 함수
+const selectCategory = (categoryName) => {
+  selectedCategory.value = categoryName; // 선택한 카테고리 이름으로 업데이트
+};
+
 // 작성 취소 버튼 클릭 시 동작
 const cancelNotice = () => {
   // 모든 입력 필드를 초기화
   title.value = "";
   content.value = "";
+  selectedCategory.value = "공지"; // 기본 카테고리로 초기화
   console.log("작성 취소되었습니다.");
 };
 
 // 작성 완료 버튼 클릭 시 동작
-const submitNotice = () => {
-  // 입력된 데이터로 작성 완료 처리 (예: 백엔드로 데이터 전송)
-  console.log("작성된 제목:", title.value);
-  console.log("작성된 내용:", content.value);
-  alert("공지사항이 작성되었습니다.");
+const submitNotice = async () => {
+  if (!title.value || !content.value) {
+    alert("제목과 내용을 모두 입력해주세요.");
+    return;
+  }
+
+  const typeMap = {
+    공지: "NOTICE",
+    매뉴얼: "MANUAL",
+    특이사항: "SPECIAL",
+  };
+
+  const noticeData = {
+    title: title.value,
+    content: content.value,
+    work: {
+      workId: workId.value,
+    },
+    type: typeMap[selectedCategory.value], // 선택된 카테고리를 type으로 설정
+    // 필요한 다른 필드들을 추가할 수 있습니다.
+  };
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8707/notice/create",
+      noticeData
+    );
+    console.log("작성된 공지사항:", response.data);
+    alert("공지사항이 작성되었습니다.");
+    // 작성 후 공지사항 목록 페이지로 이동
+    router.push({ path: "/noticemain" });
+  } catch (error) {
+    console.error("공지사항 작성 중 오류 발생:", error);
+    alert("공지사항 작성 중 오류가 발생했습니다.");
+  }
 };
 </script>
 
@@ -211,6 +261,11 @@ const submitNotice = () => {
 .category-text {
   font-size: 18px;
   color: #000;
+}
+
+.category-card.selected {
+  border-color: #007bff; /* 선택된 카테고리 강조 */
+  background-color: #e7f3ff;
 }
 
 .input-section {

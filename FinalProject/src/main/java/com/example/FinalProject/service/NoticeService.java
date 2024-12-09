@@ -47,5 +47,5 @@ public interface NoticeService {
      * @param notice 업데이트할 공지사항 객체
      * @return 업데이트된 공지사항 객체
      */
-    Notice updateNotice(Notice notice);
+    Notice updatedNotice(Notice notice);
 }
