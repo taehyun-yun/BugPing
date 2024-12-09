@@ -11,6 +11,6 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
     List<Attendance> findByScheduleScheduleId(Integer scheduleId);
 
     // 특정 WorkChange ID에 따른 출석 정보를 조회
-    List<Attendance> findByWorkChangeChangeId(String changeId);
+    List<Attendance> findByWorkChangeChangeId(Integer changeId);
 
 }
