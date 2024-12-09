@@ -23,9 +23,6 @@ public class Work {
     private Company company;
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
-    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
