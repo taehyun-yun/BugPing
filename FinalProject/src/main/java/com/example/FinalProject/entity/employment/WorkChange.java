@@ -1,10 +1,11 @@
 package com.example.FinalProject.entity.employment;
 
+import com.example.FinalProject.entity.employment.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,7 +21,7 @@ public class WorkChange {
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
     private LocalDate changeDate;
-    private LocalTime changeStartTime;
-    private LocalTime changeEndTime;
+    private LocalDateTime changeStartTime;
+    private LocalDateTime changeEndTime;
     private String inOut;
 }

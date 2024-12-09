@@ -1,4 +1,4 @@
-package com.example.FinalProject.entity.employment;
+package com.example.FinalProject.entity.contract;
 
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.work.Work;
@@ -23,7 +23,7 @@ public class Contract {
     @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
     private Work work;
 
-    private int hourlyWage; //오타수정
+    private int hourlyWage;
     private LocalDate contractStart;
     private LocalDate contractEnd;
 }
