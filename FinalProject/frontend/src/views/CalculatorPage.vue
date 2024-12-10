@@ -97,40 +97,40 @@
       </div>
       <div class="modal-payment-date">
         <span class="modal-label">지급 일자</span>
-        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }} 2024.11.01  지급</span>
+        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }} 지급</span>
         <span class="dotted-line"></span>
       </div>
 
       <div class="modal-received-amount">
         <span class="modal-label">실 수령액</span>
-        <span class="modal-value">{{ selectedEmployee.salary }} 원</span>
+        <span class="modal-value">{{ selectedEmployee.totalSalary }} 원</span>
       </div>
       <hr class="bold-hr">
 
       <div class="modal-body">
         <div class="modal-section">
           <span class="modal-label">기본급</span>
-          <span class="modal-value">877,599 원</span>
+          <span class="modal-value"> {{ selectedEmployee.basicSalary }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">주휴 수당</span>
-          <span class="modal-value">30,000 원</span>
+          <span class="modal-value"> {{ selectedEmployee.weeklyAllowance }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">연장 수당</span>
-          <span class="modal-value">20,000 원</span>
+          <span class="modal-value"> {{ selectedEmployee.overtimePay }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">야간 수당</span>
-          <span class="modal-value">0 원</span>
+          <span class="modal-value"> {{ selectedEmployee.nightPay }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">공제액</span>
-          <span class="modal-value">0 원</span>
+          <span class="modal-value"> {{ selectedEmployee.deduction }} 원</span>
         </div>
         <hr />
       </div>
@@ -150,18 +150,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import axios from 'axios';
 
-const employees = ref([
-  { id: 1, name: '윤태현', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 2, name: '유지훈', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 3, name: '장종현', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 4, name: '문준호', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: true },
-  { id: 5, name: '임은선', startDate: '2024/10/9', hourlyWage: '12,000', monthlyHours: 42, workDays: 9, salary: '504,000', paid: true },
-  { id: 6, name: '배영재', startDate: '2024/10/9', hourlyWage: '9,860', monthlyHours: 42, workDays: 9, salary: '504,000', paid: true },
-  { id: 7, name: '이경진', startDate: '2024/10/21', hourlyWage: '9,860', monthlyHours: 36, workDays: 6, salary: '354,960', paid: false },
-]);
-
+const employees = ref([]);
 const isModalVisible = ref(false);
 const selectedEmployee = ref(null);
 const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
@@ -169,9 +161,48 @@ const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
 const pages = [1, 2, 3, 4]; // 단순히 예시로 페이지 숫자들만 배열로 정의
 const currentPage = ref(1);
 
-const showModal = (employee) => {
-  selectedEmployee.value = employee;
-  isModalVisible.value = true;
+const fetchEmployeeList = async () => {
+  try {
+    const response = await axios.get("http://localhost:8707/api/employees");
+    employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
+  } catch (error) {
+    console.error("Error fetchEmployeeList : ", error);
+  }
+};
+
+// 페이지 로드시 근무자 리스트 가져오기
+onMounted(() => {
+  fetchEmployeeList(); // fetchEmployeeList 함수 호출
+});
+
+
+const showModal = async (employee) => {
+  try {
+    console.log("선택된 직원 데이터: ", selectedEmployee.value);
+    // 백엔드 API 호출
+    const response = await axios.post("http://localhost:8707/api/payroll", {
+      employeeId: employee.id,
+      startDate: "2023-12-01", // 시작일
+      endDate: "2023-12-31",   // 종료일
+    });
+
+    // 선택된 직원의 급여 데이터 모달에 출력
+    selectedEmployee.value = {
+      name: employee.name,
+      paymentDate: "2024-12-31", // 지급일 (하드코딩 추후 변경 예정)
+      basicSalary: response.data.basicSalary || 0,
+      weeklyAllowance: response.data.weeklyAllowance || 0,
+      overtimePay: response.data.overtimePay || 0,
+      nightPay: response.data.nightPay || 0,
+      deduction: response.data.deduction || 0,
+      totalSalary: response.data.totalSalary || 0,
+    };
+
+    isModalVisible.value = true;
+
+  } catch (error) {
+    console.error("Error payroll : ", error);
+  }
 };
 
 const closeModal = () => {
