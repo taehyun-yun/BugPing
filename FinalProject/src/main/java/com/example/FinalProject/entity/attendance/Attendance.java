@@ -36,7 +36,7 @@ public class Attendance {
     private String commuteStatus;
     @Column(length = 5000)
     private String remark; //특이사항
-    private String isNormalAttendace;
+    private String isNormalAttendance;
     private int recognizedWorkMinute;
     private String overtimeStatus;
     private int overtimeMinute;

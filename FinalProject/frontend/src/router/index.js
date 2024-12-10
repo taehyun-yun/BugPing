@@ -84,8 +84,6 @@ routes: [
         component: Contract,
         meta : { header : true, sidebar : true, requiresAuth: false, title: '계약',},
     },
-    { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'}, },
-    { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'},
     { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'} },
     { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'},
       children : [
