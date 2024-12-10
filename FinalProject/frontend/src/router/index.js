@@ -14,8 +14,8 @@ import SignUpView from '@/views/auth/SignUpView.vue';
 import SU1 from '@/components/auth/SU1.vue';
 import SU2 from '@/components/auth/SU2.vue';
 import SU3 from '@/components/auth/SU3.vue';
-// import Employer from '@/views/Employer.vue';
-// import Employee from '@/views/Employee.vue';
+import Employer from '@/views/Employer.vue';
+import Employee from '@/views/Employee.vue';
 
 
 const router = createRouter({
@@ -91,17 +91,17 @@ routes: [
         {path: 'su2', name : 'su2', component : SU2,},
         {path: 'su3', name : 'su3', component : SU3,},
       ],
-       },
-      //  { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"],
-      //   children : [
-      //     //이 안에 넣으시면 됩니다.
-      //   ]
-      //  }},
-      //  { path : '/employee', name : 'employee', component : Employee, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employee"],
-      //   children : [
-      //     //이 안에 넣으시면 됩니다.
-      //   ]
-      //  }}
+      },
+      { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"],
+        children : [
+          //이 안에 넣으시면 됩니다.
+        ]
+      }},
+      { path : '/employee', name : 'employee', component : Employee, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employee"],
+        children : [
+          //이 안에 넣으시면 됩니다.
+        ]
+      }}
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: { header : true, sidebar : true, requiresAuth: true, roles: ['employer'], } }
     //{ path: '/unprotected', name: 'UnProtected', component: UnProtectedPage, }
