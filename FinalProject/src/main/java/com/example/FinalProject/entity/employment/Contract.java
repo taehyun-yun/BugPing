@@ -1,6 +1,5 @@
-package com.example.FinalProject.entity.contract;
+package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,9 +16,6 @@ public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer contractId;
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
     @ManyToOne
     @JoinColumn(name = "work_id")
     private Work work;

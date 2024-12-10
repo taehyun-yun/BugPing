@@ -13,15 +13,15 @@
     <button type="button" class="login-button" @click="login">로그인</button>
     </form>
     <div class="login-links">
-    <p>아이디/비밀번호 찾기</p>
-    <p>회원가입</p>
+    <p @click="golink('findIdPw')">아이디/비밀번호 찾기</p>
+    <p @click="golink('su1')">회원가입</p>
     </div>
-    <button type="button" @click="getRole">확인용</button>
 </template>
 <script setup>
 import axios from 'axios';
 import { ref } from 'vue';
 import { axiosAddress } from '@/stores/axiosAddress';
+import router from '@/router';
     const userId = ref('');
     const password = ref('');
     const login = () =>{
@@ -39,15 +39,9 @@ import { axiosAddress } from '@/stores/axiosAddress';
             alert(err.response.data);
         })
     }
-const getRole = async() =>{
-    let roles;
-    await axios.get(axiosAddress+"/findrole",{withCredentials: true})
-    .then((res)=>{
-    roles = res.data.roles.map((role) => role.replace('ROLE_', ''));
-    });
-    alert(roles);
-    //return roles;
-}
+    const golink = (e) =>{
+        router.push({name: e});
+    }    
 </script>
 <style scoped>
     .login-title {
@@ -101,5 +95,14 @@ const getRole = async() =>{
 
     .login-button:hover {
         background-color: lightseagreen;
+    }
+    .login-links{
+        padding-top: 30px;
+    }
+    .login-links p{
+        display: inline-block;
+        cursor: pointer;
+        margin-left: 10px;
+        margin-right: 10px;
     }
 </style>
