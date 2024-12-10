@@ -14,7 +14,7 @@ import SignUpView from '@/views/auth/SignUpView.vue';
 import SU1 from '@/components/auth/SU1.vue';
 import SU2 from '@/components/auth/SU2.vue';
 import SU3 from '@/components/auth/SU3.vue';
-import Employer from '@/views/employer.vue';
+import Employer from '@/views/Employer.vue';
 import Employee from '@/views/Employee.vue';
 
 
