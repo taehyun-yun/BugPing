@@ -41,6 +41,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 스타일시트를 �
 const scheduleItems = ref([]);
 const changeRequests = ref([]);
 // 캘린더에 대한 참조 설정
+const events = ref([]);
 const calendarRef = ref(null);
 
 // 캘린더 옵션 객체를 정의
@@ -50,26 +51,22 @@ const calendarOptions = ref({
     themeSystem: 'bootstrap', // 부트스트랩을 테마로 사용
     editable: true, // 이벤트 드래그 및 수정 기능
     selectable: true, // 캘린더에서 날짜 선택 기능
+    events: events,
     headerToolbar: {
         left: 'prev,next today', // 왼쪽에는 이전, 다음, 오늘 버튼 표시
         center: 'title', // 중앙에는 타이틀 표시
         right: 'dayGridMonth,timeGridWeek,timeGridDay' // 오른쪽에는 월별, 주별, 일별 버튼 표시
     },
-    events: [],
+
     dateClick: (info) => {
         const newEventTitle = prompt('새로운 일정 입력'); // 새 이벤트 제목을 입력 받음
         if (newEventTitle) {
-            const newEventStartTime = prompt('시작 시간을 입력하세요 (HH:MM 형식)', '09:00'); // 시작 시간 입력
+            const newEventStart = prompt('시작 시간을 입력하세요 (HH:MM 형식)', '09:00'); // 시작 시간 입력
             if (newEventStartTime) {
-                const newEventEndTime = prompt('종료 시간을 입력하세요 (HH:MM 형식)', '10:00'); // 종료 시간 입력
-                if (newEventEndTime) {
-
-                    // 시작, 종료 시간 계산
-                    const startDateTime = new Date(`${info.dateStr}T${newEventStartTime}`);
-                    const endDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
-
-                    // 총 근무 시간 (초 -> 시간)
-                    const totalWorkMinute = (endDateTime - startDateTime) / (1000 * 60);
+                const newEventEndT = prompt('종료 시간을 입력하세요 (HH:MM 형식)', '10:00'); // 종료 시간 입력
+                if (officialStart && officialEnd) {
+            const totalMinutes = (new Date(`${info.dateStr}T${officialEnd}`).getTime() -
+                                  new Date(`${info.dateStr}T${officialStart}`).getTime()) / (1000 * 60);
 
                     // 휴식 시간 
                     let breakMinute = 0;
@@ -84,10 +81,10 @@ const calendarOptions = ref({
                     const schedule = {
                         title: newEventTitle,
                         day: new Date(info.dateStr).getDay(),
-                        officialStart: `${info.dateStr}T${newEventStartTime}`,
-                        officialEnd: `${info.dateStr}T${newEventEndTime}`,
+                        officialStart: `${info.dateStr}T${officialStart}`,
+                        officialEnd: `${info.dateStr}T${officialEnd}`,
                         breakMinute: breakMinute,  // 휴식 시간
-                        workHour: totalWorkMinute - breakMinute,  // 총 근무 시간
+                        workHour: totalMinutes - breakMinute,  // 총 근무 시간
                         contract: null,
                     };
                     saveScheduleToDB(schedule); // 일정 저장 함수 호출
@@ -135,53 +132,42 @@ const saveScheduleToDB = async (schedule) => {
 
 // 일정 편집 함수
 const editScheduleItem = (item) => {
-    const schedule = {
-        day: new Date(item.time).getDay(),  // 요일 계산
-        officialStart: item.time,  //시작 시간
-        officialEnd: new Date(new Date(item.time).getTime() + 60 * 60 * 1000).toISOString(), // 종료 시간
-        breakMinute: '1',
-        workHour: '8',
-        contract: null,
+    const updatedschedule = {
+        ...item,
+        officialEnd: new Date(new Date(item.time).getTime() + 60 * 60 * 1000).toISOString(),
     };
 
     saveScheduleToDB(schedule);
 };
 
-
-// 나중에 교대 확인
-/* // 서버에서 데이터 가져오기
+// User 테이블의 name 가져오기
 const fetchSchedulesAndRequests = async () => {
     try {
-        const response = await axios.get('http://localhost:8707/api/scheduleRequests'); // 서버에서 일정 및 근무 변경 요청 데이터를 가져옵니다.
-        console.log(response.data);
-        const { schedules, changes } = response.data;
-
-        scheduleItems.value = schedules || [];
-        changeRequests.value = changes || [];
-
-        if (calendarRef.value) {
-            const calendarApi = calendarRef.value.getApi();
-            schedules.forEach((schedule) => {
-                calendarApi.addEvent({
-                    id: schedule.id,
-                    title: schedule.type,
-                    start: schedule.start,
-                    end: schedule.end,
-                    allDay: false,
-                });
-            });
-        } else {
-            console.error("캘린더 인스턴스를 참조하지 못했습니다.");
-        }
-    }
-    catch (error) {
-        console.error('일정 데이터를 가져오는 중 오류 발생', error);
+        const response = await axios.get('http://localhost:8707/api/schedules/contractschedule')
+        .then(response => {
+            console.log(response.data);
+        })
+        .catch(error => {
+            console.error(error.response);
+        }); // 서버에서 일정 및 근무 변경 요청 데이터를 가져옵니다.
+        console.log(response.data); // 반환 데이터 확인
+        events.value = response.data.map(schedule => ({
+            id: schedule.scheduleId,
+            title: schedule.name,
+            start: new Date(schedule.officialStart).toISOString(),
+            end: new Date(schedule.officialEnd).toISOString(),
+            allDay: false
+        }));
+        console.log("Fetched events: ", response.data);
+    } catch (error) {
+        console.error('일정 데이터를 가져오는 중 오류 발생:',error);
     }
 };
 
 onMounted(() => {
     fetchSchedulesAndRequests();
-}); */
+});
+
 </script>
 
 <style scoped>

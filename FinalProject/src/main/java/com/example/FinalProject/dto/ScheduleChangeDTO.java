@@ -15,7 +15,7 @@ public class ScheduleChangeDTO {
     private Integer scheduleId;
     private LocalTime officialStart;
     private LocalTime officialEnd;
-    private Integer breakMinute;
-    private String userName; // 사용자 이름 필드
+    private Integer day;
+    private String name ; // 사용자 이름 필드
 
 }

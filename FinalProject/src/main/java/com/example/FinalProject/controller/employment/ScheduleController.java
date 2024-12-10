@@ -1,16 +1,13 @@
 package com.example.FinalProject.controller.employment;
 
-import com.example.FinalProject.dto.ScheduleChangeDTO;
+import com.example.FinalProject.dto.ScheduleDTO;
 import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.repository.employment.ScheduleRepository;
-import com.example.FinalProject.repository.employment.WorkChangeRepository;
-import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -29,7 +26,8 @@ public class ScheduleController {
         return ResponseEntity.ok(saveSchedule);
     }
 
-    @PutMapping("/{id}")
+    //추가
+    /*@PutMapping("/{id}")
     public ResponseEntity<Schedule> updateSchedule(@PathVariable Integer id, @RequestBody Schedule scheduleDetails){
         return scheduleRepository.findById(id).map(schedule -> {
             schedule.setOfficialStart(scheduleDetails.getOfficialStart());
@@ -41,11 +39,12 @@ public class ScheduleController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    //삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteSchedule(@PathVariable Integer id) {
         return scheduleRepository.findById(id).map(schedule -> {
             scheduleRepository.delete(schedule);
             return ResponseEntity.noContent().build();
         }).orElse(ResponseEntity.notFound().build());
-    }
+    }*/
 }

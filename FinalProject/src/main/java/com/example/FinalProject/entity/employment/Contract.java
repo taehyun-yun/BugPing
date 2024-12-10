@@ -4,7 +4,7 @@ import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -28,6 +28,6 @@ public class Contract {
     private Work work;
 
     private int hourlyWage; //오타수정
-    private LocalDate contractStart;
-    private LocalDate contractEnd;
+    private LocalDateTime contractStart;
+    private LocalDateTime contractEnd;
 }
