@@ -18,10 +18,15 @@
         <td>{{ contract.hourlyWage }}</td>
         <td>{{ contract.contractStart }}</td>
         <td>{{ contract.contractEnd }}</td>
-        <td><button class="edit-button">EDIT</button></td>
+        <td><button class="edit-button" @click="openModal(contract)">EDIT</button></td>
       </tr>
       </tbody>
     </table>
+    <ContractModal 
+      :is-open="showModal" 
+      @close="showModal = false" 
+      @save="handleSave" 
+    />
   </div>
 </template>
 
@@ -30,8 +35,14 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+import ContractModal from '@/components/employment/ContractModal.vue';
+
+
 // 계약 정보를 저장하는 변수
 const contracts = ref([]);
+
+const showModal = ref(false);
+const selectedContract = ref(null);
 
 // API로부터 계약 정보 가져오기ssss
 const fetchContracts = async () => {
@@ -45,6 +56,28 @@ const fetchContracts = async () => {
       console.error('계약 정보를 가져오는 데 실패했습니다:', error);
     }
   };
+
+
+
+  
+  const openModal = (contract) => {
+  selectedContract.value = contract;
+  showModal.value = true;
+};
+
+const handleSave = (updatedContract) => {
+  // 수정된 계약 정보를 저장하는 로직
+  console.log('Updated contract:', updatedContract);
+  showModal.value = false;
+};
+
+
+
+
+
+
+
+
 
 // 컴포넌트가 마운트될 때 계약 정보를 가져옴
 onMounted(() => {
