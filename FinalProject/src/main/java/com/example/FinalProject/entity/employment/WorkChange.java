@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,12 +15,12 @@ import java.time.LocalTime;
 public class WorkChange {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer changeId;
+    private Integer WorkchangeId;
     @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
     private LocalDate changeDate;
-    private LocalTime changeStartTime;
-    private LocalTime changeEndTime;
+    private LocalDateTime changeStartTime;
+    private LocalDateTime changeEndTime;
     private String inOut;
 }

@@ -5,7 +5,7 @@
         </div>
         <div class="schedule-list">
             <h3>일정 목록</h3>
-            <div v-for="(item) in scheduleItems" :key="item.scheduleId" class="schedule-item"
+            <div v-for="(item, index) in scheduleItems" :key="index" class="schedule-item"
                 @click="editScheduleItem(item)">
                 <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
                 <div class="schedule-details">
@@ -36,13 +36,10 @@ import dayGridPlugin from '@fullcalendar/daygrid'; // 일별 그리드
 import interactionPlugin from '@fullcalendar/interaction'; // 상호작용  (드래그 앤 드롭, 클릭 등).
 import timeGridPlugin from '@fullcalendar/timegrid'; // 시간별 
 import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 스타일시트를 가져옵니다.
-import MainSidebar from '../components/MainSidebar.vue';
-import MainHeader from '../components/MainHeader.vue';
 
 // 일정 목록 및 근무 변경 요청을 관리하는 상태 정의
 const scheduleItems = ref([]);
 const changeRequests = ref([]);
-
 // 캘린더에 대한 참조 설정
 const calendarRef = ref(null);
 
@@ -68,45 +65,44 @@ const calendarOptions = ref({
                 if (newEventEndTime) {
 
                     // 시작, 종료 시간 계산
-                    const startDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
+                    const startDateTime = new Date(`${info.dateStr}T${newEventStartTime}`);
                     const endDateTime = new Date(`${info.dateStr}T${newEventEndTime}`);
 
                     // 총 근무 시간 (초 -> 시간)
-                    const totalWorkHours = (endDateTime - startDateTime) / (1000 * 60 * 60);
+                    const totalWorkMinute = (endDateTime - startDateTime) / (1000 * 60);
 
                     // 휴식 시간 
-                    let breakHour = 0;
-                    if (totalWorkHours >= 0.5 && totalWorkHours <= 4) {
-                        breakHour = 0.5;
-                    } else if (totalWorkHours > 4) {
-                        breakHour = 1;
+                    let breakMinute = 0;
+                    if ( totalWorkMinute > 480) {
+                        breakMinute = 60;
+                    } else if (totalWorkMinute > 240) {
+                        breakMinute = 30;
                     }
 
-
+                    // breakMinute
+                    console.log("break minute :",breakMinute)
                     const schedule = {
+                        title: newEventTitle,
                         day: new Date(info.dateStr).getDay(),
-                        officialStart: newEventStartTime,
-                        officialEnd: newEventEndTime,
-                        breakHour: breakHour * 60,  // 휴식 시간
-                        workHour: totalWorkHours - breakHour,  // 총 근무 시간
+                        officialStart: `${info.dateStr}T${newEventStartTime}`,
+                        officialEnd: `${info.dateStr}T${newEventEndTime}`,
+                        breakMinute: breakMinute,  // 휴식 시간
+                        workHour: totalWorkMinute - breakMinute,  // 총 근무 시간
                         contract: null,
                     };
-                    saveScheduleToDB(schedule, info.dateStr); // 일정 저장 함수 호출
+                    saveScheduleToDB(schedule); // 일정 저장 함수 호출
                 }
             }
-        } 
+        }
     }
 });
 
 // 일정 저장 함수
-const saveScheduleToDB = async (schedule, dateStr) => {
+const saveScheduleToDB = async (schedule) => {
     try {
         const response = await axios.post('http://localhost:8707/api/schedules', schedule,
             {
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                header: { 'Content-Type': 'application/json' },
             }
         );
         console.log('응답 상태:', response.status); //상태 코드 확인
@@ -120,10 +116,14 @@ const saveScheduleToDB = async (schedule, dateStr) => {
             const calendarApi = calendarRef.value.getApi();
             calendarApi.addEvent({
                 id: response.data.scheduleId,
-                title: '새 일정',
-                start: `${dateStr}T${response.data.officialStart}`,
-                end: `${dateStr}T${response.data.officialEnd}`,
+                title: response.data.title,
+                start: response.data.officialStart,
+                end: response.data.officialEnd,
                 allDay: false,
+                extendsProps: {
+                    breakMinute : response.data.breakMinute,
+                    workHour: response.data.workHour,
+                },
             });
         }
         alert('일정이 저장되었습니다');
@@ -139,7 +139,7 @@ const editScheduleItem = (item) => {
         day: new Date(item.time).getDay(),  // 요일 계산
         officialStart: item.time,  //시작 시간
         officialEnd: new Date(new Date(item.time).getTime() + 60 * 60 * 1000).toISOString(), // 종료 시간
-        breakHour: '1',
+        breakMinute: '1',
         workHour: '8',
         contract: null,
     };
