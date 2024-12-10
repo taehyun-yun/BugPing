@@ -225,7 +225,7 @@ const submitNotice = async () => {
 }
 
 .notice-page {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -270,6 +270,7 @@ const submitNotice = async () => {
 
 .input-section {
   margin-bottom: 20px;
+  height: 80%;
 }
 
 .input-label {
@@ -284,7 +285,7 @@ const submitNotice = async () => {
 
 .input-field {
   width: 100%;
-  height: 20px;
+  height: 40px;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #c3c3c3;
@@ -292,7 +293,7 @@ const submitNotice = async () => {
 
 .textarea-field {
   width: 100%;
-  height: 450px;
+  height: 370px;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #c3c3c3;
@@ -340,7 +341,7 @@ const submitNotice = async () => {
   padding: 10px;
   border-radius: 10px;
   width: 200px;
-  height: 20px;
+  height: 38px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
