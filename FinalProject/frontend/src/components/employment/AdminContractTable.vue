@@ -43,12 +43,7 @@
         </template>
       </tbody>
     </table>
-    <ContractModal 
-      :is-open="showModal" 
-      :contract="selectedContract"
-      @close="showModal = false" 
-      @save="handleSave" 
-    />
+    <ContractModal :is-open="showModal" :contract="selectedContract" @close="showModal = false" @save="handleSave" />
   </div>
 </template>
 
