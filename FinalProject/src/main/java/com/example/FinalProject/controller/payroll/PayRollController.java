@@ -44,7 +44,8 @@ public class PayRollController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<String> employeeNames = userRepository.findAllNames(pageable); // 이름만 가져오기
-        return ResponseEntity.ok(employeeNames);
+//        Page<String> employeeNames = userRepository.findAllNames(pageable); // 이름만 가져오기
+//        return ResponseEntity.ok(employeeNames);
+        return null;
     }
 }

@@ -74,7 +74,7 @@
           <div class="payroll-item">{{ employee.hourlyWage }}</div>
           <div class="payroll-item">{{ employee.monthlyHours }}</div>
           <div class="payroll-item">{{ employee.workDays }}</div>
-          <div class="payroll-item">{{ employee.salary }}</div>
+          <div class="payroll-item">{{ employee.totalSalary }}</div>
           <div class="payroll-item">
             <button @click="togglePaid(employee)" :class="employee.paid ? 'paid-button' : 'unpaid-button'">
               {{ employee.paid ? '지급' : '미지급' }}
