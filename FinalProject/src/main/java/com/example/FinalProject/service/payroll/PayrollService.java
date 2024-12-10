@@ -5,7 +5,14 @@ import com.example.FinalProject.dto.ContractDTO;
 import com.example.FinalProject.dto.EmployeeDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
+import com.example.FinalProject.repository.payroll.EmployeeRepository;
+import com.example.FinalProject.repository.payroll.PayrollRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -17,6 +24,11 @@ import java.util.List;
 @Slf4j
 @Service
 public class PayrollService {
+
+//    @Autowired
+//    private PayrollRepository payrollRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     // 급여 계산 메서드
     public PayrollResponseDTO calculatePayroll(PayrollRequestDTO requestDTO) {
@@ -184,4 +196,11 @@ public class PayrollService {
 
         return employeeList;
     }
-}
+
+//    // 페이징
+//    public Page<EmployeeDTO> getEmployees(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+//        return employeeRepository.findAll(pageable);
+//    }
+
+}// end service

@@ -139,13 +139,29 @@
 
   <!-- 페이지 네이션 관련 코드 -->
   <div class="pagination-container">
-    <button class="pagination-button"> &lt; </button>
-    <button v-for="page in pages" :key="page" :class="['pagination-button', { active: currentPage === page }]">
+    <button
+      class="pagination-button"
+      :disabled="currentPage === 1"
+      @click="handlePageChange(currentPage - 1)"
+    >
+      &lt;
+    </button>
+    <button
+      v-for="page in totalPages"
+      :key="page"
+      class="pagination-button"
+      :class="{ active: currentPage === page }"
+      @click="handlePageChange(page)"
+    >
       {{ page }}
     </button>
-    <span class="pagination-ellipsis">...</span>
-    <button class="pagination-button">10</button>
-    <button class="pagination-button"> &gt; </button>
+    <button
+      class="pagination-button"
+      :disabled="currentPage === totalPages"
+      @click="handlePageChange(currentPage + 1)"
+    >
+      &gt;
+    </button>
   </div>
 </template>
 
@@ -158,9 +174,19 @@ const isModalVisible = ref(false);
 const selectedEmployee = ref(null);
 const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
 
-const pages = [1, 2, 3, 4]; // 단순히 예시로 페이지 숫자들만 배열로 정의
 const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = ref(10);
 
+const handlePageChange = (page) => {
+  if(page > 0 && page <= totalPages.value) {
+    currentPage.value = page;
+    console.log(`페이지 변경 : ${page}`);
+  }
+  fetchEmployees(page, pageSize.value);
+};
+
+// 근무자 리스트 출력.
 const fetchEmployeeList = async () => {
   try {
     const response = await axios.get("http://localhost:8707/api/employees");
@@ -170,9 +196,18 @@ const fetchEmployeeList = async () => {
   }
 };
 
-// 페이지 로드시 근무자 리스트 가져오기
+const fetchEmployeePaging = async (page, size) => {
+    const response = await axios.get('http://localhost:8707/api/employee-paging', {
+        params: { page: page - 1, size },
+    });
+    totalPages.value = response.data.totalPages || 1; // 전체 페이지 수
+    console.log('페이징 데이터:', response.data); // 이름 리스트만
+};
+
+// 초기 데이터 로드
 onMounted(() => {
   fetchEmployeeList(); // fetchEmployeeList 함수 호출
+  fetchEmployeePaging(currentPage.value, pageSize.value); // 페이징 데이터
 });
 
 
