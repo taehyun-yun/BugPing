@@ -1,30 +1,51 @@
 <template>
-    <form class="register-form">
+    <div class="register-box">
         <div class="input-group">
             <img src="/src/assets/Loginimg/user.svg">
-            <input type="text" class="input-field" placeholder="사업체명">
+            <input type="text" class="input-field" placeholder="아이디" v-model="localdata.userId" required>
         </div>
         <div class="input-group">
-            <img src="/src/assets/Loginimg/store-solid.svg">
-            <input type="text" class="input-field" placeholder="사업체명">
+            <img src="/src/assets/Loginimg/lock.svg">
+            <input type="password" class="input-field" placeholder="비밀번호" v-model="localdata.password" required>
         </div>
-        <SU_address></SU_address>
         <div class="input-group">
-            <img src="/src/assets/Loginimg/user.svg">
-            <input type="tel" class="input-field" placeholder="대표번호">
+            <img src="/src/assets/Loginimg/address.svg">
+            <input type="text" class="input-field" placeholder="이름" v-model="localdata.name" required>
         </div>
-        <button v-if="usertype=='employee'" type="button" class="signup-button">회원 가입</button>
-    </form>
-    {{ usertype }}
+        <div class="input-group">
+            <img src="/src/assets/Loginimg/tablet.svg">
+            <input type="tel" class="input-field" placeholder="전화번호" v-model="localdata.tel" required>
+        </div>
+        <div class="input-group">
+            <img src="/src/assets/Loginimg/calendar.svg">
+            <input type="date" class="input-field" placeholder="생년월일" v-model="localdata.birth" required>
+        </div>
+        <div class="input-group">
+            <img src="/src/assets/Loginimg/address.svg">
+            <input type="radio" name="gender" value="M" id="M" v-model="localdata.gender">
+            <label for="M" class="radiolabel">남성</label>
+            <input type="radio" name="gender" value="F" id="F" v-model="localdata.gender">
+            <label for="F" class="radiolabel">여성</label>
+        </div>
+        <br>
+    </div>
 </template>
 <script setup>
-import { useAuthStore } from '@/stores/authStore';
-import SU_address from './SU_address.vue';
+import { reactive, watch } from 'vue';
 
-const usertype = useAuthStore().userType;
+const localdata = reactive({
+    userId : '',
+    password : '',
+    name : '',
+    tel : '',
+    birth : '',
+    gender : '',
+})
+const emit = defineEmits(['update']);
+watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
 </script>
 <style scoped>
-    .register-form {
+    .register-box {
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -36,6 +57,7 @@ const usertype = useAuthStore().userType;
         border: 1px solid silver;
         border-radius: 8px;
         padding: 10px;
+        margin-top: 25px;
         background-color: #f9f9f9;
     }
     .input-group img{
@@ -49,19 +71,18 @@ const usertype = useAuthStore().userType;
         outline: none;
         background: none;
         width: calc(100% - 80px);
+        text-align: center;
     }
-    .signup-button {
-        background-color: #4FD1C5;
-        color: #ffffff;
-        border: none;
-        padding: 15px;
-        font-size: 1rem;
-        border-radius: 8px;
+    .input-group input[type="radio"]{
+        display: none;
+    }
+    .radiolabel {
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        width: calc(50% - 30px);
+        text-align: center;
     }
-
-    .signup-button:hover {
-        background-color: lightseagreen;
+    .input-group input[type="radio"]:checked + .radiolabel {
+        color: #4FD1C5;
+        font-weight: bold;
     }
 </style>

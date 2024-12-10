@@ -59,9 +59,9 @@ const golink = () =>{
     @media(max-width : 650px){
         .signup-modal{
             transform: translateX(0%);
-            width: 100%;
             left: 0px;
             padding: 30px;
+            width: 650px;
         }
     }
     .modal-title{

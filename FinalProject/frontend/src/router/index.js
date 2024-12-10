@@ -12,7 +12,6 @@ import { axiosAddress } from '@/stores/axiosAddress';
 import SignUpView from '@/views/auth/SignUpView.vue';
 import SU1 from '@/components/auth/SU1.vue';
 import SU2 from '@/components/auth/SU2.vue';
-import SU3 from '@/components/auth/SU3.vue';
 import Employer from '@/views/Employer.vue';
 import Employee from '@/views/Employee.vue';
 
@@ -67,7 +66,6 @@ routes: [
       children : [
         {path: 'su1', name : 'su1', component : SU1,},
         {path: 'su2', name : 'su2', component : SU2,},
-        {path: 'su3', name : 'su3', component : SU3,},
       ],
       },
       { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"],

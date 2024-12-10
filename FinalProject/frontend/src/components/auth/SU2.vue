@@ -1,86 +1,72 @@
 <template>
-    <form class="register-form">
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/user.svg">
-            <input type="text" class="input-field" placeholder="아이디">
-        </div>
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/lock.svg">
-            <input type="password" class="input-field" placeholder="비밀번호">
-        </div>
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/address.svg">
-            <input type="text" class="input-field" placeholder="이름">
-        </div>
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/tablet.svg">
-            <input type="tel" class="input-field" placeholder="전화번호">
-        </div>
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/calendar.svg">
-            <input type="text" class="input-field" placeholder="생년월일">
-        </div>
-        <div class="input-group">
-            <img src="/src/assets/Loginimg/address.svg">
-            <input type="radio" name="gender" value="M" id="M">
-            <label for="M" class="radiolabel">남성</label>
-            <input type="radio" name="gender" value="F" id="F">
-            <label for="F" class="radiolabel">여성</label>
+    <form ref="regform">
+    <SU3 @update="updateParent('SU3',$event)" v-show="isshow"></SU3>
+    <div v-if="usertype=='employer'" class="employer-signupcontainer">
+        <button v-show="isshow" type="button" class="signup-button" @click="showEvent">다음으로</button>
+        <div v-show="!isshow">
+            <SU4 @update="updateParent('SU4',$event)"></SU4>
+            <br>
+            <SU5 @update="updateParent('SU5',$event)"></SU5>
         </div>
         <br>
-        <button v-if="usertype=='employee'" type="button" class="signup-button">회원 가입</button>
-        <button v-if="usertype=='employer'" type="button" class="signup-button" @click="gonext('su3')">다음으로</button>
+        <button v-show="!isshow" type="button" class="signup-button" @click="showEvent">이전으로</button>
+    </div>
     </form>
-    {{ usertype }}
+    <button v-show="!isshow || usertype == 'employee'" type="button" class="signup-button" @click="submitData">회원 가입</button>
 </template>
 <script setup>
-import router from '@/router';
 import { useAuthStore } from '@/stores/authStore';
+import SU3 from './SU3.vue';
+import SU4 from './SU4.vue';
+import SU5 from './SU5.vue';
+import { onMounted, reactive, ref } from 'vue';
+import router from '@/router';
+import axios from 'axios';
+import { axiosAddress } from '@/stores/axiosAddress';
 
 const usertype = useAuthStore().userType;
-const gonext = () => {
-    router.push({name : 'su3'})
+onMounted (()=>{
+    //새로 고침했을 경우 usertype이 날라가버리므로 새로 시작하게함
+    if(usertype ==''){
+        router.push({name : 'su1'})
+    }
+})
+
+const isshow = ref(true);
+const showEvent = () => {
+    isshow.value = !isshow.value;
 }
+// 자식 데이터 가져온다면 담을 곳
+const childData = reactive({
+    SU3 : {},
+    SU4 : {},
+    SU5 : {},
+});
+// 자식 데이터 가져와서 담기
+const updateParent = (component , data) =>{
+    childData[component] = data;
+}
+// 자식 데이터 합치고 보내기
+const submitData = async() => {
+    // 자식 데이터 합치기
+    const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU_address, role : usertype };
+    //확인용
+    const entries = Object.entries(mergedData);
+    alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
+    // 보내기
+    await axios.post(axiosAddress+"/userRegister",mergedData,{withCredentials: true})
+    .then((res)=>{
+        alert(res.data);
+    })
+};
 
 </script>
 <style scoped>
-    .register-form {
+    form{
         width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
     }
-    .input-group {
-        display: flex;
-        align-items: center;
-        border: 1px solid silver;
-        border-radius: 8px;
-        padding: 10px;
-        background-color: #f9f9f9;
-    }
-    .input-group img{
-        width: 20px;
-        height: 20px;
-        margin-left: 30px;
-        margin-right: 10px;
-    }
-    .input-field {
-        border: none;
-        outline: none;
-        background: none;
-        width: calc(100% - 80px);
-    }
-    .input-group input[type="radio"]{
-        display: none;
-    }
-    .radiolabel {
-        cursor: pointer;
-        width: calc(50% - 30px);
-        text-align: center;
-    }
-    .input-group input[type="radio"]:checked + .radiolabel {
-        color: #4FD1C5;
-        font-weight: bold;
+    .employer-signupcontainer{
+        width: 100%;
     }
     .signup-button {
         background-color: #4FD1C5;
@@ -91,6 +77,9 @@ const gonext = () => {
         border-radius: 8px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 
     .signup-button:hover {
