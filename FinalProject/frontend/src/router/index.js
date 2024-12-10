@@ -86,22 +86,24 @@ routes: [
     },
     { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'}, },
     { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'},
+    { path: '/login', name: 'login', component: LoginView, meta : {title: '로그인'} },
+    { path: '/signup', name : 'signup', component : SignUpView, meta : {title: '회원가입'},
       children : [
         {path: 'su1', name : 'su1', component : SU1,},
         {path: 'su2', name : 'su2', component : SU2,},
         {path: 'su3', name : 'su3', component : SU3,},
       ],
-       },
-       { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"],
+      },
+      { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"],
         children : [
           //이 안에 넣으시면 됩니다.
         ]
-       }},
-       { path : '/employee', name : 'employee', component : Employee, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employee"],
+      }},
+      { path : '/employee', name : 'employee', component : Employee, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employee"],
         children : [
           //이 안에 넣으시면 됩니다.
         ]
-       }}
+      }}
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: { header : true, sidebar : true, requiresAuth: true, roles: ['employer'], } }
     //{ path: '/unprotected', name: 'UnProtected', component: UnProtectedPage, }

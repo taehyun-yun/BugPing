@@ -3,7 +3,7 @@
         <img src="/src/assets/Loginimg/map-location-dot-solid.svg">
         <input type="text" id="sample4_postcode" placeholder="우편번호" readonly>
         <input type="button" @click="sample4_execDaumPostcode()" value="우편번호 찾기"><br>
-        <input type="text" id="sample4_roadAddress" placeholder="도로명주소" readonly>
+        <input type="text" id="sample4_roadAddress" placeholder="도로명주소" readonly><br>
         <input type="text" id="sample4_jibunAddress" placeholder="지번주소" readonly>
         <input type="text" id="sample4_detailAddress" placeholder="상세주소">
     </div>
