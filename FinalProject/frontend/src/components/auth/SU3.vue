@@ -5,12 +5,10 @@
             <input type="text" class="input-field" placeholder="사업체명">
         </div>
         <div class="input-group">
-            <img src="/src/assets/Loginimg/user.svg">
+            <img src="/src/assets/Loginimg/store-solid.svg">
             <input type="text" class="input-field" placeholder="사업체명">
         </div>
-        <div class="input-group">
-
-        </div>
+        <SU_address></SU_address>
         <div class="input-group">
             <img src="/src/assets/Loginimg/user.svg">
             <input type="tel" class="input-field" placeholder="대표번호">
@@ -21,6 +19,7 @@
 </template>
 <script setup>
 import { useAuthStore } from '@/stores/authStore';
+import SU_address from './SU_address.vue';
 
 const usertype = useAuthStore().userType;
 </script>
