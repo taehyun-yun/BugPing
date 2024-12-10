@@ -502,6 +502,8 @@ const getStatusLabel = (status) => {
   padding: 10px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+  height: 50px;
 }
 
 .board-table th {
@@ -512,7 +514,7 @@ const getStatusLabel = (status) => {
 .checkbox-action {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .checkbox-cell {
