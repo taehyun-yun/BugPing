@@ -1,12 +1,17 @@
 package com.example.FinalProject.controller.notice;
 
+import com.example.FinalProject.dto.NoticeDTO;
+import com.example.FinalProject.entity.file.File;
 import com.example.FinalProject.entity.notice.Notice;
 import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.work.WorkRepository;
+import com.example.FinalProject.service.FileStorageService;
 import com.example.FinalProject.service.NoticeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @RestController
@@ -16,79 +21,139 @@ public class NoticeController {
 
     private final NoticeService noticeService;
     private final WorkRepository workRepository;
+    private final FileStorageService fileStorageService;
 
     @Autowired
-    public NoticeController(NoticeService noticeService, WorkRepository workRepository){
+    public NoticeController(NoticeService noticeService, WorkRepository workRepository, FileStorageService fileStorageService){
         this.noticeService = noticeService;
         this.workRepository = workRepository;
+        this.fileStorageService = fileStorageService;
     }
 
-    /* 모두 조회하기 @return 모든 공지사항 목록 */
+    /* 모두 조회하기 (DTO로 반환) */
     @GetMapping("/list")
-    public ResponseEntity<List<Notice>> getAllNotices() {
-        List<Notice> notices = noticeService.getAllNotices();
+    public ResponseEntity<List<NoticeDTO>> getAllNotices() {
+        List<NoticeDTO> notices = noticeService.getAllNoticesAsDTO();
         return ResponseEntity.ok(notices);
     }
 
-    /* 타입별 조회하기 */
+    /* 타입별 조회하기 (DTO로 반환) */
     @GetMapping("/list/type")
-    public ResponseEntity<List<Notice>> getNoticesByType(@RequestParam String type) {
-        List<Notice> notices = noticeService.getNoticesByType(type);
+    public ResponseEntity<List<NoticeDTO>> getNoticesByType(@RequestParam String type) {
+        List<NoticeDTO> notices = noticeService.getNoticesByTypeAsDTO(type);
         return ResponseEntity.ok(notices);
     }
 
-    /* 공지사항 생성하기 @param notice 생성할 공지사항 데이터 (work_id 포함) @return 생성된 공지사항 객체 */
+    /* 공지사항 생성하기 (파일 포함) */
     @PostMapping("/create")
-    public ResponseEntity<Notice> createNotice(@RequestBody Notice notice) {
-        Work writer = workRepository.findById(notice.getWork().getWorkId())
+    public ResponseEntity<NoticeDTO> createNotice(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("workId") Integer workId,
+            @RequestParam("type") String type,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files
+    ) {
+        Work writer = workRepository.findById(workId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 작성자 ID입니다."));
+
+        Notice notice = new Notice();
+        notice.setTitle(title);
+        notice.setContent(content);
         notice.setWork(writer);
+        notice.setType(type);
+        notice.setStatus("VISIBLE");
 
-        // type 값이 없으면 기본값 설정
-        if (notice.getType() == null || notice.getType().isEmpty()) {
-            notice.setType("NOTICE");
+        try {
+            // 이미지 업로드
+            if (image != null && !image.isEmpty()) {
+                String imagePath = fileStorageService.storeFile(image);
+                File imageFile = new File();
+                imageFile.setFilePath(imagePath);
+                imageFile.setFileType(image.getContentType());
+                notice.addFile(imageFile);
+            }
+
+            // 일반 파일 업로드
+            if (files != null && !files.isEmpty()) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String filePath = fileStorageService.storeFile(file);
+                        File uploadedFile = new File();
+                        uploadedFile.setFilePath(filePath);
+                        uploadedFile.setFileType(file.getContentType());
+                        notice.addFile(uploadedFile);
+                    }
+                }
+            }
+
+            NoticeDTO createdNotice = noticeService.createNoticeAsDTO(notice);
+            return ResponseEntity.ok(createdNotice);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
         }
-
-        Notice createdNotice = noticeService.createNotice(notice);
-        return ResponseEntity.ok(createdNotice);
     }
-    /* 공지사항 삭제하하기 */
+
+    /* 공지사항 삭제 */
     @DeleteMapping("/delete")
     public ResponseEntity<Void> deleteNotices(@RequestBody List<Integer> noticeIds) {
         noticeService.deleteNotices(noticeIds);
         return ResponseEntity.noContent().build();
     }
 
-    /* 특정 ID의 공지사항을 조회하기 */
+    /* 특정 ID의 공지사항 조회 (DTO로 반환) */
     @GetMapping("/{id}")
-    public ResponseEntity<Notice> getNoticeById(@PathVariable Integer id) {
-        return noticeService.getNoticeById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<NoticeDTO> getNoticeById(@PathVariable Integer id) {
+        NoticeDTO noticeDTO = noticeService.getNoticeByIdAsDTO(id);
+        return ResponseEntity.ok(noticeDTO);
     }
 
     /* 공지사항 업데이트 */
     @PutMapping("/update/{id}")
-    public ResponseEntity<Notice> updateNotice(@PathVariable Integer id, @RequestBody Notice notice) {
-        // ID로 기존 공지사항 조회
+    public ResponseEntity<NoticeDTO> updateNotice(
+            @PathVariable Integer id,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("type") String type,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files
+    ) {
         Notice existingNotice = noticeService.getNoticeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항이 존재하지 않습니다."));
 
-        // 수정할 내용 업데이트
-        existingNotice.setTitle(notice.getTitle());
-        existingNotice.setContent(notice.getContent());
-        existingNotice.setStatus(notice.getStatus());
-        existingNotice.setType(notice.getType());
+        existingNotice.setTitle(title);
+        existingNotice.setContent(content);
+        existingNotice.setType(type);
 
-        // 작성자 정보 업데이트 (필요하다면)
-        if (notice.getWork() != null && notice.getWork().getWorkId() != null) {
-            Work writer = workRepository.findById(notice.getWork().getWorkId())
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 작성자 ID입니다."));
-            existingNotice.setWork(writer);
+        try {
+            // 이미지 업로드
+            if (image != null && !image.isEmpty()) {
+                String imagePath = fileStorageService.storeFile(image);
+                File imageFile = new File();
+                imageFile.setFilePath(imagePath);
+                imageFile.setFileType(image.getContentType());
+                existingNotice.addFile(imageFile);
+            }
+
+            // 일반 파일 업로드
+            if (files != null && !files.isEmpty()) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String filePath = fileStorageService.storeFile(file);
+                        File uploadedFile = new File();
+                        uploadedFile.setFilePath(filePath);
+                        uploadedFile.setFileType(file.getContentType());
+                        existingNotice.addFile(uploadedFile);
+                    }
+                }
+            }
+
+            NoticeDTO updatedNotice = noticeService.updatedNoticeAsDTO(existingNotice);
+            return ResponseEntity.ok(updatedNotice);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
         }
-
-        // 업데이트된 공지사항 저장
-        Notice updated = noticeService.updatedNotice(existingNotice);
-        return ResponseEntity.ok(updated);
     }
 }
