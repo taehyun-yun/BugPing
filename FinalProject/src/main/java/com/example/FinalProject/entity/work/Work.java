@@ -14,15 +14,18 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Work {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer workId;
+
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
     private LocalDate hireDate;
     private LocalDate resignDate;
 }

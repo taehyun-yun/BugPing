@@ -64,20 +64,26 @@
                   alt="공지 아이콘"
                   class="attachment-img"
                 />
-                <img
-                  v-if="attachments[0].icon"
-                  :src="attachments[0].icon"
-                  alt="이미지 첨부 아이콘"
-                  class="attachment-icon"
-                />
                 <div class="attachment-text">이미지 첨부</div>
               </div>
-              <div class="attachment-card">
+              <div class="attachment-card1" @click="triggerFileUpload('image')">
                 <img
                   src="@/assets/noticeimg/add.png"
                   alt="공지 아이콘"
                   class="upload-icon"
                 />
+              </div>
+              <!-- 숨겨진 이미지 입력창 -->
+              <input
+                ref="imageInput"
+                type="file"
+                accept="image/*"
+                class="file-input-hidden"
+                @change="handleImageUpload"
+              />
+              <!-- 이미지 미리보기 -->
+              <div v-if="previewImage" class="image-preview">
+                <img :src="previewImage" alt="미리보기" />
               </div>
             </div>
 
@@ -92,24 +98,29 @@
                   alt="공지 아이콘"
                   class="attachment-img"
                 />
-                <img
-                  v-if="attachments[1].icon"
-                  :src="attachments[1].icon"
-                  alt="파일 첨부 아이콘"
-                  class="attachment-icon"
-                />
                 <div class="attachment-text">파일 첨부</div>
               </div>
-              <div class="attachment-card">
+              <div class="attachment-card2" @click="triggerFileUpload('file')">
                 <img
                   src="@/assets/noticeimg/add.png"
                   alt="공지 아이콘"
                   class="upload-icon"
                 />
               </div>
-              <div v-if="attachments[1].info" class="attachment-info">
-                {{ attachments[1].info }}
-              </div>
+              <!-- 숨겨진 파일 입력창 -->
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                class="file-input-hidden"
+                @change="handleFileUpload"
+              />
+              <!-- 업로드된 파일 목록 -->
+              <ul v-if="uploadedFiles.length > 0" class="uploaded-files">
+                <li v-for="(file, index) in uploadedFiles" :key="index">
+                  {{ file.name }}
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -131,6 +142,8 @@ import axios from "axios";
 import megaphoneIcon from "@/assets/noticeimg/megaphone.png";
 import checklistIcon from "@/assets/noticeimg/checklist.png";
 import questionMarkIcon from "@/assets/noticeimg/question-mark.png";
+const previewImage = ref(""); // 이미지 미리보기 URL
+const uploadedFiles = ref([]); // 업로드된 파일 목록
 
 const router = useRouter();
 
@@ -172,6 +185,8 @@ const cancelNotice = () => {
   title.value = "";
   content.value = "";
   selectedCategory.value = "공지"; // 기본 카테고리로 초기화
+  uploadedFiles.value = []; // 업로드된 파일 목록 초기화
+  previewImage.value = ""; // 이미지 미리보기 초기화
   console.log("작성 취소되었습니다.");
 };
 
@@ -188,20 +203,33 @@ const submitNotice = async () => {
     특이사항: "SPECIAL",
   };
 
-  const noticeData = {
-    title: title.value,
-    content: content.value,
-    work: {
-      workId: workId.value,
-    },
-    type: typeMap[selectedCategory.value], // 선택된 카테고리를 type으로 설정
-    // 필요한 다른 필드들을 추가할 수 있습니다.
-  };
+  const formData = new FormData();
+  formData.append("title", title.value);
+  formData.append("content", content.value);
+  formData.append("workId", workId.value);
+  formData.append("type", typeMap[selectedCategory.value]);
+
+  // 이미지 파일 추가
+  if (imageInput.value && imageInput.value.files[0]) {
+    formData.append("image", imageInput.value.files[0]);
+  }
+
+  // 일반 파일 추가
+  if (fileInput.value && fileInput.value.files.length > 0) {
+    for (let i = 0; i < fileInput.value.files.length; i++) {
+      formData.append("files", fileInput.value.files[i]);
+    }
+  }
 
   try {
     const response = await axios.post(
       "http://localhost:8707/notice/create",
-      noticeData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     console.log("작성된 공지사항:", response.data);
     alert("공지사항이 작성되었습니다.");
@@ -212,6 +240,45 @@ const submitNotice = async () => {
     alert("공지사항 작성 중 오류가 발생했습니다.");
   }
 };
+
+// 파일 업로드 창 열기
+const triggerFileUpload = (type) => {
+  if (type === "image") {
+    document.querySelector('input[type="file"][accept="image/*"]').click();
+  } else if (type === "file") {
+    document.querySelector('input[type="file"]:not([accept])').click();
+  }
+};
+
+// 이미지 업로드 처리
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      previewImage.value = reader.result;
+    };
+    reader.readAsDataURL(file);
+    alert("이미지가 선택되었습니다: " + file.name);
+  } else {
+    alert("유효한 이미지 파일을 선택해주세요.");
+  }
+};
+
+// 파일 업로드 처리
+const handleFileUpload = (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    uploadedFiles.value = Array.from(files);
+    alert(`${files.length}개의 파일이 선택되었습니다.`);
+  } else {
+    alert("유효한 파일을 선택해주세요.");
+  }
+};
+
+// 파일 input refs
+const imageInput = ref(null);
+const fileInput = ref(null);
 </script>
 
 <style scoped>
@@ -336,7 +403,19 @@ const submitNotice = async () => {
   align-items: center; /* 텍스트를 세로 중앙에 위치 */
 }
 
-.attachment-card {
+.attachment-card1 {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.attachment-card2 {
   background: #f5f5f5;
   padding: 10px;
   border-radius: 10px;
@@ -397,5 +476,38 @@ const submitNotice = async () => {
   font-size: 28px;
   font-weight: bold;
   margin: 20px 0;
+}
+
+/* 숨겨진 파일 입력창 스타일 */
+.file-input-hidden {
+  display: none;
+}
+
+.attachment-card1:hover,
+.attachment-card2:hover {
+  background: #e7e7e7;
+}
+
+.image-preview {
+  margin-top: 10px;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 5px;
+}
+
+.uploaded-files {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.uploaded-files li {
+  background: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
 </style>

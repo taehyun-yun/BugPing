@@ -49,4 +49,5 @@ const sidebar = computed(()=>route?.meta?.sidebar === true)
       width : 100%;
       display: inline-block;
    }
+   
 </style>

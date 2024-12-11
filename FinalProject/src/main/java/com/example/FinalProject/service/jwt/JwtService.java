@@ -1,4 +1,4 @@
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.jwt;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;

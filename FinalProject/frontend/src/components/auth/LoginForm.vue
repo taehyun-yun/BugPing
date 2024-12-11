@@ -13,7 +13,7 @@
     <button type="button" class="login-button" @click="login">로그인</button>
     </form>
     <div class="login-links">
-    <p @click="golink('findIdPw')">아이디/비밀번호 찾기</p>
+    <p @click="golink('find1')">아이디/비밀번호 찾기</p>
     <p @click="golink('su1')">회원가입</p>
     </div>
 </template>

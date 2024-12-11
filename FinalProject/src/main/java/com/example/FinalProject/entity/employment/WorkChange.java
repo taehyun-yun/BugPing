@@ -22,12 +22,9 @@ public class WorkChange {
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
     private LocalDate changeDate;
     private LocalDateTime changeStartTime;
     private LocalDateTime changeEndTime;
     private String inOut;
+    private boolean permit;
 }
