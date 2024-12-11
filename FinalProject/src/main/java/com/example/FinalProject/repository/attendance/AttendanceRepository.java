@@ -5,10 +5,32 @@ import com.example.FinalProject.entity.attendance.Attendance;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AttendanceRepository  extends JpaRepository<Attendance, Integer> {
 
+
+    //-------------------------------------------------------------- TH --------------------------------------------------------------
+    @Query("SELECT a FROM Attendance a " +
+            "LEFT JOIN a.schedule s " +
+            "WHERE a.actualStart >= :startDate " +
+            "AND a.actualEnd <= :endDate")
+    List<Attendance> findAttendancesByDateRange(
+            @Param("userId") String userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT a FROM Attendance a " +
+            "JOIN a.schedule s " +
+            "JOIN s.contract c " +
+            "JOIN c.work w " +
+            "WHERE w.user.userId = :userId " +
+            "AND w.workId = :workId")
+    List<Attendance> findAttendancesByUserIdAndWorkId(@Param("userId") String userId, @Param("workId") Integer workId);
+
+
+    //-------------------------------------------------------------- ES --------------------------------------------------------------
     // 특정 스케줄 ID에 따른 출석 정보를 조회
     List<Attendance> findByScheduleScheduleId(Integer scheduleId);
 

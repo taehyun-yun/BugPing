@@ -6,9 +6,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
+
+    //----------------------------------- JH ---------------------------------
+
+    // userId의 모든 일정
+    List<Schedule> findByContract_Work_User_UserId(String userId);
+
+    // 날짜 범위로 스케줄 검색
+    List<Schedule> findByContract_ContractStartBetween(LocalDate start, LocalDate end);
+
+
+    //----------------------------------- ES ---------------------------------
     // 특정 Contract ID로 스케줄을 조회하는 메서드
     List<Schedule> findByContractContractId(Integer contractId);
 
