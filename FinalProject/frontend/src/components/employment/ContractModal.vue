@@ -41,9 +41,18 @@
 
                 <section v-if="contract?.schedules?.length">
                     <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
+                        
                         <div class="schedule-header day-box">
                             <span class="day">{{ getDayName(schedule.day) }}</span>
                         </div>
+                            <div class="schedule-actions">
+                                <button @click="editSchedule(schedule)" class="action-button edit-button">
+                                    <span class="icon">✏️</span>
+                                </button>
+                                <button @click="deleteSchedule(schedule)" class="action-button delete-button">
+                                    <span class="icon">🗑️</span>
+                                </button>
+                            </div>
                         <div class="schedule-details">
                             <div class="time-slot">
                                 <span class="time-icon">🕐</span>
@@ -64,7 +73,6 @@
                         </div>
                     </div>
                 </section>
-
 
                 <section class="weekdays-section" v-if="!contract?.schedules?.length">
                     <div class="weekdays-header">
@@ -363,4 +371,60 @@ const formatDuration = (minutes) => {
 .save-button:hover {
     background: #2c5282;
 }
+
+/* 수정삭제버튼 */
+
+.schedule-actions {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: flex;
+  gap: 5px;
+}
+
+.edit-icon,
+.delete-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+}
+
+.schedule-details {
+  position: relative;
+}
+
+.schedule-section {
+    position: relative;
+}
+
+.schedule-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+}
+
+.schedule-section:hover .schedule-actions {
+    display: flex;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: 4px;
+}
+
+.action-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+}
+
+.icon {
+    font-size: 16px;
+}
+
 </style>
