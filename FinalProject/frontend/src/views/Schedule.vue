@@ -59,13 +59,14 @@ const closeModal = () => {
 
                 // 서버와 날짜 요청 형식을 맞추기
                 const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
-                const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
+                const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd'); 
 
-                const response = await axios.get('http://localhost:8707/api/schedules', {
+                const response = await axios.get('http://localhost:8707/api/schedules/paged', {
                     params: {
-                        userId: 'jh',
                         start: startFormatted,
                         end: endFormatted,
+                        page: 0,        // 첫 페이지 요청
+                        size: 50,      // 한 페이지에 표시할 이벤트 수
                     },
                 });
                 successCallback(response.data);
