@@ -1,6 +1,6 @@
 package com.example.FinalProject.filter;
 
-import com.example.FinalProject.service.JwtService;
+import com.example.FinalProject.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (token != null) {
-            System.out.println("쿠키에서 전달된 쿠키 : "+token);
+            // System.out.println("jwt 쿠키에서 전달된 토큰 값 : "+token);
             if(jwtService.validateToken(token)) {
                 //토큰이 유효하다면 Authentication 객체를 생성하고 SecurityContext에 설정
                 Authentication authentication = jwtService.getAuthentication(token);
@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 System.out.println("토큰 유효성 검사 성공, 인증 객체 생성");
             } else{
                 System.out.println("토큰 유효성 검사 실패");
+                return;
             }
         } else {
             System.out.println("토큰이 쿠키에서 전달되지 않음");
