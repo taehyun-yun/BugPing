@@ -19,7 +19,6 @@ import java.time.LocalTime;
 public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    //@Column(name = "attendanceId", nullable = false, updatable = false)
     private Integer attendanceId;
 
     //1안
@@ -27,9 +26,8 @@ public class Attendance {
     @JoinColumn(name = "schedule_id")//, nullable = false, insertable = false, updatable = false
     private Schedule schedule;
 
-    //1안
-    @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "change_id")//, nullable = false, insertable = false, updatable = false
+    @ManyToOne
+    @JoinColumn(name = "change_id")
     private WorkChange workChange;
 
 //    //2안
@@ -37,8 +35,12 @@ public class Attendance {
 //    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
 //    private Work work;
 
+    @Column(name = "actual_start")
     private LocalDateTime actualStart;
+
+    @Column(name = "actual_end")
     private LocalDateTime actualEnd;
+
     private String commuteStatus;
 
     @Column(length = 5000)

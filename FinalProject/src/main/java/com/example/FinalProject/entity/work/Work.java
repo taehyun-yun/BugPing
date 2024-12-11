@@ -28,5 +28,4 @@ public class Work {
 
     private LocalDate hireDate;
     private LocalDate resignDate;
-
 }

@@ -16,10 +16,12 @@ public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer contractId;
-    @ManyToOne
+
     @JoinColumn(name = "work_id")
+    @ManyToOne
     private Work work;
-    private int hourlyWage;
-    private LocalDate contractStart;
-    private LocalDate contractEnd;
+
+    private int hourlyWage; // 시급
+    private LocalDate contractStart; // 적용 시작일
+    private LocalDate contractEnd; // 적용 종료일
 }
