@@ -2,6 +2,8 @@ package com.example.FinalProject.repository.attendance;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.FinalProject.entity.attendance.Attendance;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -13,4 +15,36 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
     // 특정 WorkChange ID에 따른 출석 정보를 조회
     List<Attendance> findByWorkChangeWorkChangeId(Integer workChangeId);
 
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "WHERE a.id = :attendanceId")
+    Attendance findAttendanceWithScheduleContractWorkAndUser(@Param("attendanceId") Long attendanceId);
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u")
+    List<Attendance> findAllAttendancesWithScheduleContractWorkAndUser();
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.workChange wc " + // WorkChange와 패치 조인
+            "JOIN FETCH wc.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "WHERE a.id = :attendanceId")
+    Attendance findAttendanceWithWorkChangeScheduleContractWorkAndUser(@Param("attendanceId") Long attendanceId);
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.workChange wc " + // WorkChange와 패치 조인
+            "JOIN FETCH wc.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u")
+    List<Attendance> findAllAttendancesWithWorkChangeScheduleContractWorkAndUser();
 }
