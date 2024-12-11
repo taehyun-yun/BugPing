@@ -24,7 +24,6 @@ public class UserController {
     //이메일확인
     @PostMapping("/sendCode")
     public ResponseEntity<String> sendCode(@RequestBody Map<String,String> map){
-        System.out.println(map.get("userEmail"));
-        return userValidationService.sendCode("junho9661@gmail.com");
+        return userValidationService.sendCode(map.get("userEmail"));
     }
 }

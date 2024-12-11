@@ -14,12 +14,12 @@ import { ref } from 'vue';
     const userEmail = ref('');
     const isCooltime = ref(false);
     const currentCooltime = ref(0);
-    const sendcooltime = () =>{
+    const sendcooltime = async() =>{
         if(currentCooltime.value == 0 ){
             isCooltime.value =  true;
             currentCooltime.value = 5;
             //currentCooltime.value = 180;
-            sendcode();
+            await sendcode();
             const cooldown = setInterval(()=>{currentCooltime.value -= 1;},1000);
             setTimeout(()=>{
             isCooltime.value = false;
@@ -29,8 +29,8 @@ import { ref } from 'vue';
             //}, 3 * 60 * 1000);
         }
     }
-    const sendcode = () =>{
-        axios.post(axiosAddress+"/sendCode",{ userEmail : userEmail.value},{ withCredentials : true })
+    const sendcode = async() =>{
+        await axios.post(axiosAddress+"/sendCode",{ userEmail : userEmail.value},{ withCredentials : true })
         .then((res)=>{
             alert(res.data);
         })

@@ -19,5 +19,5 @@ public class Email {
     @JoinColumn(name = "user_id")
     private User user;
     private String code;
-    private LocalDateTime sendTime;
+    private LocalDateTime dueTime;
 }
