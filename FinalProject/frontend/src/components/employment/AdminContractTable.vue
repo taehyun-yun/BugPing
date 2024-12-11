@@ -63,6 +63,7 @@ const fetchContracts = async () => {
     const response = await axios.get(apiUrl, {
       headers: { 'Content-Type': 'application/json' },
     });
+    console.log('Contracts API response:', response.data); // 응답 확인
     contracts.value = await Promise.all(
       response.data.map(async (contract) => {
         // [추가된 부분] 스케줄 데이터를 동적으로 가져오기
