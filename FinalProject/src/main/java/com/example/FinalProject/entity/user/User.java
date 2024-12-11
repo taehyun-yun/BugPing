@@ -22,5 +22,5 @@ public class User {
     private LocalDate birth;
     private String gender;
     private String role;
-    private LocalDate regDate;
+    private LocalDate regDate; //
 }

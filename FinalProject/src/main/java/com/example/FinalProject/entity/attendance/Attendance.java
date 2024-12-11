@@ -17,22 +17,21 @@ public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer attendanceId;
-    //1안
-    @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id")//, nullable = false, insertable = false, updatable = false
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
-    //1안
-    @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "change_id")//, nullable = false, insertable = false, updatable = false
+    @ManyToOne
+    @JoinColumn(name = "change_id")
     private WorkChange workChange;
 
-//    2안
-//    @ManyToOne
-//    @JoinColumn(name = "contract_id")
-//    private Contract contract;
+    @Column(name = "actual_start")
     private LocalDateTime actualStart;
+
+    @Column(name = "actual_end")
     private LocalDateTime actualEnd;
+
     private String commuteStatus;
 
     @Column(length = 5000)

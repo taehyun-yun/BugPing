@@ -1,6 +1,6 @@
 package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,9 +17,15 @@ public class WorkChange {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer workChangeId;
+
     @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private LocalDate changeDate;
     private LocalDateTime changeStartTime;
     private LocalDateTime changeEndTime;
