@@ -1,24 +1,42 @@
 package com.example.FinalProject.repository.employment;
 
-import com.example.FinalProject.entity.employment.Schedule;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
+import com.example.FinalProject.entity.employment.Schedule;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
+    // 특정 Contract ID로 스케줄을 조회하는 메서드
+    List<Schedule> findByContractContractId(Integer contractId);
 
-    // 모든 데이터 Page
-    Page<Schedule> findAll(Pageable pageable);
+    //특정 Contract ID로 스케줄을 조회 + 패치조인
+    @Query("SELECT s FROM Schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu " +
+            "WHERE c.id = :contractId")
+    List<Schedule> findSchedulesByContractIdWithContractWorkAndUser(@Param("contractId") Integer contractId);
 
-    // userId의 전체 일정 반환
-    List<Schedule> findByContract_Work_User_UserId(String userId);
 
-    // UserId의 페이징 처리
-    Page<Schedule> findByOfficialStartBetween(LocalDate start, LocalDate end, Pageable pageable);
+    @Query("SELECT DISTINCT s FROM Schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu " +
+            "WHERE s.id = :scheduleId")
+    Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Integer scheduleId);
 
+    @Query("SELECT DISTINCT s FROM Schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu ")
+    List<Schedule> findAllSchedulesWithContractWorkAndUser();
 }
-
-
