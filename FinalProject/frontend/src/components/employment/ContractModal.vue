@@ -34,25 +34,25 @@
                     </div>
                 </section>
 
-                <button class="add-button">
+                <button class="add-button" @click="addSchedule">
                     <span class="plus-icon">+</span>
                     추가
                 </button>
 
                 <section v-if="contract?.schedules?.length">
                     <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
-                        
+
                         <div class="schedule-header day-box">
                             <span class="day">{{ getDayName(schedule.day) }}</span>
                         </div>
-                            <div class="schedule-actions">
-                                <button @click="editSchedule(schedule)" class="action-button edit-button">
-                                    <span class="icon">✏️</span>
-                                </button>
-                                <button @click="deleteSchedule(schedule)" class="action-button delete-button">
-                                    <span class="icon">🗑️</span>
-                                </button>
-                            </div>
+                        <div class="schedule-actions">
+                            <button @click="editSchedule(schedule)" class="action-button edit-button">
+                                <span class="icon">✏️</span>
+                            </button>
+                            <button @click="deleteSchedule(schedule)" class="action-button delete-button">
+                                <span class="icon">🗑️</span>
+                            </button>
+                        </div>
                         <div class="schedule-details">
                             <div class="time-slot">
                                 <span class="time-icon">🕐</span>
@@ -87,11 +87,15 @@
                 <button class="save-button" @click="saveContract">저장</button>
             </div>
         </div>
+        <!-- ScheduleModal 추가 -->
+        <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
+            @save="saveSchedule" />
     </div>
 </template>
 
 <script setup>
 import { ref, defineProps, defineEmits, watch } from 'vue'
+import ScheduleModal from '@/components/employment/ScheduleModal.vue'; // ScheduleModal import
 
 const props = defineProps({
     isOpen: {
@@ -111,6 +115,49 @@ const editedContract = ref({
     contractStart: '',
     contractEnd: ''
 })
+
+
+
+
+// ScheduleModal 상태 관리
+const showScheduleModal = ref(false);
+const currentSchedule = ref({});
+
+// 스케줄 추가 버튼 클릭
+const addSchedule = () => {
+    currentSchedule.value = {
+        day: '',
+        officialStart: '',
+        officialEnd: '',
+        breakMinute: 0
+    };
+    showScheduleModal.value = true;
+};
+
+// 스케줄 수정
+const editSchedule = (schedule) => {
+    currentSchedule.value = { ...schedule };
+    showScheduleModal.value = true;
+};
+
+// 스케줄 저장
+const saveSchedule = (schedule) => {
+    if (!contract?.schedules) contract.schedules = [];
+    const index = contract.schedules.findIndex((s) => s.id === schedule.id);
+    if (index === -1) {
+        contract.schedules.push(schedule);
+    } else {
+        contract.schedules[index] = schedule;
+    }
+    closeScheduleModal();
+};
+
+// 스케줄 모달 닫기
+const closeScheduleModal = () => {
+    showScheduleModal.value = false;
+};
+
+
 
 watch(() => props.contract, (newContract) => {
     if (newContract) { // contract가 유효한 경우에만 실행
@@ -171,8 +218,10 @@ const formatDuration = (minutes) => {
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
-    max-height: 80%; /* 모달의 최대 높이를 화면의 90%로 제한 */
-    overflow-y: auto; /* 스크롤바 */
+    max-height: 80%;
+    /* 모달의 최대 높이를 화면의 90%로 제한 */
+    overflow-y: auto;
+    /* 스크롤바 */
     padding: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -375,24 +424,24 @@ const formatDuration = (minutes) => {
 /* 수정삭제버튼 */
 
 .schedule-actions {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  display: flex;
-  gap: 5px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
 }
 
 .edit-icon,
 .delete-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px;
 }
 
 .schedule-details {
-  position: relative;
+    position: relative;
 }
 
 .schedule-section {
@@ -426,5 +475,4 @@ const formatDuration = (minutes) => {
 .icon {
     font-size: 16px;
 }
-
 </style>

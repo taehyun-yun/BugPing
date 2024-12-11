@@ -17,7 +17,7 @@
           </div>
         </section>
 
-        <section class="work-type-section">
+        <!-- <section class="work-type-section">
           <h3>유형</h3>
           <div class="select-wrapper">
             <select v-model="workType">
@@ -26,7 +26,7 @@
               <option value="외근">외근</option>
             </select>
           </div>
-        </section>
+        </section> -->
 
         <section class="work-time-section">
           <h3>근무시간 <span class="required">*</span></h3>
@@ -99,7 +99,7 @@
           </div>
         </section>
 
-        <section class="workplace-section">
+        <!-- <section class="workplace-section">
           <h3>근무지</h3>
           <div class="select-wrapper full-width">
             <select v-model="workplace">
@@ -116,7 +116,7 @@
             <textarea v-model="memo" placeholder="입력하세요" maxlength="500"></textarea>
             <div class="memo-count">{{ memo.length }} / 500</div>
           </div>
-        </section>
+        </section> -->
       </div>
 
       <div class="modal-footer">
@@ -388,9 +388,3 @@ textarea {
   }
 }
 </style>
-<!-- 
-<WorkScheduleModal 
-:is-open="showModal"
-@close="showModal = false"
-@confirm="handleScheduleConfirm"
-/> -->
