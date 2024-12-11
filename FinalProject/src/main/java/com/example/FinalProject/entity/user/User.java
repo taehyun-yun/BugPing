@@ -23,4 +23,5 @@ public class User {
     private String gender;
     private String role;
     private LocalDate regDate;
+    private String email;
 }

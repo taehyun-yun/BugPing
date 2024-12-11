@@ -24,4 +24,5 @@ public class WorkChange {
     private LocalDateTime changeStartTime;
     private LocalDateTime changeEndTime;
     private String inOut;
+    private boolean permit;
 }

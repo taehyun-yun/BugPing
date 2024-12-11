@@ -14,7 +14,16 @@
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/tablet.svg">
-            <input type="tel" class="input-field" placeholder="전화번호" v-model="localdata.tel" required>
+            <div class="tel-container">
+                <p>전화번호</p>
+                <input type="num" class="input-field divide-box" v-model="t.num1" minlength="3" @input="nextinput($event,3)" required>
+                <input type="num" class="input-field divide-box" v-model="t.num2" minlength="4" @input="nextinput($event,4)" required>
+                <input type="num" class="input-field divide-box" v-model="t.num3" minlength="4" @input="nextinput($event,4)" required>
+            </div>
+        </div>
+        <div class="input-group">
+            <img src="/src/assets/Loginimg/envelope-regular.svg">
+            <input type="email" class="input-field" placeholder="아이디, 비밀번호 분실시 사용할 이메일(선택)" v-model="localdata.email">
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/calendar.svg">
@@ -31,18 +40,38 @@
     </div>
 </template>
 <script setup>
-import { reactive, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
+const t = reactive({
+    num1 : '',
+    num2 : '',
+    num3 : '',
+});
+const tel = computed(()=>{
+    return t.num1+"-"+t.num2+"-"+t.num3
+});
+watch(tel,(newValue)=>{localdata.tel = newValue});
 
 const localdata = reactive({
     userId : '',
     password : '',
     name : '',
     tel : '',
+    email : '',
     birth : '',
     gender : '',
-})
+});
 const emit = defineEmits(['update']);
 watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
+//다음 input으로 자동으로 넘어가게 하기
+const nextinput = (e,num) =>{
+    if(e.target.value.length >= num){
+        const inputs = Array.from(document.querySelectorAll('.input-field'));
+        const currentIndex = inputs.indexOf(e.target);
+        if(currentIndex < inputs.length -1){
+            inputs[currentIndex + 1 ].focus();
+        }
+    }
+}
 </script>
 <style scoped>
     .register-box {
@@ -84,5 +113,24 @@ watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
     .input-group input[type="radio"]:checked + .radiolabel {
         color: #4FD1C5;
         font-weight: bold;
+    }
+    .tel-container{
+        display: inline-flex;
+        width: calc(100% - 60px);
+        justify-content: space-evenly;
+    }
+    .tel-container p{
+        color : silver;
+        margin : 0;
+        width: 120px;
+    }
+    .divide-box{
+        border : solid 1px silver;
+        width: 80px;
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+        border-radius: 5px;
+        background-color: white;
     }
 </style>

@@ -31,7 +31,7 @@ onMounted (()=>{
         router.push({name : 'su1'})
     }
 })
-
+const regform = ref(null);
 const isshow = ref(true);
 const showEvent = () => {
     isshow.value = !isshow.value;
@@ -48,16 +48,20 @@ const updateParent = (component , data) =>{
 }
 // 자식 데이터 합치고 보내기
 const submitData = async() => {
-    // 자식 데이터 합치기
-    const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU_address, role : usertype };
-    //확인용
-    const entries = Object.entries(mergedData);
-    alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
-    // 보내기
-    await axios.post(axiosAddress+"/userRegister",mergedData,{withCredentials: true})
-    .then((res)=>{
-        alert(res.data);
-    })
+    let a = regform.value.reportValidity();
+    alert(a);
+    if(a){
+        // 자식 데이터 합치기
+        const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU_address, role : usertype };
+        //확인용
+        const entries = Object.entries(mergedData);
+        alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
+        // 보내기
+        await axios.post(axiosAddress+"/userRegister",mergedData,{withCredentials: true})
+        .then((res)=>{
+            alert(res.data);
+        })
+    }
 };
 
 </script>

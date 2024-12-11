@@ -2,8 +2,10 @@ package com.example.FinalProject.controller.login;
 
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.repository.user.UserRepository;
-import com.example.FinalProject.service.JoinService;
+import com.example.FinalProject.service.jwt.JoinService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +22,6 @@ public class JoinController {
     //회원가입
     @PostMapping(value = "/userRegister")
     public String register(@RequestBody User user){
-        System.out.println(user);
-        //가입시 중복 아이디 체크
-        if (joinService.check(user)){
-            return "good";
-        }
-        //String response = joinService.joinprocess(user).getBody();
-        return "bad";
+        return joinService.joinprocess(user).getBody();
     }
 }

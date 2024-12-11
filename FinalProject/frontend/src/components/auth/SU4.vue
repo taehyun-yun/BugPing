@@ -7,15 +7,20 @@
     <div class="input-group">
         <img src="/src/assets/Loginimg/store-solid.svg">
         <div class="licence-number-container">
-        <p>사업자 등록번호</p>
-        <input type="number" class="input-field licence-number" maxlength="3" minlength="3" v-model="licence.l1" @input="nextinput($event,3)" required>
-        <input type="number" class="input-field licence-number" maxlength="2" minlength="2" v-model="licence.l2" @input="nextinput($event,2)" required>
-        <input type="number" class="input-field licence-number" maxlength="5" minlength="5" v-model="licence.l3" @input="nextinput($event,5)" required>
+            <p>사업자 등록번호</p>
+            <input type="number" class="input-field divide-box" maxlength="3" minlength="3" v-model="licence.l1" @input="nextinput($event,3)" required>
+            <input type="number" class="input-field divide-box" maxlength="2" minlength="2" v-model="licence.l2" @input="nextinput($event,2)" required>
+            <input type="number" class="input-field divide-box" maxlength="5" minlength="5" v-model="licence.l3" @input="nextinput($event,5)" required>
         </div>
     </div>
     <div class="input-group">
         <img src="/src/assets/Loginimg/user.svg">
-        <input type="tel" class="input-field" placeholder="대표번호" v-model="localdata.ctel"required>
+        <div class="tel-container">
+            <p>전화번호</p>
+            <input type="num" class="input-field divide-box" minlength="3" v-model="t.num1" @input="nextinput($event,3)" required>
+            <input type="num" class="input-field divide-box" minlength="4" v-model="t.num2" @input="nextinput($event,4)" required>
+            <input type="num" class="input-field divide-box" minlength="4" v-model="t.num3" @input="nextinput($event,4)" required>
+        </div>
     </div>
 </div>
 </template>
@@ -27,10 +32,29 @@ const licence = reactive({
     l2 : '',
     l3 : '',
 })
-
+const t = reactive({
+    num1 : '',
+    num2 : '',
+    num3 : '',
+})
 const cnum = computed(()=>{
     return licence.l1+'-'+licence.l2+'-'+licence.l3
 })
+const ctel = computed(()=>{
+    return t.num1+"-"+t.num2+"-"+t.num3
+});
+//실시간 변경
+watch(ctel,(newValue)=>{localdata.ctel = newValue});
+watch(cnum,(newValue) => {localdata.cnum = newValue;})
+//부모에게 보내기
+const localdata = reactive({
+    cname : '',
+    cnum : '',
+    ctel : '',
+})
+const emit = defineEmits(['update']);
+watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
+
 //다음 input으로 자동으로 넘어가게 하기
 const nextinput = (e,num) =>{
     if(e.target.value.length >= num){
@@ -41,19 +65,6 @@ const nextinput = (e,num) =>{
         }
     }
 }
-//cnum바뀌면 local.cnum도 변경
-watch(cnum,(newValue) => {
-    localdata.cnum = newValue;
-})
-//부모에게 보내기
-const localdata = reactive({
-    cname : '',
-    cnum : '',
-    ctel : '',
-})
-
-const emit = defineEmits(['update']);
-watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
 </script>
 <style scoped>
     .register-box {
@@ -84,17 +95,19 @@ watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
         width: calc(100% - 80px);
         text-align: center;
     }
+    .tel-container,
     .licence-number-container{
         display: inline-flex;
         width: calc(100% - 60px);
         justify-content: space-evenly;
     }
+    .tel-container p,
     .licence-number-container p{
         color : silver;
         margin : 0;
-        width: 130px;
+        width: 120px;
     }
-    .licence-number{
+    .divide-box{
         border : solid 1px silver;
         width: 80px;
         padding-left: 10px;
