@@ -1085,7 +1085,7 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="322" parent="279" name="contract_id">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>41</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>

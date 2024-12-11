@@ -3,48 +3,35 @@ package com.example.FinalProject.controller.employment;
 import com.example.FinalProject.dto.ScheduleDTO;
 import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.repository.employment.ScheduleRepository;
+import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/schedules")
+@RequestMapping("/api")
 public class ScheduleController {
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ScheduleService scheduleService;
 
-    public List<Schedule> getAllSchedules() {
-        return scheduleRepository.findAll();
+    @GetMapping("/schedules")
+    public ResponseEntity<List<Map<String, Object>>> getSchedules(
+            @RequestParam String userId,
+            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false) LocalDate end) {
+//      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+
+        // UserId 사용자 전체 일정
+        List<Map<String, Object>> schedules = scheduleService.getUserSchedule(userId);
+        return ResponseEntity.ok(schedules);
     }
 
-    @PostMapping
-    public ResponseEntity<Schedule> createSchedule(@RequestBody Schedule schedule) {
-        Schedule saveSchedule = scheduleRepository.save(schedule);
-        return ResponseEntity.ok(saveSchedule);
-    }
-
-    //추가
-    /*@PutMapping("/{id}")
-    public ResponseEntity<Schedule> updateSchedule(@PathVariable Integer id, @RequestBody Schedule scheduleDetails){
-        return scheduleRepository.findById(id).map(schedule -> {
-            schedule.setOfficialStart(scheduleDetails.getOfficialStart());
-            schedule.setOfficialEnd(scheduleDetails.getOfficialEnd());
-            schedule.setBreakMinute(scheduleDetails.getBreakMinute());
-            schedule.setDay(scheduleDetails.getDay());
-            Schedule updatedSchedule = scheduleRepository.save(schedule);
-            return ResponseEntity.ok(updatedSchedule);
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    //삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteSchedule(@PathVariable Integer id) {
-        return scheduleRepository.findById(id).map(schedule -> {
-            scheduleRepository.delete(schedule);
-            return ResponseEntity.noContent().build();
-        }).orElse(ResponseEntity.notFound().build());
-    }*/
 }

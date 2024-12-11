@@ -3,285 +3,164 @@
         <div class="calendar-container">
             <FullCalendar ref="calendarRef" :options="calendarOptions" />
         </div>
-        <div class="schedule-list">
-            <h3>일정 목록</h3>
-            <div v-for="(item, index) in scheduleItems" :key="index" class="schedule-item"
-                @click="editScheduleItem(item)">
-                <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
-                <div class="schedule-details">
-                    <div class="schedule-type">{{ item.type }}</div>
-                    <div class="schedule-time">{{ item.time }}</div>
-                    <div class="schedule-duration">{{ item.duration }}</div>
-                    <div class="schedule-creator">{{ item.creator }}</div>
-                </div>
-            </div>
-            <h3>근무 변경 요청 목록</h3>
-            <div v-for="(item, index) in changeRequests" :key="index" class="schedule-item">
-                <div class="schedule-color" :style="{ backgroundColor: item.color }"></div>
-                <div class="schedule-details">
-                    <div class="schedule-type">{{ item.type }}</div>
-                    <div class="schedule-time">{{ item.time }}</div>
-                    <div class="schedule-creator">{{ item.requestor }}</div>
-                </div>
+
+        <!--  모달  -->
+        <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
+            <div class="modal-content" @click.stop>
+                <h3>{{ modalData.title }}</h3>
+                <p><strong>설명:</strong> {{ modalData.description }}</p>
+                <p><strong>시작:</strong> {{ modalData.start }}</p>
+                <p><strong>종료:</strong> {{ modalData.end }}</p>
+                <button @click="closeModal">닫기</button>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import FullCalendar from '@fullcalendar/vue3'; // FullCalendar 
-import dayGridPlugin from '@fullcalendar/daygrid'; // 일별 그리드 
-import interactionPlugin from '@fullcalendar/interaction'; // 상호작용  (드래그 앤 드롭, 클릭 등).
-import timeGridPlugin from '@fullcalendar/timegrid'; // 시간별 
-import 'bootstrap/dist/css/bootstrap.min.css'; // Bootstrap 스타일시트를 가져옵니다.
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import axios from 'axios';
+import { format } from 'date-fns';
 
-// 일정 목록 및 근무 변경 요청을 관리하는 상태 정의
-const scheduleItems = ref([]);
-const changeRequests = ref([]);
-// 캘린더에 대한 참조 설정
-const events = ref([]);
-const calendarRef = ref(null);
+// 모달 관련 데이터
+const isModalVisible = ref(false);
+const modalData = ref({
+    title: '',
+    description: '',
+    start: '',
+    end: '',
+});
 
-// 캘린더 옵션 객체를 정의
-const calendarOptions = ref({
-    plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin], // 사용할 플러그인
-    initialView: 'dayGridMonth', // 캘린더의 기본 뷰 설정
-    themeSystem: 'bootstrap', // 부트스트랩을 테마로 사용
-    editable: true, // 이벤트 드래그 및 수정 기능
-    selectable: true, // 캘린더에서 날짜 선택 기능
-    events: events,
-    headerToolbar: {
-        left: 'prev,next today', // 왼쪽에는 이전, 다음, 오늘 버튼 표시
-        center: 'title', // 중앙에는 타이틀 표시
-        right: 'dayGridMonth,timeGridWeek,timeGridDay' // 오른쪽에는 월별, 주별, 일별 버튼 표시
+// 모달 열기
+const openModal = (event) => {
+    modalData.value = {
+        title: event.title,
+        description: event.extendedProps.description || '설명 없음',
+        start: event.start,
+        end: event.end,
+    };
+    isModalVisible.value = true;
+};
+
+// 모달 닫기
+const closeModal = () => {
+    isModalVisible.value = false;
+}
+
+// 서버에서 일정 데이터 가져오기
+    const calendarOptions = ref({
+        plugins: [dayGridPlugin, interactionPlugin],
+        initialView: 'dayGridMonth',
+        events: async (fetchInfo, successCallback, failureCallback) => {
+            try {
+
+                // 서버와 날짜 요청 형식을 맞추기
+                const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
+                const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
+
+                const response = await axios.get('http://localhost:8707/api/schedules', {
+                    params: {
+                        userId: 'jh',
+                        start: startFormatted,
+                        end: endFormatted,
+                    },
+                });
+                successCallback(response.data);
+                console.log('Fetched Events:', response.data);
+            } catch (error) {
+                console.error('이벤트 데이터를 가져오는 중 오류 발생:', error);
+                failureCallback(error);
+            }
+    },
+    editable: true,     // 드래그로 이벤트 수정 가능
+    selectable: true,   // 드래그로 영역 선택 가능
+    eventColor: '#3788d8',  // 기본 이벤트 색상
+
+    // 이벤트 렌더링: 제목만 표시
+    eventContent: function (info) {
+        return {
+            html: `<div class="fc-event-title">${info.event.title}</div>`,
+        };
     },
 
-    dateClick: (info) => {
-        const newEventTitle = prompt('새로운 일정 입력'); // 새 이벤트 제목을 입력 받음
-        if (newEventTitle) {
-            const newEventStart = prompt('시작 시간을 입력하세요 (HH:MM 형식)', '09:00'); // 시작 시간 입력
-            if (newEventStartTime) {
-                const newEventEndT = prompt('종료 시간을 입력하세요 (HH:MM 형식)', '10:00'); // 종료 시간 입력
-                if (officialStart && officialEnd) {
-            const totalMinutes = (new Date(`${info.dateStr}T${officialEnd}`).getTime() -
-                                  new Date(`${info.dateStr}T${officialStart}`).getTime()) / (1000 * 60);
-
-                    // 휴식 시간 
-                    let breakMinute = 0;
-                    if ( totalWorkMinute > 480) {
-                        breakMinute = 60;
-                    } else if (totalWorkMinute > 240) {
-                        breakMinute = 30;
-                    }
-
-                    // breakMinute
-                    console.log("break minute :",breakMinute)
-                    const schedule = {
-                        title: newEventTitle,
-                        day: new Date(info.dateStr).getDay(),
-                        officialStart: `${info.dateStr}T${officialStart}`,
-                        officialEnd: `${info.dateStr}T${officialEnd}`,
-                        breakMinute: breakMinute,  // 휴식 시간
-                        workHour: totalMinutes - breakMinute,  // 총 근무 시간
-                        contract: null,
-                    };
-                    saveScheduleToDB(schedule); // 일정 저장 함수 호출
-                }
-            }
-        }
+    // 이벤트 클릭시 모달 열기
+    eventClick: function (info) {
+        openModal(info.event);
     }
 });
 
-// 일정 저장 함수
-const saveScheduleToDB = async (schedule) => {
-    try {
-        const response = await axios.post('http://localhost:8707/api/schedules', schedule,
-            {
-                header: { 'Content-Type': 'application/json' },
-            }
-        );
-        console.log('응답 상태:', response.status); //상태 코드 확인
-        console.log('응답 데이터:', response.data); // 응답 데이터
-        console.log('일정 저장 성공:', response.data);
-
-        // UI에 저장된 일정 추가
-        scheduleItems.value.push(response.data);
-
-        if (calendarRef.value) {
-            const calendarApi = calendarRef.value.getApi();
-            calendarApi.addEvent({
-                id: response.data.scheduleId,
-                title: response.data.title,
-                start: response.data.officialStart,
-                end: response.data.officialEnd,
-                allDay: false,
-                extendsProps: {
-                    breakMinute : response.data.breakMinute,
-                    workHour: response.data.workHour,
-                },
-            });
-        }
-        alert('일정이 저장되었습니다');
-    } catch (error) {
-        console.error('일정 저장 중 오류 발생:', error);
-        alert('일정을 저장하는 중 문제 발생.');
-    }
-};
-
-// 일정 편집 함수
-const editScheduleItem = (item) => {
-    const updatedschedule = {
-        ...item,
-        officialEnd: new Date(new Date(item.time).getTime() + 60 * 60 * 1000).toISOString(),
-    };
-
-    saveScheduleToDB(schedule);
-};
-
-// User 테이블의 name 가져오기
-const fetchSchedulesAndRequests = async () => {
-    try {
-        const response = await axios.get('http://localhost:8707/api/schedules/contractschedule')
-        .then(response => {
-            console.log(response.data);
-        })
-        .catch(error => {
-            console.error(error.response);
-        }); // 서버에서 일정 및 근무 변경 요청 데이터를 가져옵니다.
-        console.log(response.data); // 반환 데이터 확인
-        events.value = response.data.map(schedule => ({
-            id: schedule.scheduleId,
-            title: schedule.name,
-            start: new Date(schedule.officialStart).toISOString(),
-            end: new Date(schedule.officialEnd).toISOString(),
-            allDay: false
-        }));
-        console.log("Fetched events: ", response.data);
-    } catch (error) {
-        console.error('일정 데이터를 가져오는 중 오류 발생:',error);
-    }
-};
-
-onMounted(() => {
-    fetchSchedulesAndRequests();
-});
+const calendarRef = ref(null);
 
 </script>
 
-<style scoped>
-.app-container {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-}
-
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    overflow-y: auto;
-}
-
+<style>
+/* 달력 전체 스타일 */
 .calendar-and-schedule {
     display: flex;
-    gap: 20px;
-    height: calc(100vh - 100px);
-    /* 헤더 높이를 고려하여 조정 */
-}
-
-.calendar-container {
-    flex: 2;
-    min-width: 0;
-    /* flexbox 내에서 축소되지 않도록 설정 */
-}
-
-.schedule-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
-}
-
-.schedule-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-}
-
-.schedule-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    margin-right: 15px;
-}
-
-.schedule-details {
-    display: flex;
     flex-direction: column;
-    flex: 1;
+    align-items: center;
 }
 
-.schedule-type {
+/* 달력 컨테이너 */
+.calendar-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* FullCalendar 이벤트 스타일 */
+.fc-event-title {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 1rem;
     color: #333;
 }
 
-.schedule-time,
-.schedule-duration,
-.schedule-creator {
-    font-size: 12px;
-    color: #555;
-    margin-top: 2px;
+/* 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-/* FullCalendar 스타일 오버라이드 */
-:deep(.fc) {
-    height: 100%;
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-:deep(.fc-header-toolbar) {
-    margin-bottom: 0.5em !important;
+.modal-content h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
 }
 
-:deep(.fc-view-harness) {
-    height: calc(100% - 50px) !important;
-    /* 툴바 높이를 고려하여 조정 */
+.modal-content p {
+    margin: 10px 0;
 }
 
-/* 기존 스타일은 그대로 유지하며 필요한 부분만 추가 */
-
-/* 요일의 언더라인 제거 */
-:deep(.fc-col-header-cell a) {
-    text-decoration: none !important;
-    /* 요일 헤더에서 언더라인 제거 */
+.modal-content button {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background-color: #3788d8;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-/* 날짜의 언더라인 제거 */
-:deep(.fc-daygrid-day-number) {
-    text-decoration: none !important;
-    /* 날짜에서 언더라인 제거 */
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-    .calendar-and-schedule {
-        flex-direction: column;
-    }
-
-    .calendar-container,
-    .schedule-list {
-        flex: none;
-        width: 100%;
-        height: 50vh;
-    }
+.modal-content button:hover {
+    background-color: #2c6fb2;
 }
 </style>
