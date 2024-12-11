@@ -15,7 +15,7 @@
                         <div class="profile-image">
                             <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
                         </div>
-                        <span class="member-name">{{ contract.work.user.name }}</span>
+                        <span class="member-name">{{ contract?.work?.user?.name || '이름 없음' }}</span>
                     </div>
                 </section>
 
@@ -39,36 +39,36 @@
                     추가
                 </button>
 
-                <section class="schedule-section">
-                    <div class="schedule-header">
-                        <span class="day">화</span>
-                        <span class="divider">|</span>
-                        <span class="type">근무</span>
-                    </div>
-
-                    <div class="schedule-details">
-                        <div class="time-slot">
-                            <span class="time-icon">🕐</span>
-                            01:00 - 02:00
+                <section v-if="contract?.schedules?.length">
+                    <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
+                        <div class="schedule-header day-box">
+                            <span class="day">{{ getDayName(schedule.day) }}</span>
                         </div>
-                        <div class="break-time">
-                            <span class="break-icon">☕</span>
-                            00:05
-                        </div>
-                        <div class="location">
-                            <span class="location-icon">📍</span>
-                            준호하우스
-                        </div>
-                        <div class="note">
-                            <span class="note-icon">📝</span>
-                            노트
+                        <div class="schedule-details">
+                            <div class="time-slot">
+                                <span class="time-icon">🕐</span>
+                                {{ schedule.officialStart }} - {{ schedule.officialEnd }}
+                            </div>
+                            <div class="break-time">
+                                <span class="break-icon">☕</span>
+                                {{ formatDuration(schedule.breakMinute) }}
+                            </div>
+                            <!-- <div class="location">
+                                <span class="location-icon">📍</span>
+                                {{ schedule.workplace }}
+                            </div>
+                            <div class="note">
+                                <span class="note-icon">📝</span>
+                                {{ schedule.memo || '메모 없음' }}
+                            </div> -->
                         </div>
                     </div>
                 </section>
 
-                <section class="weekdays-section">
+
+                <section class="weekdays-section" v-if="!contract?.schedules?.length">
                     <div class="weekdays-header">
-                        월, 수, 목, 금, 토, 일
+                        월, 화, 수, 목, 금, 토, 일
                         <span class="status">일정 없음</span>
                     </div>
                 </section>
@@ -91,8 +91,8 @@ const props = defineProps({
         default: false
     },
     contract: {
-        type: Object,
-        required: true
+        type: [Object, null], // Object 또는 null 허용
+        required: false,      // 필수 아님
     }
 })
 
@@ -105,12 +105,20 @@ const editedContract = ref({
 })
 
 watch(() => props.contract, (newContract) => {
-    editedContract.value = {
-        hourlyWage: newContract.hourlyWage,
-        contractStart: newContract.contractStart,
-        contractEnd: newContract.contractEnd
+    if (newContract) { // contract가 유효한 경우에만 실행
+        editedContract.value = {
+            hourlyWage: newContract.hourlyWage,
+            contractStart: newContract.contractStart,
+            contractEnd: newContract.contractEnd,
+        };
+    } else {
+        editedContract.value = {
+            hourlyWage: 0,
+            contractStart: '',
+            contractEnd: '',
+        };
     }
-}, { immediate: true })
+}, { immediate: true });
 
 const closeModal = () => {
     emit('close')
@@ -123,6 +131,17 @@ const saveContract = () => {
     })
     closeModal()
 }
+
+const getDayName = (dayNumber) => {
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return days[dayNumber - 1] || '요일 정보 없음';
+};
+
+const formatDuration = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}시간 ${mins}분`;
+};
 </script>
 
 <style scoped>
@@ -144,6 +163,8 @@ const saveContract = () => {
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
+    max-height: 80%; /* 모달의 최대 높이를 화면의 90%로 제한 */
+    overflow-y: auto; /* 스크롤바 */
     padding: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
