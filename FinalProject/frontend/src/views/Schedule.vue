@@ -61,7 +61,7 @@ const closeModal = () => {
                 const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
                 const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd'); 
 
-                const response = await axios.get('http://localhost:8707/api/schedules/paged', {
+                const response = await axios.get('http://localhost:8707/api/calendar', {
                     params: {
                         start: startFormatted,
                         end: endFormatted,

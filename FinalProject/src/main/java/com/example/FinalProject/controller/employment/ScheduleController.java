@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/schedules")
+@RequestMapping("/api/calendar")
 public class ScheduleController {
 
     @Autowired
     private ScheduleService scheduleService;
 
-    @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getSchedules(
             @RequestParam String userId,
             @RequestParam(required = false) LocalDate start,
