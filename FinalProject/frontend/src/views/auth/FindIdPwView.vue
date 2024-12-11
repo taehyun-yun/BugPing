@@ -1,23 +1,22 @@
 <template>
-<div class="signup-container">
-    <div class="top">
-        <img class="logo" src="/src/assets/Loginimg/instancelogo2.png" @click="golink" draggable="false">
+    <div class="signup-container">
+        <div class="top">
+            <img class="logo" src="/src/assets/Loginimg/instancelogo2.png" @click="golink" draggable="false">
+        </div>
+        <div class="bottom"></div>
     </div>
-    <div class="bottom"></div>
-</div>
-<div class="signup-modal">
-    <p class="modal-title">회원 가입</p>
-    <div class="modal-content">
-        <RouterView/>
+    <div class="signup-modal">
+        <p class="modal-title">아이디/비밀번호 찾기</p>
+        <div class="modal-content">
+            <RouterView/>
+        </div>
     </div>
-</div>
 </template>
 <script setup>
 import router from '@/router';
 const golink = () =>{
     router.push({name : 'login'});
 }
-
 </script>
 <style scoped>
     .signup-container{

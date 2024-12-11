@@ -1,4 +1,4 @@
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.jwt;
 
 import io.jsonwebtoken.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

@@ -1,5 +1,6 @@
 package com.example.FinalProject.entity.work;
 
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,6 +19,9 @@ public class Work {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer workId;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

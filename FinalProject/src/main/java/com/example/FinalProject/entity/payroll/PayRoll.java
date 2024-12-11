@@ -17,11 +17,9 @@ public class PayRoll {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer payRollId;
     private LocalDate paymentDate;
-    private int incentive;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "work_id")
     private Work work;
-    private boolean getPaid;
-
+    private boolean isPaid;
 }
 
