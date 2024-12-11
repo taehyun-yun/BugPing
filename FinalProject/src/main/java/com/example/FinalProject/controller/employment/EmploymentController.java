@@ -25,14 +25,24 @@ public class EmploymentController {
     // 모든 계약 정보를 가져옵니다
     @GetMapping("/contracts")
     public List<Contract> getAllContracts() {
-        return contractRepository.findAll();
+        //return contractRepository.findAll();
+        return contractRepository.findAllContractsWithWorkAndUser(); //fetch join
     }
 
     // ID를 통해 특정 계약 정보를 가져옵니다
     @GetMapping("/contracts/{id}")
     public ResponseEntity<Contract> getContractById(@PathVariable Integer id) {
-        Optional<Contract> contract = contractRepository.findById(id);
-        return contract.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        // Optional<Contract> contract = contractRepository.findById(id); //Optional - isEmpty 체크필요
+        // return contract.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        Contract contract = contractRepository.findContractWithWorkAndUser(id);//fetch join
+
+        // 계약 정보가 존재하지 않을 경우 404 반환
+        if (contract == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 계약 정보가 존재할 경우 200 OK와 함께 반환
+        return ResponseEntity.ok(contract);
     }
 
     // 새로운 계약을 생성합니다
@@ -73,20 +83,32 @@ public class EmploymentController {
     // 모든 스케줄 정보를 가져옵니다
     @GetMapping("/schedules")
     public List<Schedule> getAllSchedules() {
-        return scheduleRepository.findAll();
+        //return scheduleRepository.findAll();
+        return scheduleRepository.findAllSchedulesWithContractWorkAndUser();//fetch join
     }
 
     // 특정 계약과 연관된 스케줄 정보를 가져옵니다
     @GetMapping("/contracts/{contractId}/schedules")
     public List<Schedule> getSchedulesByContractId(@PathVariable Integer contractId) {
-        return scheduleRepository.findByContractContractId(contractId);
+        //return scheduleRepository.findByContractContractId(contractId);
+        return scheduleRepository.findSchedulesByContractIdWithContractWorkAndUser(contractId);//fetch join
     }
 
     // ID를 통해 특정 스케줄 정보를 가져옵니다
     @GetMapping("/schedules/{id}")
     public ResponseEntity<Schedule> getScheduleById(@PathVariable Integer id) {
-        Optional<Schedule> schedule = scheduleRepository.findById(id);
-        return schedule.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    // Optional<Schedule> schedule = scheduleRepository.findById(id);
+    // return schedule.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+
+        Schedule schedule = scheduleRepository.findScheduleWithContractWorkAndUser(id);//fetch join
+
+        // 계약 정보가 존재하지 않을 경우 404 반환
+        if (schedule == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 계약 정보가 존재할 경우 200 OK와 함께 반환
+        return ResponseEntity.ok(schedule);
     }
 
     // 새로운 스케줄을 생성합니다

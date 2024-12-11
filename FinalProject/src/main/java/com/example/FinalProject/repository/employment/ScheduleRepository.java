@@ -12,17 +12,31 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     // 특정 Contract ID로 스케줄을 조회하는 메서드
     List<Schedule> findByContractContractId(Integer contractId);
 
+    //특정 Contract ID로 스케줄을 조회 + 패치조인
+    @Query("SELECT s FROM Schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu " +
+            "WHERE c.id = :contractId")
+    List<Schedule> findSchedulesByContractIdWithContractWorkAndUser(@Param("contractId") Integer contractId);
+
 
     @Query("SELECT DISTINCT s FROM Schedule s " +
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu " +
             "WHERE s.id = :scheduleId")
-    Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Long scheduleId);
+    Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Integer scheduleId);
 
     @Query("SELECT DISTINCT s FROM Schedule s " +
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
-            "JOIN FETCH w.user u")
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 }

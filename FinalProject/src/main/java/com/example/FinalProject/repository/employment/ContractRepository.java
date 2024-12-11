@@ -11,12 +11,16 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
     @Query("SELECT DISTINCT c FROM Contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu " +
             "WHERE c.id = :contractId")
-    Contract findContractWithWorkAndUser(@Param("contractId") Long contractId);
+    Contract findContractWithWorkAndUser(@Param("contractId") Integer contractId);
 
     @Query("SELECT DISTINCT c FROM Contract c " +
             "JOIN FETCH c.work w " +
-            "JOIN FETCH w.user u")
+            "JOIN FETCH w.user u " +
+            "JOIN FETCH w.company cp " +
+            "JOIN FETCH cp.user uu ")
     List<Contract> findAllContractsWithWorkAndUser();
 
 }
