@@ -1,7 +1,9 @@
 <template>
     <div class="signup-button-container">
-        {{ currentCooltime }} <br>
-        {{ isCooltime }}
+        <input type="email" maxlength="20" v-model="userEmail">
+        <br>{{ userEmail }}
+        <br>{{ currentCooltime }}
+        <br>{{ isCooltime }}
         <button @click="sendcooltime">인증번호발송</button>
     </div>
 </template>
@@ -9,7 +11,7 @@
 import { axiosAddress } from '@/stores/axiosAddress';
 import axios from 'axios';
 import { ref } from 'vue';
-
+    const userEmail = ref('');
     const isCooltime = ref(false);
     const currentCooltime = ref(0);
     const sendcooltime = () =>{
@@ -17,18 +19,18 @@ import { ref } from 'vue';
             isCooltime.value =  true;
             currentCooltime.value = 5;
             //currentCooltime.value = 180;
+            sendcode();
             const cooldown = setInterval(()=>{currentCooltime.value -= 1;},1000);
             setTimeout(()=>{
             isCooltime.value = false;
             currentCooltime.value = 0;
             clearInterval(cooldown);
-            sendcode();
             }, 5 * 1000);
             //}, 3 * 60 * 1000);
         }
     }
     const sendcode = () =>{
-        axios.post(axiosAddress+"/sendcode",null,{ withCredentials : true })
+        axios.post(axiosAddress+"/sendCode",{ userEmail : userEmail.value},{ withCredentials : true })
         .then((res)=>{
             alert(res.data);
         })
