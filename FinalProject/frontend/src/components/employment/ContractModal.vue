@@ -217,19 +217,22 @@
     emit('close')
   }
   
-  // getDayName 함수
+  // 요일 정보 가져오기 - getDayName 함수 (객체(Object) 기반 매핑)
+  // 객체는 키를 통해 값을 접근하지만, 배열은 인덱스를 통해 값을 접근 
+  // 배열의 인덱스는 0부터 시작하는 반면, 객체의 키는 1부터 시작
   const getDayName = (day) => {
-    const dayMap = {
-      MON: '월',
-      TUE: '화',
-      WED: '수',
-      THU: '목',
-      FRI: '금',
-      SAT: '토',
-      SUN: '일',
-    };
-    return dayMap[day] || '요일 정보 없음';
+  const dayMapNumber = {
+    1: '월',
+    2: '화',
+    3: '수',
+    4: '목',
+    5: '금',
+    6: '토',
+    7: '일',
   };
+  return dayMapNumber[day] || '요일 정보 없음';
+};
+
   
   // formatDuration 함수 정의
   const formatDuration = (minutes) => {

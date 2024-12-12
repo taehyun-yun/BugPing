@@ -113,10 +113,10 @@ const formatDuration = (minutes) => {
   return `${hours}시간 ${mins}분`;
 };
 
-// 요일 이름 가져오기
+// 요일 정보 가져오기 - getDayName 함수 (배열(Array) 기반 매핑)
 const getDayName = (dayNumber) => {
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return days[dayNumber - 1];
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  return days[dayNumber - 1] || '요일 정보 없음';
 };
 </script>
 
