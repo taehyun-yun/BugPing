@@ -54,6 +54,7 @@ const closeModal = () => {
     const calendarOptions = ref({
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
+        locale: 'ko', //한국어
         events: async (fetchInfo, successCallback, failureCallback) => {
             try {
 
