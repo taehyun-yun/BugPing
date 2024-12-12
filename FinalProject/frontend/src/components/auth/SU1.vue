@@ -16,6 +16,7 @@ const golink = (e,t) =>{
 <style scoped>
     .signup-button-container{
         width: 100%;
+        height: 100%;
     }
     button {
         width: 100%;

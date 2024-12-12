@@ -29,7 +29,8 @@ const execDaumPostcode = () => {
     new daum.Postcode({
         oncomplete: function(data) {
             // document.getElementById('postcode').value = data.zonecode;
-            document.getElementById("roadAddress").value = data.roadAddress;
+            // document.getElementById("roadAddress").value = data.roadAddress;
+            localdata.address = data.roadAddress;
             // document.getElementById("jibunAddress").value = data.jibunAddress;
         }
     }).open();
@@ -61,6 +62,7 @@ watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
         background: none;
         width: calc(100% - 80px);
         text-align: center;
+        font-size: 20px;
     }
     button {
         background-color: #4FD1C5;

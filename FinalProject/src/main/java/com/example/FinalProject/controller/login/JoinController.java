@@ -20,14 +20,25 @@ public class JoinController {
     //회원가입
     @PostMapping(value = "/userRegister")
     public ResponseEntity<String> register(@ModelAttribute User user, @ModelAttribute Company company){
-        User newUser = joinService.joinprocess(user);
-        if(newUser != null) {
-            if(company.getCname()!=null){
-                joinService.registCompany(company);
-            }
-            return new ResponseEntity<>("회원가입 성공",HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("회원가입 실패",HttpStatus.NOT_ACCEPTABLE);
+        System.out.println(company);
+    //회사 등록 할 때
+    if(company.getCname()!=null){
+        if(!joinService.check(user)){
+            return new ResponseEntity<>("중복된 아이디입니다.",HttpStatus.NOT_ACCEPTABLE);
         }
+        if(!joinService.checkCompany(company)){
+            return new ResponseEntity<>("이미 등록된 사업자 등록번호입니다.",HttpStatus.NOT_ACCEPTABLE);
+        }
+        User newUser = joinService.signup(user);
+        Company newCompany = joinService.registCompany(company);
+        joinService.registWork(newUser,newCompany);
+        return new ResponseEntity<>("등록되었습니다.",HttpStatus.OK);
+    }
+    //회사 등록 안할 때
+    if(!joinService.check(user)){
+        return new ResponseEntity<>("중복된 아이디입니다.",HttpStatus.NOT_ACCEPTABLE);
+    }
+    joinService.signup(user);
+    return new ResponseEntity<>("등록되었습니다.",HttpStatus.OK);
     }
 }

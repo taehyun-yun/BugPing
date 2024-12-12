@@ -94,6 +94,7 @@ const nextinput = (e,num) =>{
         background: none;
         width: calc(100% - 80px);
         text-align: center;
+        font-size: 20px;
     }
     .tel-container,
     .licence-number-container{

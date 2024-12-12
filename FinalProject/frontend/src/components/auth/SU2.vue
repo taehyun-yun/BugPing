@@ -1,6 +1,8 @@
 <template>
     <form ref="regform">
-    <SU3 @update="updateParent('SU3',$event)" v-show="isshow"></SU3>
+        <div v-show="isshow">
+            <SU3 @update="updateParent('SU3',$event)"></SU3>
+        </div>
     <div v-if="usertype=='employer'" class="employer-signupcontainer">
         <button v-show="isshow" type="button" class="signup-button" @click="showEvent">다음으로</button>
         <div v-show="!isshow">
@@ -48,15 +50,14 @@ const updateParent = (component , data) =>{
 }
 // 자식 데이터 합치고 보내기
 const submitData = async() => {
-    let a = regform.value.reportValidity();
-    alert(a);
-    if(a){
+    let isvalid = regform.value.reportValidity();
+    if(isvalid){
         // 자식 데이터 합치기
-        const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU_address, role : usertype };
+        const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU5, role : usertype };
         // JSON으로 되어있다.. formdata로 바꾸자. requestBody는 한개만 받아올 수 있어서 user와 company 두개로 분리하기 힘들다...
         const formdata = new FormData();
         const entries = Object.entries(mergedData);
-        entries.map(([key, value])=> formdata.append(key,value));
+        entries.forEach(([key, value])=> formdata.append(key,value));
         //확인용
         alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
         // 보내기
@@ -64,6 +65,11 @@ const submitData = async() => {
         .then((res)=>{
             alert(res.data);
         })
+        .catch((err)=>{
+            alert(err.response.data);
+        })
+    }else{
+        alert("필수 항목을 전부 입력해주세요.");
     }
 };
 

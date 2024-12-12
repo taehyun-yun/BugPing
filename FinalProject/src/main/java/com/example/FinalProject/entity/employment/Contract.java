@@ -26,4 +26,5 @@ public class Contract {
     private int hourlyWage;
     private LocalDateTime contractStart; //LocalDate -> LocalDateTime 변경 (캘린더 사용 시 변환 필요)
     private LocalDateTime contractEnd;
+    private String status; // 계약 비-활성화
 }

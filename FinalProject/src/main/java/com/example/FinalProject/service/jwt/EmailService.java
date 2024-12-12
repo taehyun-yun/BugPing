@@ -60,13 +60,21 @@ public class EmailService {
         email.setDue(LocalDateTime.now().plusMinutes(5L));
         emailRepository.save(email);
         //문자전송
-        SimpleMailMessage smm = new SimpleMailMessage();
-        smm.setTo(inputEmail);
-        smm.setFrom("MasterOfManagement@gmail.com");
-        smm.setSubject("[운영의 달인] 본인인증 문자입니다.");
-        smm.setText("운영의 달인 본인인증 문자입니다. 최대 5분간 유효합니다.\n"+code);
-        javaMailSender.send(smm);
-        return new ResponseEntity<>("전송되었습니다.",HttpStatus.OK);
+        try{
+            SimpleMailMessage smm = new SimpleMailMessage();
+            smm.setTo(inputEmail);
+            smm.setFrom("MasterOfManagement@gmail.com");
+            smm.setSubject("[운영의 달인] 본인인증 문자입니다.");
+            smm.setText("운영의 달인 본인인증 문자입니다. 최대 5분간 유효합니다.\n"+code);
+            javaMailSender.send(smm);
+            return new ResponseEntity<>("전송되었습니다.",HttpStatus.OK);
+        } catch (org.springframework.mail.MailSendException e) {
+            emailRepository.delete(email);
+            return new ResponseEntity<>("이메일 전송이 실패하였습니다.",HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            emailRepository.delete(email);
+            return new ResponseEntity<>("오류가 발생하였습니다.",HttpStatus.BAD_REQUEST);
+        }
     }
     //이메일 확인
     public boolean isValidCode(String inputEmail, String code){

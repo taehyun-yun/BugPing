@@ -80,6 +80,7 @@ import { ref } from 'vue';
         background: none;
         width: calc(100% - 210px);
         text-align: center;
+        font-size: 20px;
     }
     button {
         width: 200px;

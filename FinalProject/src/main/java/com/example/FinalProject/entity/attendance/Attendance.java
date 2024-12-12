@@ -52,4 +52,5 @@ public class Attendance {
 
 
     private int totalMinute; //총근무시간(인정근무시간 + 추가근무시간)
+    private String status; // 비-활성화
 }
