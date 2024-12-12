@@ -53,8 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth //페이지별 로그인 필수 페이지와, 아이디에 따라 접근 가능한 페이지 할당
                         .requestMatchers("/api/**").permitAll()
 //                        hasAnyRole("employer","employee","admin")
-//                        .requestMatchers("/employer/**").hasAnyRole("employ","admin")
-//                        .requestMatchers("/employee/**").hasAnyRole("employee","admin")
+                        .requestMatchers("/employer/**").hasAnyRole("employ","admin")
+                        .requestMatchers("/employee/**").hasAnyRole("employee","admin")
                         .anyRequest().permitAll()//로그인하지 않아도 접근 가능한 곳
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 인증 필터 추가
@@ -69,7 +69,8 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutUrl("http://localhost:5173/logout")
                         .logoutSuccessUrl("/")
-                );
+                )
+                ;
      return http.build();
     }
 }
