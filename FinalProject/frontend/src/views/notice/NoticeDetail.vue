@@ -53,8 +53,8 @@
             :src="`http://localhost:8707/notice/files/${file.filePath}`"
             alt="첨부 이미지"
             class="preview-image"
-            width="500"
-            height="100"
+            width="800"
+            height="500"
           />
           <!-- 이미지 원본 보기 -->
           <a
