@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -22,6 +23,6 @@ public class Contract {
     private Work work;
 
     private int hourlyWage; // 시급
-    private LocalDate contractStart; // 적용 시작일
-    private LocalDate contractEnd; // 적용 종료일
+    private LocalDateTime contractStart; // 적용 시작일
+    private LocalDateTime contractEnd; // 적용 종료일
 }

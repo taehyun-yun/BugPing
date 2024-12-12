@@ -29,18 +29,4 @@ public class ScheduleController {
         List<Map<String, Object>> schedules = scheduleService.getUserSchedule(userId);
         return ResponseEntity.ok(schedules);
     }
-
-    // 페이징 처리된 전체 스케줄
-    @GetMapping("/paged")
-    public ResponseEntity<Page<Map<String, Object>>> getPagedSchedules(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate start,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end,
-            /*@RequestParam(required = false) String start,
-            @RequestParam(required = false) String end,*/
-            @RequestParam int page,
-            @RequestParam int size) {
-
-        Page<Map<String, Object>> pagedSchedules = scheduleService.getPagedSchedulesByDateRange(start, end, page, size);
-        return ResponseEntity.ok(pagedSchedules);
-    }
 }
