@@ -1,242 +1,284 @@
 <template>
     <div v-if="isOpen" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-            <div class="modal-header">
-                <h2 class="title">
-                    계약 정보 수정
-                    <button class="help-button">?</button>
-                </h2>
-            </div>
-
-            <div class="modal-body">
-                <section class="members-section">
-                    <h3>편집 대상 구성원</h3>
-                    <div class="member-item">
-                        <div class="profile-image">
-                            <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
-                        </div>
-                        <span class="member-name">{{ contract?.work?.user?.name || '이름 없음' }}</span>
-                    </div>
-                </section>
-
-                <section class="contract-details">
-                    <div class="form-group">
-                        <label for="hourlyWage">시급</label>
-                        <input id="hourlyWage" v-model="editedContract.hourlyWage" type="number" min="0" step="100">
-                    </div>
-                    <div class="form-group">
-                        <label for="contractStart">계약 시작일</label>
-                        <input id="contractStart" v-model="editedContract.contractStart" type="date">
-                    </div>
-                    <div class="form-group">
-                        <label for="contractEnd">계약 종료일</label>
-                        <input id="contractEnd" v-model="editedContract.contractEnd" type="date">
-                    </div>
-                </section>
-
-                <button class="add-button" @click="addSchedule">
-                    <span class="plus-icon">+</span>
-                    추가
-                </button>
-
-                <section v-if="contract?.schedules?.length">
-                    <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
-
-                        <div class="schedule-header day-box">
-                            <span class="day">{{ getDayName(schedule.day) }}</span>
-                        </div>
-                        <div class="schedule-actions">
-                            <button @click="editSchedule(schedule)" class="action-button edit-button">
-                                <span class="icon">✏️</span>
-                            </button>
-                            <button @click="deleteSchedule(schedule)" class="action-button delete-button">
-                                <span class="icon">🗑️</span>
-                            </button>
-                        </div>
-                        <div class="schedule-details">
-                            <div class="time-slot">
-                                <span class="time-icon">🕐</span>
-                                {{ schedule.officialStart }} - {{ schedule.officialEnd }}
-                            </div>
-                            <div class="break-time">
-                                <span class="break-icon">☕</span>
-                                {{ formatDuration(schedule.breakMinute) }}
-                            </div>
-                            <!-- <div class="location">
-                                <span class="location-icon">📍</span>
-                                {{ schedule.workplace }}
-                            </div>
-                            <div class="note">
-                                <span class="note-icon">📝</span>
-                                {{ schedule.memo || '메모 없음' }}
-                            </div> -->
-                        </div>
-                    </div>
-                </section>
-
-                <section class="weekdays-section" v-if="!contract?.schedules?.length">
-                    <div class="weekdays-header">
-                        월, 화, 수, 목, 금, 토, 일
-                        <span class="status">일정 없음</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="modal-footer">
-                <button class="cancel-button" @click="closeModal">취소</button>
-                <button class="save-button" @click="saveContract">저장</button>
-            </div>
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2 class="title">
+            계약 정보 수정
+            <button class="help-button">?</button>
+          </h2>
         </div>
-        <!-- ScheduleModal 추가 -->
-        <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
-            @save="saveSchedule" />
+  
+        <div class="modal-body">
+          <section class="members-section">
+            <h3>편집 대상 구성원</h3>
+            <div class="member-item">
+              <div class="profile-image">
+                <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
+              </div>
+              <span class="member-name">{{ contract?.work?.user?.name || '이름 없음' }}</span>
+            </div>
+          </section>
+  
+          <section class="contract-details">
+            <div class="form-group">
+              <label for="hourlyWage">시급</label>
+              <input id="hourlyWage" v-model="editedContract.hourlyWage" type="number" min="0" step="100" />
+            </div>
+            <div class="form-group">
+              <label for="contractStart">계약 시작일</label>
+              <input id="contractStart" v-model="editedContract.contractStart" type="date" />
+            </div>
+            <div class="form-group">
+              <label for="contractEnd">계약 종료일</label>
+              <input id="contractEnd" v-model="editedContract.contractEnd" type="date" />
+            </div>
+          </section>
+  
+          <button class="add-button" @click="addSchedule">
+            <span class="plus-icon">+</span>
+            추가
+          </button>
+  
+          <section v-if="contract?.schedules?.length">
+            <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
+              <div class="schedule-header day-box">
+                <span class="day">{{ getDayName(schedule.day) }}</span>
+              </div>
+              <div class="schedule-actions">
+                <button @click="editSchedule(schedule)" class="action-button edit-button">
+                  <span class="icon">✏️</span>
+                </button>
+                <button @click="deleteSchedule(schedule)" class="action-button delete-button">
+                  <span class="icon">🗑️</span>
+                </button>
+              </div>
+              <div class="schedule-details">
+                <div class="time-slot">
+                  <span class="time-icon">🕐</span>
+                  {{ schedule.officialStart }} - {{ schedule.officialEnd }}
+                </div>
+                <div class="break-time">
+                  <span class="break-icon">☕</span>
+                  {{ formatDuration(schedule.breakMinute) }}
+                </div>
+              </div>
+            </div>
+          </section>
+  
+          <section class="weekdays-section" v-if="!contract?.schedules?.length">
+            <div class="weekdays-header">
+              월, 화, 수, 목, 금, 토, 일
+              <span class="status">일정 없음</span>
+            </div>
+          </section>
+  
+          <!-- 메시지 표시 -->
+          <div v-if="message" :class="messageType" style="margin-top:20px;">
+            {{ message }}
+          </div>
+        </div>
+  
+        <div class="modal-footer">
+          <button class="cancel-button" @click="closeModal">취소</button>
+          <button class="save-button" @click="saveContract">저장</button>
+        </div>
+      </div>
+      <!-- ScheduleModal 추가 -->
+      <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
+        @save="saveSchedule" />
     </div>
-</template>
-
-<script setup>
-import { ref, defineProps, defineEmits, watch } from 'vue'
-import axios from 'axios' 
-import ScheduleModal from '@/components/employment/ScheduleModal.vue'; // ScheduleModal import
-
-const props = defineProps({
+  </template>
+  
+  <script setup>
+  import { ref, defineProps, defineEmits, watch } from 'vue'
+  import { useContractsStore } from '@/stores/contracts' // Pinia 스토어 import
+  import ScheduleModal from '@/components/employment/ScheduleModal.vue'
+  
+  // Props 정의
+  const props = defineProps({
     isOpen: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     },
     contract: {
-        type: [Object, null], // Object 또는 null 허용
-        required: false,      // 필수 아님
+      type: [Object, null],
+      required: false,
     }
-})
-
-const emit = defineEmits(['close', 'save'])
-
-const editedContract = ref({
+  })
+  
+  // Emits 정의
+  const emit = defineEmits(['close', 'save'])
+  
+  // Pinia 스토어 사용
+  const contractsStore = useContractsStore()
+  
+  // 수정된 계약 데이터
+  const editedContract = ref({
     hourlyWage: 0,
     contractStart: '',
     contractEnd: ''
-})
-
-
-
-
-// ScheduleModal 상태 관리
-const showScheduleModal = ref(false);
-const currentSchedule = ref({});
-
-// 스케줄 추가 버튼 클릭
-const addSchedule = () => {
+  })
+  
+  // 메시지 상태
+  const message = ref('')
+  const messageType = ref('') // 'success' 또는 'error'
+  
+  // ScheduleModal 상태 관리
+  const showScheduleModal = ref(false)
+  const currentSchedule = ref({})
+  
+  // 스케줄 추가 함수
+  const addSchedule = () => {
     currentSchedule.value = {
-        day: '',
-        officialStart: '',
-        officialEnd: '',
-        breakMinute: 0
-    };
-    showScheduleModal.value = true;
-};
-
-// 스케줄 수정
-const editSchedule = (schedule) => {
-    currentSchedule.value = { ...schedule };
-    showScheduleModal.value = true;
-};
-
-// 스케줄 저장
-const saveSchedule = (schedule) => {
-    if (!contract?.schedules) contract.schedules = [];
-    const index = contract.schedules.findIndex((s) => s.id === schedule.id);
-    if (index === -1) {
-        contract.schedules.push(schedule);
-    } else {
-        contract.schedules[index] = schedule;
+      day: '',
+      officialStart: '',
+      officialEnd: '',
+      breakMinute: 0
     }
-    closeScheduleModal();
-};
-
-// 스케줄 모달 닫기
-const closeScheduleModal = () => {
-    showScheduleModal.value = false;
-};
-
-
-
-watch(() => props.contract, (newContract) => {
-    if (newContract) { // contract가 유효한 경우에만 실행
-        // LocalDateTime -> YYYY-MM-DD 변환
-        const startDate = newContract.contractStart ? newContract.contractStart.split('T')[0] : '';
-        const endDate = newContract.contractEnd ? newContract.contractEnd.split('T')[0] : '';
-        
-        editedContract.value = {
-            hourlyWage: newContract.hourlyWage,
-            contractStart: startDate,
-            contractEnd: endDate,
-        };
-    } else {
-        editedContract.value = {
-            hourlyWage: 0,
-            contractStart: '',
-            contractEnd: '',
-        };
-    }
-}, { immediate: true });
-
-const closeModal = () => {
-    emit('close')
-}
-
-// const saveContract = () => {
-//     emit('save', {
-//         ...props.contract,
-//         ...editedContract.value
-//     })
-//     closeModal()
-// }
-
-
-
-const saveContract = async () => {
-    const baseUrl = import.meta.env.VITE_API_URL; 
-    console.log('baseUrl:', baseUrl); // 여기서 baseUrl이 undefined나 빈 문자열이 아닌지 확인
-
-    console.log('props.contract:', props.contract);
-    if (props.contract && props.contract.contractId) {
-        const updatedContract = {
-            ...props.contract,
-            ...editedContract.value,
-            // LocalDateTime 형식에 맞게 'T00:00:00' 추가
-            contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
-            contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
-            
-        };
-
+    showScheduleModal.value = true
+  }
+  
+  // 스케줄 수정 함수
+  const editSchedule = (schedule) => {
+    currentSchedule.value = { ...schedule }
+    showScheduleModal.value = true
+  }
+  
+  // 스케줄 저장 함수
+  const saveSchedule = async (schedule) => {
+    if (props.contract) {
+      if (schedule.id) {
+        // 기존 스케줄 수정
         try {
-            const response = await axios.put(`${baseUrl}/api/contracts/${props.contract.contractId}`, updatedContract);
-            console.log('계약 업데이트 성공:', response.data);
+          await contractsStore.editSchedule(props.contract.contractId, schedule.id, schedule)
+          message.value = '스케줄이 성공적으로 수정되었습니다.'
+          messageType.value = 'success'
         } catch (error) {
-            console.error('계약 업데이트 실패:', error);
+          message.value = '스케줄 수정에 실패했습니다. 다시 시도해주세요.'
+          messageType.value = 'error'
         }
+      } else {
+        // 새 스케줄 추가
+        try {
+          await contractsStore.addSchedule(props.contract.contractId, schedule)
+          message.value = '스케줄이 성공적으로 추가되었습니다.'
+          messageType.value = 'success'
+        } catch (error) {
+          message.value = '스케줄 추가에 실패했습니다. 다시 시도해주세요.'
+          messageType.value = 'error'
+        }
+      }
+      closeScheduleModal()
     }
-
-    closeModal()
-}
-
-
-
-
-const getDayName = (dayNumber) => {
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    return days[dayNumber - 1] || '요일 정보 없음';
-};
-
-const formatDuration = (minutes) => {
+  }
+  
+  // 스케줄 삭제 함수
+  const deleteSchedule = async (schedule) => {
+    if (props.contract && schedule.id) {
+      try {
+        await contractsStore.deleteSchedule(props.contract.contractId, schedule.id)
+        message.value = '스케줄이 성공적으로 삭제되었습니다.'
+        messageType.value = 'success'
+      } catch (error) {
+        message.value = '스케줄 삭제에 실패했습니다. 다시 시도해주세요.'
+        messageType.value = 'error'
+      }
+    }
+  }
+  
+  // 스케줄 모달 닫기 함수
+  const closeScheduleModal = () => {
+    showScheduleModal.value = false
+  }
+  
+  // 계약 데이터 감시 및 편집 데이터 초기화
+  watch(() => props.contract, (newContract) => {
+    if (newContract) {
+      // LocalDateTime -> YYYY-MM-DD 변환
+      const startDate = newContract.contractStart ? newContract.contractStart.split('T')[0] : ''
+      const endDate = newContract.contractEnd ? newContract.contractEnd.split('T')[0] : ''
+  
+      editedContract.value = {
+        hourlyWage: newContract.hourlyWage,
+        contractStart: startDate,
+        contractEnd: endDate,
+      }
+    } else {
+      editedContract.value = {
+        hourlyWage: 0,
+        contractStart: '',
+        contractEnd: '',
+      }
+    }
+  }, { immediate: true })
+  
+  // 모달 닫기 함수
+  const closeModal = () => {
+    emit('close')
+  }
+  
+  // getDayName 함수
+  const getDayName = (day) => {
+    const dayMap = {
+      MON: '월',
+      TUE: '화',
+      WED: '수',
+      THU: '목',
+      FRI: '금',
+      SAT: '토',
+      SUN: '일',
+    };
+    return dayMap[day] || '요일 정보 없음';
+  };
+  
+  // formatDuration 함수 정의
+  const formatDuration = (minutes) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}시간 ${mins}분`;
-};
-</script>
-
-<style scoped>
-.modal-overlay {
+  };
+  
+  // 계약 저장 함수
+  const saveContract = async () => {
+    const baseUrl = import.meta.env.VITE_API_URL
+    console.log('baseUrl:', baseUrl) // baseUrl이 undefined나 빈 문자열이 아닌지 확인
+  
+    console.log('props.contract:', props.contract)
+    if (props.contract && props.contract.contractId) {
+      const updatedContract = {
+        ...props.contract,
+        ...editedContract.value,
+        // LocalDateTime 형식에 맞게 'T00:00:00' 추가
+        contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
+        contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
+      }
+  
+      try {
+        await contractsStore.updateContract(props.contract.contractId, updatedContract)
+        console.log('계약 업데이트 성공')
+        message.value = '계약 정보가 성공적으로 업데이트되었습니다.'
+        messageType.value = 'success'
+      } catch (error) {
+        console.error('계약 업데이트 실패:', error)
+        message.value = '계약 업데이트에 실패했습니다. 다시 시도해주세요.'
+        messageType.value = 'error'
+      }
+    } else {
+      message.value = '유효한 계약 ID가 없습니다.'
+      messageType.value = 'error'
+    }
+  
+    // closeModal()을 바로 호출하지 않고 메시지를 표시한 후 닫기
+    setTimeout(() => {
+      closeModal()
+      message.value = ''
+      messageType.value = ''
+    }, 2000) // 2초 후 모달 닫기
+  }
+  </script>
+  
+  <style scoped>
+  .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -247,34 +289,34 @@ const formatDuration = (minutes) => {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-}
-
-.modal-content {
+  }
+  
+  .modal-content {
     background: white;
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
     max-height: 80%;
-    /* 모달의 최대 높이를 화면의 90%로 제한 */
+    /* 모달의 최대 높이를 화면의 80%로 제한 */
     overflow-y: auto;
     /* 스크롤바 */
     padding: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
+  }
+  
+  .modal-header {
     margin-bottom: 24px;
-}
-
-.title {
+  }
+  
+  .title {
     font-size: 20px;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.help-button {
+  }
+  
+  .help-button {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -282,84 +324,84 @@ const formatDuration = (minutes) => {
     background: none;
     color: #718096;
     cursor: pointer;
-}
-
-.members-section {
+  }
+  
+  .members-section {
     margin-bottom: 20px;
-}
-
-.members-section h3 {
+  }
+  
+  .members-section h3 {
     font-size: 16px;
     color: #4a5568;
     margin-bottom: 12px;
-}
-
-.member-item {
+  }
+  
+  .member-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px;
     background: #f7fafc;
     border-radius: 8px;
-}
-
-.profile-image {
+  }
+  
+  .profile-image {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     overflow: hidden;
     background: #e2e8f0;
-}
-
-.profile-image img {
+  }
+  
+  .profile-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.member-name {
+  }
+  
+  .member-name {
     font-size: 16px;
     color: #2d3748;
-}
-
-.contract-details {
+  }
+  
+  .contract-details {
     background: #f7fafc;
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
-}
-
-.form-group {
+  }
+  
+  .form-group {
     margin-bottom: 16px;
-}
-
-.form-group:last-child {
+  }
+  
+  .form-group:last-child {
     margin-bottom: 0;
-}
-
-.form-group label {
+  }
+  
+  .form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
     color: #4a5568;
-}
-
-.form-group input {
+  }
+  
+  .form-group input {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #e2e8f0;
     border-radius: 4px;
     font-size: 14px;
     background-color: white;
-}
-
-.form-group input:focus {
+  }
+  
+  .form-group input:focus {
     outline: none;
     border-color: #3182ce;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-}
-
-.add-button {
+  }
+  
+  .add-button {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -373,142 +415,125 @@ const formatDuration = (minutes) => {
     width: 100%;
     justify-content: center;
     transition: all 0.2s;
-}
-
-.add-button:hover {
+  }
+  
+  .add-button:hover {
     background: #f7fafc;
-}
-
-.plus-icon {
+  }
+  
+  .plus-icon {
     color: #3182ce;
     font-size: 18px;
-}
-
-.schedule-section {
+  }
+  
+  .schedule-section {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
-}
-
-.schedule-header {
+    position: relative;
+  }
+  
+  .schedule-header {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 16px;
     color: #4a5568;
-}
-
-.schedule-details {
-    display: grid;
-    gap: 12px;
-    color: #718096;
-}
-
-.weekdays-section {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-}
-
-.weekdays-header {
-    color: #4a5568;
-    display: flex;
-    justify-content: space-between;
-}
-
-.status {
-    color: #718096;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.cancel-button,
-.save-button {
-    padding: 8px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.cancel-button {
-    border: 1px solid #e2e8f0;
-    background: #f7fafc;
-    color: #4a5568;
-}
-
-.save-button {
-    border: none;
-    background: #3182ce;
-    color: white;
-}
-
-.cancel-button:hover {
-    background: #edf2f7;
-}
-
-.save-button:hover {
-    background: #2c5282;
-}
-
-/* 수정삭제버튼 */
-
-.schedule-actions {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    display: flex;
-    gap: 5px;
-}
-
-.edit-icon,
-.delete-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 2px;
-}
-
-.schedule-details {
-    position: relative;
-}
-
-.schedule-section {
-    position: relative;
-}
-
-.schedule-actions {
+  }
+  
+  .schedule-actions {
     position: absolute;
     top: 8px;
     right: 8px;
     display: none;
-}
-
-.schedule-section:hover .schedule-actions {
+  }
+  
+  .schedule-section:hover .schedule-actions {
     display: flex;
-}
-
-.action-button {
+  }
+  
+  .action-button {
     background: none;
     border: none;
     cursor: pointer;
     padding: 4px;
     margin-left: 4px;
-}
-
-.action-button:hover {
+  }
+  
+  .action-button:hover {
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: 50%;
-}
-
-.icon {
+  }
+  
+  .icon {
     font-size: 16px;
-}
-</style>
+  }
+  
+  .schedule-details {
+    display: grid;
+    gap: 12px;
+    color: #718096;
+  }
+  
+  .weekdays-section {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .weekdays-header {
+    color: #4a5568;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .status {
+    color: #718096;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  
+  .cancel-button,
+  .save-button {
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .cancel-button {
+    border: 1px solid #e2e8f0;
+    background: #f7fafc;
+    color: #4a5568;
+  }
+  
+  .save-button {
+    border: none;
+    background: #3182ce;
+    color: white;
+  }
+  
+  .cancel-button:hover {
+    background: #edf2f7;
+  }
+  
+  .save-button:hover {
+    background: #2c5282;
+  }
+  
+  .success {
+    color: green;
+  }
+  
+  .error {
+    color: red;
+  }
+  </style>
+  

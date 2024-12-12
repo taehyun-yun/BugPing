@@ -1,6 +1,11 @@
+<!-- AdminContractTable.vue -->
 <template>
   <div class="table-container">
-    <table class="employee-table">
+    <h1>계약 목록</h1>
+    <div v-if="contractsStore.loading">로딩 중...</div>
+    <div v-if="contractsStore.error" class="error">{{ contractsStore.error }}</div>
+
+    <table class="employee-table" v-if="contractsStore.contracts.length">
       <thead>
         <tr>
           <th></th>
@@ -13,7 +18,7 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="contract in contracts" :key="contract.id">
+        <template v-for="contract in contractsStore.contracts" :key="contract.contractId">
           <tr class="parent-row">
             <td>
               <button @click="toggleExpand(contract)" class="expand-button">
@@ -43,56 +48,32 @@
         </template>
       </tbody>
     </table>
-    <ContractModal :is-open="showModal" :contract="selectedContract" @close="showModal = false" @save="handleSave" />
+
+    <!-- ContractModal 추가 -->
+    <ContractModal 
+      :is-open="showModal" 
+      :contract="selectedContract" 
+      @close="closeModal" 
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useContractsStore } from '@/stores/contracts';
 import ContractModal from '@/components/employment/ContractModal.vue';
 
-const contracts = ref([]);
+// Pinia 스토어 사용
+const contractsStore = useContractsStore();
+
+// 모달 상태 관리
 const showModal = ref(false);
 const selectedContract = ref(null);
 
-// 계약 정보 가져오기
-const fetchContracts = async () => {
-  try {
-    const apiUrl = `${import.meta.env.VITE_API_URL}/api/contracts`;
-    const response = await axios.get(apiUrl, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    console.log('Contracts API response:', response.data); // 응답 확인
-    contracts.value = await Promise.all(
-      response.data.map(async (contract) => {
-        // [추가된 부분] 스케줄 데이터를 동적으로 가져오기
-        const schedules = await fetchSchedules(contract.contractId);
-        return {
-          ...contract,
-          expanded: false, // 확장 상태 초기화
-          schedules, // API로 가져온 스케줄 데이터를 추가
-        };
-      })
-    );
-  } catch (error) {
-    console.error('계약 정보를 가져오는 데 실패했습니다:', error);
-  }
-};
-
-// [추가된 함수] 스케줄 데이터 가져오기
-const fetchSchedules = async (contractId) => {
-  try {
-    const apiUrl = `${import.meta.env.VITE_API_URL}/api/contracts/${contractId}/schedules`;
-    const response = await axios.get(apiUrl, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return response.data; // 스케줄 리스트 반환
-  } catch (error) {
-    console.error(`스케줄 정보를 가져오는 데 실패했습니다: 계약 ID ${contractId}`, error);
-    return []; // 실패 시 빈 배열 반환
-  }
-};
+// 계약 목록 가져오기
+onMounted(() => {
+  contractsStore.fetchContracts();
+});
 
 // 확장 상태 토글
 const toggleExpand = (contract) => {
@@ -105,9 +86,8 @@ const openModal = (contract) => {
   showModal.value = true;
 };
 
-// 수정 저장 처리
-const handleSave = (updatedContract) => {
-  console.log('Updated contract:', updatedContract);
+// 수정 모달 닫기
+const closeModal = () => {
   showModal.value = false;
 };
 
@@ -138,11 +118,6 @@ const getDayName = (dayNumber) => {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   return days[dayNumber - 1];
 };
-
-// 컴포넌트가 마운트될 때 데이터 가져오기
-onMounted(() => {
-  fetchContracts();
-});
 </script>
 
 <style scoped>
@@ -217,5 +192,9 @@ onMounted(() => {
 
 .schedule-info strong {
   color: #555;
+}
+
+.error {
+  color: red;
 }
 </style>
