@@ -1,6 +1,7 @@
 package com.example.FinalProject.repository.employment;
 
 import com.example.FinalProject.entity.employment.Contract;
+import com.example.FinalProject.entity.work.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +42,9 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
             "JOIN FETCH w.company cp ")
     List<Contract> findAllContractsWithWorkAndUser();
 
+
+//---------------------JH----------------------
+
+    // Work를 기준으로 Contract 조회
+    List<Contract> findByWork(Work work);
 }

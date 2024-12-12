@@ -1,6 +1,5 @@
 package com.example.FinalProject.entity.employment;
 
-import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

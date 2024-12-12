@@ -40,8 +40,8 @@ const openModal = (event) => {
     modalData.value = {
         title: event.title,
         description: event.extendedProps.description || '없음',
-        start: event.start,
-        end: event.end,
+        start: format(new Date(event.start), 'yyyy-MM-dd HH:mm'),
+        end: format(new (event.end), 'yyyy-MM-dd HH:MM'),
     };
     isModalVisible.value = true;
 };
@@ -52,8 +52,8 @@ const closeModal = () => {
 };
 
 // 나의 일정, 회사 일정 보기
-const selectedUserId = ref('jh'); // 사용자 ID
-const selectedCompanyId = ref(''); // 회사 ID
+const selectedUserId = ref('user2'); // 사용자 ID
+const selectedCompanyId = ref('45'); // 회사 ID
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 
 // 버튼 텍스트 동적 설정
@@ -76,10 +76,10 @@ const calendarOptions = ref({
                 isUserView.value = !isUserView.value;
                 if (isUserView.value) {
                     selectedCompanyId.value = '';
-                    selectedUserId.value = 'jh';
+                    selectedUserId.value = 'user2';
                 } else {
                     selectedUserId.value = '';
-                    selectedCompanyId.value = 'C001';
+                    selectedCompanyId.value = '45';
                 }
                 calendarRef.value.getApi().refetchEvents(); // 일정 새로 로드
             },
@@ -104,7 +104,7 @@ const calendarOptions = ref({
                 throw new Error('userId 또는 companyId가 설정되지 않았습니다.');
             }
 
-            const response = await axios.get('http://localhost:8707/api/schedules', { params });
+            const response = await axios.get('http://localhost:8707/api/calendar', { params });
             successCallback(response.data);
             console.log('Fetched Events:', response.data);
         } catch (error) {
