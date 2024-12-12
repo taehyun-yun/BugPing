@@ -1,17 +1,23 @@
 package com.example.FinalProject.repository.attendance;
 
-import com.example.FinalProject.entity.attendance.Attendance;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.FinalProject.entity.attendance.Attendance;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+<<<<<<< HEAD
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
 
+=======
+public interface AttendanceRepository  extends JpaRepository<Attendance, Integer> {
+
+
+    //-------------------------------------------------------------- TH --------------------------------------------------------------
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b
     @Query("SELECT a FROM Attendance a " +
             "LEFT JOIN a.schedule s " +
             "WHERE a.actualStart >= :startDate " +
@@ -29,6 +35,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
             "AND w.workId = :workId")
     List<Attendance> findAttendancesByUserIdAndWorkId(@Param("userId") String userId, @Param("workId") Integer workId);
 
+<<<<<<< HEAD
     // Work ID와 날짜 범위로 Attendance 조회
     @Query("SELECT a FROM Attendance a " +
             "JOIN a.schedule s " +
@@ -40,6 +47,58 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+=======
+
+    //-------------------------------------------------------------- ES --------------------------------------------------------------
+    // 특정 스케줄 ID에 따른 출석 정보를 조회
+    List<Attendance> findByScheduleScheduleId(Integer scheduleId);
+
+    // 특정 WorkChange ID에 따른 출석 정보를 조회
+    List<Attendance> findByWorkChangeWorkChangeId(Integer workChangeId);
+
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "WHERE a.id = :attendanceId")
+    Attendance findAttendanceWithScheduleContractWorkAndUser(@Param("attendanceId") Long attendanceId);
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u")
+    List<Attendance> findAllAttendancesWithScheduleContractWorkAndUser();
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.workChange wc " + // WorkChange와 패치 조인
+            "JOIN FETCH wc.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "WHERE a.id = :attendanceId")
+    Attendance findAttendanceWithWorkChangeScheduleContractWorkAndUser(@Param("attendanceId") Long attendanceId);
+
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.workChange wc " + // WorkChange와 패치 조인
+            "JOIN FETCH wc.schedule s " +
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u")
+    List<Attendance> findAllAttendancesWithWorkChangeScheduleContractWorkAndUser();
+
+
+
+    //출퇴근-체인지 엔티티 연결 끊고 스케쥴. 변경사항으로 타고 들어가게 하는 방법도 고려해볼 것
+    @Query("SELECT DISTINCT a FROM Attendance a " +
+            "JOIN FETCH a.schedule s " +
+            //"JOIN FETCH a.workChange wc " + // WorkChange와 패치 조인은 제외
+            "JOIN FETCH s.contract c " +
+            "JOIN FETCH c.work w " +
+            "JOIN FETCH w.user u " +
+            "WHERE a.id = :attendanceId")
+    Attendance findAttendanceWithAll(@Param("attendanceId") Long attendanceId);
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b
 }
-
-

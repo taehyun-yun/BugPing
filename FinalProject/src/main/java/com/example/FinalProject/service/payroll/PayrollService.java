@@ -9,7 +9,7 @@ import com.example.FinalProject.entity.payroll.PayRoll;
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
-import com.example.FinalProject.repository.contract.ContractRepository;
+import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.payroll.PayrollRepository;
 import com.example.FinalProject.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;

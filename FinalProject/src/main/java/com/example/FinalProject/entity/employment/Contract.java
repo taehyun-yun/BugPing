@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,13 +16,14 @@ import java.time.LocalDate;
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
 
-    @JoinColumn(name = "work_id")
-    @ManyToOne
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
     private Work work;
 
-    private int hourlyWage; // 시급
-    private LocalDate contractStart; // 적용 시작일
-    private LocalDate contractEnd; // 적용 종료일
+    private int hourlyWage;
+    private LocalDateTime contractStart;
+    private LocalDateTime contractEnd;
 }
