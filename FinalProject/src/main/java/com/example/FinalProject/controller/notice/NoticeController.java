@@ -30,21 +30,21 @@ public class NoticeController {
         this.fileStorageService = fileStorageService;
     }
 
-    /* 모두 조회하기 (DTO로 반환) */
+    /* 모두 조회하기 */
     @GetMapping("/list")
     public ResponseEntity<List<NoticeDTO>> getAllNotices() {
         List<NoticeDTO> notices = noticeService.getAllNoticesAsDTO();
         return ResponseEntity.ok(notices);
     }
 
-    /* 타입별 조회하기 (DTO로 반환) */
+    /* 타입별 조회하기 */
     @GetMapping("/list/type")
     public ResponseEntity<List<NoticeDTO>> getNoticesByType(@RequestParam String type) {
         List<NoticeDTO> notices = noticeService.getNoticesByTypeAsDTO(type);
         return ResponseEntity.ok(notices);
     }
 
-    /* 공지사항 생성하기 (파일 포함) */
+    /* 공지사항 생성하기 */
     @PostMapping("/create")
     public ResponseEntity<NoticeDTO> createNotice(
             @RequestParam("title") String title,
@@ -102,7 +102,7 @@ public class NoticeController {
         return ResponseEntity.noContent().build();
     }
 
-    /* 특정 ID의 공지사항 조회 (DTO로 반환) */
+    /* 특정 ID의 공지사항 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<NoticeDTO> getNoticeById(@PathVariable Integer id) {
         NoticeDTO noticeDTO = noticeService.getNoticeByIdAsDTO(id);
