@@ -41,7 +41,6 @@ dependencies {
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 	implementation 'org.slf4j:slf4j-api:2.0.9'
 	runtimeOnly 'ch.qos.logback:logback-classic:1.4.11'
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

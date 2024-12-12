@@ -1,6 +1,5 @@
 package com.example.FinalProject.entity.company;
 
-import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,14 +9,12 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Company {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer companyId;
+    private String companyId;
+
     private String cname;
     private String ctel;
     private String address;
-    @Column(unique = true)
-    private String cnum;//사업자 등록번호
+    private String cnum;
 }

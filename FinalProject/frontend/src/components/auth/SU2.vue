@@ -53,14 +53,11 @@ const submitData = async() => {
     if(a){
         // 자식 데이터 합치기
         const mergedData = { ...childData.SU3, ...childData.SU4, ...childData.SU_address, role : usertype };
-        // JSON으로 되어있다.. formdata로 바꾸자. requestBody는 한개만 받아올 수 있어서 user와 company 두개로 분리하기 힘들다...
-        const formdata = new FormData();
-        const entries = Object.entries(mergedData);
-        entries.map(([key, value])=> formdata.append(key,value));
         //확인용
+        const entries = Object.entries(mergedData);
         alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
         // 보내기
-        await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
+        await axios.post(axiosAddress+"/userRegister",mergedData,{withCredentials: true})
         .then((res)=>{
             alert(res.data);
         })
