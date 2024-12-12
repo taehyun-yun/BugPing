@@ -1,6 +1,5 @@
 package com.example.FinalProject.entity.company;
 
-import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,9 +12,7 @@ import lombok.*;
 public class Company {
     @Id
     private String companyId;
-    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-//    private User user;
+
     private String cname;
     private String ctel;
     private String address;
