@@ -14,8 +14,8 @@ public class Company {
     @Id
     private String companyId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+//    @JoinColumn(name = "user_id")
+//    private User user;
     private String cname;
     private String ctel;
     private String address;

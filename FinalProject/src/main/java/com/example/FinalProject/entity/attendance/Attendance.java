@@ -21,19 +21,13 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer attendanceId;
 
-    //1안
-    @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id")//, nullable = false, insertable = false, updatable = false
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
     @ManyToOne
     @JoinColumn(name = "change_id")
     private WorkChange workChange;
-
-//    //2안
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
-//    private Work work;
 
     @Column(name = "actual_start")
     private LocalDateTime actualStart;
@@ -44,11 +38,11 @@ public class Attendance {
     private String commuteStatus;
 
     @Column(length = 5000)
-    private String remark; //특이사항
+    private String remark;
 
-    private String isNormalAttendance;//오타수정
-    private int recognizedWorkMinute;//오타수정, int로 변경
+    private String isNormalAttendance;
+    private int recognizedWorkMinute;
     private String overtimeStatus;
-    private int overtimeMinute;//int로 변경
-    private int totalMinute;//오타수정, int로 변경
+    private int overtimeMinute;
+    private int totalMinute;
 }

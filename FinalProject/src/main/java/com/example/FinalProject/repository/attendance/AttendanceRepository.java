@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
+
     @Query("SELECT a FROM Attendance a " +
             "LEFT JOIN a.schedule s " +
             "WHERE a.actualStart >= :startDate " +
@@ -27,6 +28,18 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
             "WHERE w.user.userId = :userId " +
             "AND w.workId = :workId")
     List<Attendance> findAttendancesByUserIdAndWorkId(@Param("userId") String userId, @Param("workId") Integer workId);
+
+    // Work ID와 날짜 범위로 Attendance 조회
+    @Query("SELECT a FROM Attendance a " +
+            "JOIN a.schedule s " +
+            "JOIN s.contract c " +
+            "WHERE c.work.workId = :workId " +
+            "AND a.actualStart BETWEEN :startDate AND :endDate")
+    List<Attendance> findAttendancesByWorkIdAndDateRange(
+            @Param("workId") Integer workId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }
 
 
