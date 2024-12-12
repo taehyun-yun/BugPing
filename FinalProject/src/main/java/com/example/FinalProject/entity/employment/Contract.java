@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -23,6 +24,6 @@ public class Contract {
     private Work work;
 
     private int hourlyWage;
-    private LocalDate contractStart;
-    private LocalDate contractEnd;
+    private LocalDateTime contractStart; //LocalDate -> LocalDateTime 변경 (캘린더 사용 시 변환 필요)
+    private LocalDateTime contractEnd;
 }

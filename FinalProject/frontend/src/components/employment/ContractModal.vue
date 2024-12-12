@@ -161,10 +161,14 @@ const closeScheduleModal = () => {
 
 watch(() => props.contract, (newContract) => {
     if (newContract) { // contract가 유효한 경우에만 실행
+        // LocalDateTime -> YYYY-MM-DD 변환
+        const startDate = newContract.contractStart ? newContract.contractStart.split('T')[0] : '';
+        const endDate = newContract.contractEnd ? newContract.contractEnd.split('T')[0] : '';
+        
         editedContract.value = {
             hourlyWage: newContract.hourlyWage,
-            contractStart: newContract.contractStart,
-            contractEnd: newContract.contractEnd,
+            contractStart: startDate,
+            contractEnd: endDate,
         };
     } else {
         editedContract.value = {
