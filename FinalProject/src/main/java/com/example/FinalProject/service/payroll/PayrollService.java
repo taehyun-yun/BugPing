@@ -14,15 +14,15 @@ import com.example.FinalProject.repository.payroll.PayrollRepository;
 import com.example.FinalProject.repository.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -30,132 +30,128 @@ public class PayrollService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private AttendanceRepository attendanceRepository;
+
     @Autowired
     private ContractRepository contractRepository;
+
     @Autowired
     private PayrollRepository payrollRepository;
 
-    // 급여 계산 유틸 메서드
-    private double calculateTotalSalary(List<Attendance> attendanceList, Contract contract) {
-        double basicSalary = 0; // 기본급
-        double overtimePay = 0; // 추가 수당
-        double nightPay = 0; // 야간 수당
-
-        for (Attendance attendance : attendanceList) {
-            int regularMinutes = attendance.getRecognizedWorkMinute(); // 정규 근무 시간
-            int overtimeMinutes = attendance.getOvertimeMinute();      // 초과 근무 시간
-            int nightMinutes = calculateNightMinutes(attendance);      // 야간 근무 시간
-
-            basicSalary += (regularMinutes / 60.0) * contract.getHourlyWage();
-            overtimePay += (overtimeMinutes / 60.0) * contract.getHourlyWage() * 1.5;
-            nightPay += (nightMinutes / 60.0) * contract.getHourlyWage() * 0.5;
-        }
-
-        return basicSalary + overtimePay + nightPay;
-    }
-
-    // 계약 정보 조회 (Work ID 또는 User ID + Date Range)
-    private Contract findContractByWorkOrUser(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
-        if (workId != null) {
-            return contractRepository.findByWorkId(workId);
-        }
-        return contractRepository.findValidContractByUserIdAndDateRange(userId, startDate, endDate);
-    }
-
-    // 출근 데이터 조회
-    private List<Attendance> findAttendanceData(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
-        if (workId != null) {
-            return attendanceRepository.findAttendancesByUserIdAndWorkId(userId, workId);
-        }
-        return attendanceRepository.findAttendancesByDateRange(userId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
-    }
-
     // 급여 계산 메서드
     public PayrollResponseDTO calculatePayroll(PayrollRequestDTO requestDTO) {
+        log.info("급여 계산 요청 - User ID: {}, Start Date: {}, End Date: {}",
+                requestDTO.getUserId(), requestDTO.getStartDate(), requestDTO.getEndDate());
 
-        if (requestDTO.getUserId() == null || requestDTO.getStartDate() == null || requestDTO.getEndDate() == null) {
-            throw new IllegalArgumentException("필수 입력값(userId, startDate, endDate)이 누락되었습니다.");
-        }
-
-        // 출근 데이터 가져오기
-        List<Attendance> attendanceList = findAttendanceData(
-                requestDTO.getUserId(), null, requestDTO.getStartDate(), requestDTO.getEndDate()
-        );
-
-        if (attendanceList.isEmpty()) {
-            throw new IllegalArgumentException("해당 기간에 대한 출근 데이터가 없습니다.");
-        }
-
-        // 계약 정보 가져오기
+        // 계약 정보 조회 // 근데 workId는 왜 null 로 주는거지?
         Contract contract = findContractByWorkOrUser(requestDTO.getUserId(), null, requestDTO.getStartDate(), requestDTO.getEndDate());
         if (contract == null) {
-            throw new IllegalArgumentException("유효한 계약 정보가 없습니다.");
-        }
-        log.info("조회 조건 - userId: {}, startDate: {}, endDate: {}", requestDTO.getUserId(), requestDTO.getStartDate(), requestDTO.getEndDate());
-        log.info("조회된 계약 정보: contractId={}, hourlyWage={}",
-                contract.getContractId(), contract.getHourlyWage());
-
-        // 항목별 초기화
-        double basicSalary = 0; // 기본급
-        double overtimePay = 0; // 연장수당
-        double nightPay = 0; // 야간수당
-
-        // 근무시간 기반 급여 계산
-        for (Attendance attendance : attendanceList) {
-            int regularMinutes = attendance.getRecognizedWorkMinute(); // 정규 근무 시간 (분)
-            int overtimeMinutes = attendance.getOvertimeMinute(); // 초과 근무 시간 (분)
-            int nightMinutes = calculateNightMinutes(attendance); // 야간 근무 시간 (분)
-
-            // 기본급, 초과 근무수당, 야간수당 계산
-            basicSalary += (regularMinutes / 60.0) * contract.getHourlyWage(); // 기본급
-            overtimePay += (overtimeMinutes / 60.0) * contract.getHourlyWage() * 1.5; // 초과 근무 1.5배
-            nightPay += (nightMinutes / 60.0) * contract.getHourlyWage() * 0.5; // 야간 할증
-
-            log.info("기본급 계산 - 분: {}, 기본급: {}", regularMinutes, (regularMinutes / 60.0) * contract.getHourlyWage());
-            log.info("야간 수당 계산 - 분: {}, 야간수당: {}", nightMinutes, (nightMinutes / 60.0) * contract.getHourlyWage() * 1.5);
+            throw new IllegalArgumentException("유효한 계약 정보를 찾을 수 없습니다.");
         }
 
-        // 주휴수당, 공제액(일단 10%), 총급여 계산
+        // 출근 데이터 조회
+        List<Attendance> attendanceList = findAttendanceData(requestDTO.getUserId(), null, requestDTO.getStartDate(), requestDTO.getEndDate());
+        if (attendanceList.isEmpty()) {
+            throw new IllegalArgumentException("출근 데이터가 없습니다.");
+        }
+
+        // 급여 관련 계산
+        double basicSalary = calculateBasicSalary(attendanceList, contract);
         double weeklyAllowance = calculateWeeklyAllowance(attendanceList, contract.getHourlyWage());
-        double deduction = (basicSalary + overtimePay + nightPay + weeklyAllowance) * 0.1;
-        double totalSalary = basicSalary + overtimePay + nightPay + weeklyAllowance - deduction;
+        double nightPay = calculateNightPay(attendanceList, contract.getHourlyWage());
+        double overtimePay = calculateOvertimePay(attendanceList, contract.getHourlyWage());
+        double deduction = (basicSalary + weeklyAllowance + nightPay) * 0.1;
+        double totalSalary = basicSalary + weeklyAllowance + nightPay - deduction;
 
-        log.info("급여 계산 완료 - 직원ID: {}, 기본급: {}, 주휴수당: {}, 연장수당: {}, 야간수당: {}, 실수령액: {}",
-                requestDTO.getUserId(), basicSalary, weeklyAllowance, overtimePay, nightPay, totalSalary);
+        log.info("급여 계산 완료 - Basic Salary: {}, Weekly Allowance: {}, Night Pay: {}, Overtime Pay: {}, Deduction: {}, Total Salary: {}",
+                basicSalary, weeklyAllowance, nightPay, overtimePay, deduction, totalSalary);
 
-        // Payroll 엔티티 생성 및 저장
-//        PayRoll payRoll = new PayRoll();
-//        payRoll.setPaymentDate(LocalDate.now()); // 지급일자
-//        payRoll.setPaid(false); // 초기 상태 미지급
-//        payRoll.setWork(contract.getWork()); // work 엔티티 연관관계 설정
-//
-//        payrollRepository.save(payRoll);
-
-        // 응답 DTO 생성
         return new PayrollResponseDTO(
                 requestDTO.getUserId(),
-                userRepository.findNameByUserId(requestDTO.getUserId()), // 사용자 이름
+                userRepository.findNameByUserId(requestDTO.getUserId()),
                 basicSalary,
                 weeklyAllowance,
                 overtimePay,
                 nightPay,
                 deduction,
-                totalSalary
+                totalSalary,
+                contract.getHourlyWage()
         );
-    } // end calculatePayroll
+    }
 
-//    // 총 근무 시간 계산
-//    private double calculateTotalWorkHours(List<AttendanceDTO> attendanceList) {
-//        double totalMinutes = 0;
-//        for (AttendanceDTO attendanceDTO : attendanceList) {
-//            totalMinutes += attendanceDTO.getRecognizedWorkMinute();
-//        }
-//        return totalMinutes / 60.0; // 시간 단위로 반환
-//    }// end calculateTotalWorkHours
+    // 근무자 리스트와 급여 정보를 포함한 데이터 생성
+    public List<EmployeeDTO> getEmployeeListWithPayroll() {
+        log.info("getEmployeeListWithPayroll 호출");
 
-    // 주휴수당 계산 메서드
+        List<Object[]> results = payrollRepository.findPayRollWithWorkAndUser();
+        List<EmployeeDTO> employeeList = new ArrayList<>();
+
+        for (Object[] result : results) {
+            PayRoll payRoll = (PayRoll) result[0];
+            Work work = (Work) result[1];
+            User user = (User) result[2];
+
+            // 근무 기록 조회
+            List<Attendance> attendanceList = findAttendanceData(user.getUserId(), work.getWorkId(), LocalDate.now().minusMonths(1), LocalDate.now());
+
+            // 계약 정보 조회
+            Contract contract = findContractByWorkOrUser(user.getUserId(), work.getWorkId(), LocalDate.now().minusMonths(1), LocalDate.now());
+            if (contract == null) {
+                log.warn("유효한 계약 정보를 찾을 수 없습니다. Work ID: {}", work.getWorkId());
+                continue;
+            }
+
+            // 급여 계산
+            double basicSalary = calculateBasicSalary(attendanceList, contract);
+            double weeklyAllowance = calculateWeeklyAllowance(attendanceList, contract.getHourlyWage());
+            double nightPay = calculateNightPay(attendanceList, contract.getHourlyWage());
+            double overtimePay = calculateOvertimePay(attendanceList, contract.getHourlyWage());
+            double deduction = (basicSalary + weeklyAllowance + nightPay + overtimePay) * 0.1;
+            double totalSalary = basicSalary + weeklyAllowance + nightPay + overtimePay - deduction;
+
+            // 월 근무시간 및 월 근무일수 계산
+            double monthlyHours = calculateMonthlyHours(attendanceList);
+            int workDays = calculateWorkDays(attendanceList);
+
+            // EmployeeDTO 생성
+            EmployeeDTO employeeDTO = new EmployeeDTO(
+                    user.getUserId(),
+                    user.getName(),
+                    work.getHireDate().toString(),
+                    String.valueOf(contract.getHourlyWage()),
+                    monthlyHours,
+                    workDays,
+                    basicSalary,
+                    totalSalary,
+                    payRoll.isPaid(),
+                    payRoll.getPayRollId(),
+                    weeklyAllowance,
+                    nightPay,
+                    overtimePay,
+                    deduction
+            );
+            log.info("EmployeeDTO 생성: {}", employeeDTO);
+
+            employeeList.add(employeeDTO);
+        }
+        log.info("최종 근무자 리스트: {}", employeeList);
+        return employeeList;
+    }
+
+    // 기본급 계산
+    private double calculateBasicSalary(List<Attendance> attendanceList, Contract contract) {
+        double basicSalary = 0.0;
+        for (Attendance attendance : attendanceList) {
+            int regularMinutes = attendance.getRecognizedWorkMinute();
+            basicSalary += (regularMinutes / 60.0) * contract.getHourlyWage();
+        }
+        log.info("기본급 계산 완료: {}", basicSalary);
+        return basicSalary;
+    }
+
+    // 주휴수당 계산
     private double calculateWeeklyAllowance(List<Attendance> attendanceList, double hourlyWage) {
         double totalMinutes = 0;
         for (Attendance attendance : attendanceList) {
@@ -163,84 +159,133 @@ public class PayrollService {
         }
         double avgWeeklyHours = (totalMinutes / 60.0) / 4.0;
 
-        boolean isFullAttendance = true;
-        for (Attendance attendance : attendanceList) {
-            if (!"정상".equals(attendance.getIsNormalAttendance())) {
-                isFullAttendance = false;
-                break;
-            }
-        }
-        return (avgWeeklyHours >= 15 && isFullAttendance) ? hourlyWage * 8 : 0;
+        boolean isFullAttendance = attendanceList.stream()
+                .allMatch(att -> "정상".equals(att.getIsNormalAttendance()));
+
+        double weeklyAllowance = (avgWeeklyHours >= 15 && isFullAttendance) ? hourlyWage * 8 : 0;
+        log.info("주휴수당 계산 완료: {}", weeklyAllowance);
+        return weeklyAllowance;
     }
 
-    // 야간 수당 메서드
+    // 야간수당 계산
+    private double calculateNightPay(List<Attendance> attendanceList, double hourlyWage) {
+        double nightPay = 0.0;
+        for (Attendance attendance : attendanceList) {
+            int nightMinutes = calculateNightMinutes(attendance);
+            nightPay += (nightMinutes / 60.0) * hourlyWage * 0.5;
+        }
+        log.info("야간수당 계산 완료: {}", nightPay);
+        return nightPay;
+    }
+
+    // 야간 근무 시간 계산
     private int calculateNightMinutes(Attendance attendance) {
         LocalDateTime startDateTime = attendance.getActualStart();
         LocalDateTime endDateTime = attendance.getActualEnd();
 
-        // 야간 근무 시간 기준 (22시 ~ 06시)
-        LocalDateTime nightStart = startDateTime.toLocalDate().atTime(22, 0); // 당일 22:00
-        LocalDateTime nightEnd = startDateTime.toLocalDate().plusDays(1).atTime(6, 0); // 다음 날 06:00
+        LocalDateTime nightStart = startDateTime.toLocalDate().atTime(22, 0);
+        LocalDateTime nightEnd = startDateTime.toLocalDate().plusDays(1).atTime(6, 0);
 
-        //int nightMinutes = 0;
-
-        // 근무시간이 야간 시간(22:00 - 06:00)과 겹치는지 확인
         if (startDateTime.isBefore(nightEnd) && endDateTime.isAfter(nightStart)) {
-            // 겹치는 야간 시간 계산
             LocalDateTime effectiveStart = startDateTime.isAfter(nightStart) ? startDateTime : nightStart;
             LocalDateTime effectiveEnd = endDateTime.isBefore(nightEnd) ? endDateTime : nightEnd;
-            return  (int) Duration.between(effectiveStart, effectiveEnd).toMinutes();
+            return (int) Duration.between(effectiveStart, effectiveEnd).toMinutes();
         }
-
         return 0;
-    } // end calculateNightHours
+    }
 
-    public List<EmployeeDTO> getEmployeeListWithPayroll() {
-        // PayRoll, Work, User 데이터를 가져오기 위해 JPA 쿼리 실행
-        List<Object[]> results = payrollRepository.findPayRollWithWorkAndUser();
+    // 월 근무시간 계산
+    public double calculateMonthlyHours(List<Attendance> attendanceList) {
+        double totalMinutes = 0.0;
+        for (Attendance attendance : attendanceList) {
+            totalMinutes += attendance.getRecognizedWorkMinute();
+        }
+        double monthlyHours = totalMinutes / 60.0;
+        log.info("월 근무시간 계산 완료: {}", monthlyHours);
+        return monthlyHours;
+    }
 
-        // 결과를 저장할 EmployeeDTO 리스트
-        List<EmployeeDTO> employeeList = new ArrayList<>();
+    // 월 근무일수 계산
+    private int calculateWorkDays(List<Attendance> attendanceList) {
 
-        for (Object[] result : results) {
-            // 각 객체를 적절한 타입으로 캐스팅
-            PayRoll payRoll = (PayRoll) result[0];
-            Work work = (Work) result[1];
-            User user = (User) result[2];
+        log.info("근무 일수 계산 시작 - Attendance List Size: {}", attendanceList.size());
 
-            // 근무 기록 조회
-            List<Attendance> attendanceList = attendanceRepository.findAttendancesByUserIdAndWorkId(
-                    user.getUserId(), work.getWorkId()
-            );
-
-            // 계약 정보 조회
-            Contract contract = contractRepository.findByWorkId(work.getWorkId());
-
-            // 급여 계산
-            double totalSalary = calculateTotalSalary(attendanceList, contract);
-
-            // EmployeeDTO 객체 생성 및 리스트에 추가
-            EmployeeDTO employeeDTO = new EmployeeDTO(
-                    user.getUserId(),                   // 직원 ID
-                    user.getName(),                     // 직원 이름
-                    work.getHireDate().toString(),      // 정산 시작일
-                    String.valueOf(contract.getHourlyWage()), // 시급
-                    attendanceList.size() * 8,          // 월 근무 시간
-                    attendanceList.size(),              // 월 근무 일수
-                    totalSalary,                        // 총 급여
-                    payRoll.isPaid(),                   // 지급 여부
-                    payRoll.getPayRollId()              // PayRoll ID
-            );
-
-            employeeList.add(employeeDTO);
+        // 출근 데이터가 없는 경우 처리
+        if (attendanceList.isEmpty()) {
+            log.warn("근무 일수 계산 불가 - Attendance 데이터가 없습니다.");
+            return 0;
         }
 
-        return employeeList;
+        // 고유 날짜 계산
+        Set<LocalDate> uniqueDays = new HashSet<>();
+        for (Attendance attendance : attendanceList) {
+            if (attendance.getActualStart() != null) {
+                uniqueDays.add(attendance.getActualStart().toLocalDate());
+            }
+            if (attendance.getActualEnd() != null) {
+                uniqueDays.add(attendance.getActualEnd().toLocalDate());
+            }
+        }
+
+        for (Attendance attendance : attendanceList) {
+            if (attendance.getActualStart() != null) {
+                LocalDate startDate = attendance.getActualStart().toLocalDate();
+                uniqueDays.add(startDate);
+                log.info("고유 날짜 추가 - Start Date: {}", startDate);
+            }
+            if (attendance.getActualEnd() != null) {
+                LocalDate endDate = attendance.getActualEnd().toLocalDate();
+                uniqueDays.add(endDate);
+                log.info("고유 날짜 추가 - End Date: {}", endDate);
+            }
+        }
+
+        log.info("고유 근무일 계산 완료 - Unique Days: {}", uniqueDays);
+        int workDays = uniqueDays.size();
+        log.info("근무 일수 계산 완료 - Work Days: {}", workDays);
+        return workDays;
     }
 
-    // 페이징 처리 메서드
-    public Page<Integer> getEmployeeIds(Pageable pageable) {
-        return userRepository.findAllEmployeeIds(pageable);
+
+
+    // 계약 정보 조회
+    private Contract findContractByWorkOrUser(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
+        log.info("계약 정보 조회 - User ID: {}, Start Date: {}, End Date: {}", userId, startDate, endDate);
+        if (workId != null) {
+            return contractRepository.findByWorkId(workId);
+        }
+        Contract contract = contractRepository.findValidContractByUserIdAndDateRange(userId, startDate, endDate);
+        log.info("조회된 계약 정보: {}", contract);
+        return contract;
     }
 
-}// end service
+    // 출근 데이터 조회
+    public List<Attendance> findAttendanceData(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
+        log.info("출근 데이터 조회 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
+        List<Attendance> attendanceList;
+        if (workId != null) {
+            attendanceList = attendanceRepository.findAttendancesByWorkIdAndDateRange(workId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+        } else {
+            attendanceList = attendanceRepository.findAttendancesByDateRange(userId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+        }
+
+        if (attendanceList.isEmpty()) {
+            log.warn("출근 데이터 없음 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
+        } else {
+            log.info("출근 데이터 조회 성공 - {}건", attendanceList.size());
+        }
+        return attendanceList;
+    }
+
+    // 추가근무 수당 계산
+    private double calculateOvertimePay(List<Attendance> attendanceList, double hourlyWage) {
+        double overtimePay = 0.0;
+        for (Attendance attendance : attendanceList) {
+            int overtimeMinutes = attendance.getOvertimeMinute(); // 초과 근무 시간 (분)
+            overtimePay += (overtimeMinutes / 60.0) * hourlyWage * 1.5; // 초과 근무 수당 1.5배
+        }
+        log.info("추가근무 수당 계산 완료: {}", overtimePay);
+        return overtimePay;
+    }
+
+}

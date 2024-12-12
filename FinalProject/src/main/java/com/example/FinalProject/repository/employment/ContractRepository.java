@@ -6,7 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+<<<<<<< HEAD:FinalProject/src/main/java/com/example/FinalProject/repository/contract/ContractRepository.java
+=======
 import java.util.List;
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b:FinalProject/src/main/java/com/example/FinalProject/repository/employment/ContractRepository.java
 
 public interface ContractRepository extends JpaRepository<Contract, Integer> {
 //---------------------TH----------------------

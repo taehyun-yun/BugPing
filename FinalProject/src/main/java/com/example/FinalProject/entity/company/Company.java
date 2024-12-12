@@ -15,8 +15,13 @@ public class Company {
     @Column(name = "companyId")
     private String companyId;
     @ManyToOne(fetch = FetchType.LAZY)
+<<<<<<< HEAD
+//    @JoinColumn(name = "user_id")
+//    private User user;
+=======
     @JoinColumn(name = "userId")
     private User user;
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b
     private String cname;
     private String ctel;
     private String address;

@@ -8,10 +8,16 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
+<<<<<<< HEAD
+@Repository
+public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
+
+=======
 public interface AttendanceRepository  extends JpaRepository<Attendance, Integer> {
 
 
     //-------------------------------------------------------------- TH --------------------------------------------------------------
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b
     @Query("SELECT a FROM Attendance a " +
             "LEFT JOIN a.schedule s " +
             "WHERE a.actualStart >= :startDate " +
@@ -29,6 +35,19 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "AND w.workId = :workId")
     List<Attendance> findAttendancesByUserIdAndWorkId(@Param("userId") String userId, @Param("workId") Integer workId);
 
+<<<<<<< HEAD
+    // Work ID와 날짜 범위로 Attendance 조회
+    @Query("SELECT a FROM Attendance a " +
+            "JOIN a.schedule s " +
+            "JOIN s.contract c " +
+            "WHERE c.work.workId = :workId " +
+            "AND a.actualStart BETWEEN :startDate AND :endDate")
+    List<Attendance> findAttendancesByWorkIdAndDateRange(
+            @Param("workId") Integer workId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+=======
 
     //-------------------------------------------------------------- ES --------------------------------------------------------------
     // 특정 스케줄 ID에 따른 출석 정보를 조회
@@ -81,4 +100,5 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "JOIN FETCH w.user u " +
             "WHERE a.id = :attendanceId")
     Attendance findAttendanceWithAll(@Param("attendanceId") Long attendanceId);
+>>>>>>> 564d4d18815f3c378fed769b10d81ebfe74b855b
 }
