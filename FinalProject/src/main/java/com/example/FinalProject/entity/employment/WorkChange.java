@@ -1,5 +1,6 @@
 package com.example.FinalProject.entity.employment;
 
+import com.example.FinalProject.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,12 +16,15 @@ import java.time.LocalDateTime;
 public class WorkChange {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer WorkchangeId;
+    private Integer workChangeId;
+
     @JoinColumn(name = "schedule_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Schedule schedule;
+
     private LocalDate changeDate;
     private LocalDateTime changeStartTime;
     private LocalDateTime changeEndTime;
     private String inOut;
+    private boolean permit;
 }

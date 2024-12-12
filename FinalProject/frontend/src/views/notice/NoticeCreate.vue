@@ -1,7 +1,6 @@
 <template>
   <div class="page-container">
     <div class="main-content">
-
       <!-- 공지사항 작성 페이지 UI -->
       <div class="notice-page">
         <div class="category-main">
@@ -14,6 +13,8 @@
             v-for="category in categories"
             :key="category.id"
             class="category-card"
+            :class="{ selected: selectedCategory === category.name }"
+            @click="selectCategory(category.name)"
           >
             <img
               v-if="category.icon"
@@ -63,20 +64,26 @@
                   alt="공지 아이콘"
                   class="attachment-img"
                 />
-                <img
-                  v-if="attachments[0].icon"
-                  :src="attachments[0].icon"
-                  alt="이미지 첨부 아이콘"
-                  class="attachment-icon"
-                />
                 <div class="attachment-text">이미지 첨부</div>
               </div>
-              <div class="attachment-card">
+              <div class="attachment-card1" @click="triggerFileUpload('image')">
                 <img
                   src="@/assets/noticeimg/add.png"
                   alt="공지 아이콘"
                   class="upload-icon"
                 />
+              </div>
+              <!-- 숨겨진 이미지 입력창 -->
+              <input
+                ref="imageInput"
+                type="file"
+                accept="image/*"
+                class="file-input-hidden"
+                @change="handleImageUpload"
+              />
+              <!-- 이미지 미리보기 -->
+              <div v-if="previewImage" class="image-preview">
+                <img :src="previewImage" alt="미리보기" />
               </div>
             </div>
 
@@ -91,24 +98,29 @@
                   alt="공지 아이콘"
                   class="attachment-img"
                 />
-                <img
-                  v-if="attachments[1].icon"
-                  :src="attachments[1].icon"
-                  alt="파일 첨부 아이콘"
-                  class="attachment-icon"
-                />
                 <div class="attachment-text">파일 첨부</div>
               </div>
-              <div class="attachment-card">
+              <div class="attachment-card2" @click="triggerFileUpload('file')">
                 <img
                   src="@/assets/noticeimg/add.png"
                   alt="공지 아이콘"
                   class="upload-icon"
                 />
               </div>
-              <div v-if="attachments[1].info" class="attachment-info">
-                {{ attachments[1].info }}
-              </div>
+              <!-- 숨겨진 파일 입력창 -->
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                class="file-input-hidden"
+                @change="handleFileUpload"
+              />
+              <!-- 업로드된 파일 목록 -->
+              <ul v-if="uploadedFiles.length > 0" class="uploaded-files">
+                <li v-for="(file, index) in uploadedFiles" :key="index">
+                  {{ file.name }}
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -125,12 +137,21 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import megaphoneIcon from "@/assets/noticeimg/megaphone.png";
+import checklistIcon from "@/assets/noticeimg/checklist.png";
+import questionMarkIcon from "@/assets/noticeimg/question-mark.png";
+const previewImage = ref(""); // 이미지 미리보기 URL
+const uploadedFiles = ref([]); // 업로드된 파일 목록
+
+const router = useRouter();
 
 // 카테고리와 첨부 파일 데이터
 const categories = ref([
-  { id: 1, name: "공지", icon: "" },
-  { id: 2, name: "매뉴얼", icon: "" },
-  { id: 3, name: "특이사항", icon: "" },
+  { id: 1, name: "공지", icon: megaphoneIcon },
+  { id: 2, name: "매뉴얼", icon: checklistIcon },
+  { id: 3, name: "특이사항", icon: questionMarkIcon },
 ]);
 
 const attachments = ref([
@@ -147,21 +168,117 @@ const attachments = ref([
 const title = ref("");
 const content = ref("");
 
+// 카테고리 선택 상태
+const selectedCategory = ref(categories.value[0].name); // 기본값: 첫 번째 카테고리 이름
+
+// 예시로 현재 사용자의 workId를 하드코딩 (실제 프로젝트에서는 인증을 통해 동적으로 가져와야 함)
+const workId = ref(1);
+
+// 카테고리 선택 함수
+const selectCategory = (categoryName) => {
+  selectedCategory.value = categoryName; // 선택한 카테고리 이름으로 업데이트
+};
+
 // 작성 취소 버튼 클릭 시 동작
 const cancelNotice = () => {
   // 모든 입력 필드를 초기화
   title.value = "";
   content.value = "";
+  selectedCategory.value = "공지"; // 기본 카테고리로 초기화
+  uploadedFiles.value = []; // 업로드된 파일 목록 초기화
+  previewImage.value = ""; // 이미지 미리보기 초기화
   console.log("작성 취소되었습니다.");
 };
 
 // 작성 완료 버튼 클릭 시 동작
-const submitNotice = () => {
-  // 입력된 데이터로 작성 완료 처리 (예: 백엔드로 데이터 전송)
-  console.log("작성된 제목:", title.value);
-  console.log("작성된 내용:", content.value);
-  alert("공지사항이 작성되었습니다.");
+const submitNotice = async () => {
+  if (!title.value || !content.value) {
+    alert("제목과 내용을 모두 입력해주세요.");
+    return;
+  }
+
+  const typeMap = {
+    공지: "NOTICE",
+    매뉴얼: "MANUAL",
+    특이사항: "SPECIAL",
+  };
+
+  const formData = new FormData();
+  formData.append("title", title.value);
+  formData.append("content", content.value);
+  formData.append("workId", workId.value);
+  formData.append("type", typeMap[selectedCategory.value]);
+
+  // 이미지 파일 추가
+  if (imageInput.value && imageInput.value.files[0]) {
+    formData.append("image", imageInput.value.files[0]);
+  }
+
+  // 일반 파일 추가
+  if (fileInput.value && fileInput.value.files.length > 0) {
+    for (let i = 0; i < fileInput.value.files.length; i++) {
+      formData.append("files", fileInput.value.files[i]);
+    }
+  }
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8707/notice/create",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    console.log("작성된 공지사항:", response.data);
+    alert("공지사항이 작성되었습니다.");
+    // 작성 후 공지사항 목록 페이지로 이동
+    router.push({ path: "/noticemain" });
+  } catch (error) {
+    console.error("공지사항 작성 중 오류 발생:", error);
+    alert("공지사항 작성 중 오류가 발생했습니다.");
+  }
 };
+
+// 파일 업로드 창 열기
+const triggerFileUpload = (type) => {
+  if (type === "image") {
+    document.querySelector('input[type="file"][accept="image/*"]').click();
+  } else if (type === "file") {
+    document.querySelector('input[type="file"]:not([accept])').click();
+  }
+};
+
+// 이미지 업로드 처리
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      previewImage.value = reader.result;
+    };
+    reader.readAsDataURL(file);
+    alert("이미지가 선택되었습니다: " + file.name);
+  } else {
+    alert("유효한 이미지 파일을 선택해주세요.");
+  }
+};
+
+// 파일 업로드 처리
+const handleFileUpload = (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    uploadedFiles.value = Array.from(files);
+    alert(`${files.length}개의 파일이 선택되었습니다.`);
+  } else {
+    alert("유효한 파일을 선택해주세요.");
+  }
+};
+
+// 파일 input refs
+const imageInput = ref(null);
+const fileInput = ref(null);
 </script>
 
 <style scoped>
@@ -175,7 +292,7 @@ const submitNotice = () => {
 }
 
 .notice-page {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -213,8 +330,14 @@ const submitNotice = () => {
   color: #000;
 }
 
+.category-card.selected {
+  border-color: #007bff; /* 선택된 카테고리 강조 */
+  background-color: #e7f3ff;
+}
+
 .input-section {
   margin-bottom: 20px;
+  height: 80%;
 }
 
 .input-label {
@@ -229,7 +352,7 @@ const submitNotice = () => {
 
 .input-field {
   width: 100%;
-  height: 20px;
+  height: 40px;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #c3c3c3;
@@ -237,7 +360,7 @@ const submitNotice = () => {
 
 .textarea-field {
   width: 100%;
-  height: 450px;
+  height: 370px;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #c3c3c3;
@@ -280,12 +403,24 @@ const submitNotice = () => {
   align-items: center; /* 텍스트를 세로 중앙에 위치 */
 }
 
-.attachment-card {
+.attachment-card1 {
   background: #f5f5f5;
   padding: 10px;
   border-radius: 10px;
   width: 200px;
-  height: 20px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.attachment-card2 {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -341,5 +476,38 @@ const submitNotice = () => {
   font-size: 28px;
   font-weight: bold;
   margin: 20px 0;
+}
+
+/* 숨겨진 파일 입력창 스타일 */
+.file-input-hidden {
+  display: none;
+}
+
+.attachment-card1:hover,
+.attachment-card2:hover {
+  background: #e7e7e7;
+}
+
+.image-preview {
+  margin-top: 10px;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 5px;
+}
+
+.uploaded-files {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.uploaded-files li {
+  background: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
 </style>

@@ -106,13 +106,18 @@
           </thead>
           <tbody>
             <!-- 공지사항 목록을 반복하여 표시 -->
-            <tr v-for="(item, index) in filteredItems" :key="item.noticeId">
+            <tr
+              v-for="(item, index) in filteredItems"
+              :key="item.noticeId"
+              @click="goToDetail(item.noticeId)"
+              class="clickable-row"
+            >
               <td class="checkbox-cell">
-                <!-- 개별 선택 체크박스 -->
                 <input
                   type="checkbox"
                   v-model="selectedItems"
                   :value="item.noticeId"
+                  @click.stop
                 />
               </td>
               <!-- 공지사항 번호 (페이지에 따라 계산) -->
@@ -120,7 +125,7 @@
               <!-- 공지사항 제목 -->
               <td>{{ item.title }}</td>
               <!-- 작성자 이름 (work.user.name) -->
-              <td>{{ item.work.user.name }}</td>
+              <td>{{ item.work?.user?.name || "작성자 없음" }}</td>
               <!-- 보기 권한 -->
               <td>{{ item.viewers }}</td>
               <!-- 작성 날짜 형식 변경 후 표시 -->
@@ -163,6 +168,11 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Axios를 사용하여 API 호출
+
+const goToDetail = (noticeId) => {
+  console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
+  router.push({ name: "noticedetail", params: { id: noticeId } });
+};
 
 const router = useRouter();
 
@@ -348,18 +358,21 @@ onMounted(() => {
 const formatDate = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  // 'ko-KR' 로케일과 옵션을 사용하여 날짜 형식 지정
-  return date
-    .toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .replace(/\./g, "-");
-};
 
+  // 날짜
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // 시간
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const period = hours >= 12 ? "오후" : "오전";
+
+  const formattedHours = hours % 12 || 12;
+
+  return `${year}-${month}-${day} ${period} ${formattedHours}:${minutes}`;
+};
 /**
  * 상태 코드를 한글 레이블로 변환하는 함수
  * @param status 상태 코드 (VISIBLE, DRAFT, WITHDRAWN)
@@ -489,6 +502,8 @@ const getStatusLabel = (status) => {
   padding: 10px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+  height: 50px;
 }
 
 .board-table th {
@@ -499,7 +514,7 @@ const getStatusLabel = (status) => {
 .checkbox-action {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .checkbox-cell {
@@ -528,6 +543,13 @@ input[type="checkbox"] {
 .delete-button:hover {
   background-color: #007bff;
   color: white;
+}
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: #f0f8ff; /* 하이라이트 색상 */
 }
 
 /* 페이징 스타일 */

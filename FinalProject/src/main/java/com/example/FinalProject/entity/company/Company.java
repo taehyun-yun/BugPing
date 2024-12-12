@@ -10,14 +10,14 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Company {
     @Id
-    private String companyId;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer companyId;
     private String cname;
     private String ctel;
     private String address;
-    private String cnum;
+    @Column(unique = true)
+    private String cnum;//사업자 등록번호
 }
