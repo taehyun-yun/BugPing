@@ -30,7 +30,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "JOIN FETCH cp.user uu " +
             "WHERE c.id = :contractId")
     List<Schedule> findSchedulesByContractIdWithContractWorkAndUser(@Param("contractId") Integer contractId);
 
@@ -40,7 +39,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "JOIN FETCH cp.user uu " +
             "WHERE s.id = :scheduleId")
     Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Integer scheduleId);
 
@@ -48,7 +46,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
-            "JOIN FETCH w.company cp " +
-            "JOIN FETCH cp.user uu ")
+            "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 }
