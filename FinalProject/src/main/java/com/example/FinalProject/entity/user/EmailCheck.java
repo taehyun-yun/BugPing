@@ -11,13 +11,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @ToString
-public class Email {
+public class EmailCheck {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer emailId;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private String email;
     private String code;
-    private LocalDateTime dueTime;
+    private LocalDateTime due;
 }
