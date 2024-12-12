@@ -97,7 +97,7 @@ const calendarRef = ref(null);
 
 </script>
 
-<style>
+<style scoped>
 /* 달력 전체 스타일 */
 .calendar-and-schedule {
     display: flex;
