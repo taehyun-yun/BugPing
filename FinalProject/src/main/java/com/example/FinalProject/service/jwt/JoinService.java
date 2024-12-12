@@ -1,6 +1,8 @@
 package com.example.FinalProject.service.jwt;
 
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;
+import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,19 +16,20 @@ import java.time.LocalDate;
 public class JoinService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
     @Autowired
-    public JoinService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public JoinService(PasswordEncoder passwordEncoder, UserRepository userRepository, CompanyRepository companyRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.companyRepository = companyRepository;
     }
     //회원가입 프로세스
-    public ResponseEntity<String>joinprocess(User user){
+    public User joinprocess(User user){
         String msg;
         if(check(user)){
-            signup(user);
-            return new ResponseEntity<>("회원가입 성공", HttpStatus.CREATED);
+            return signup(user);
         } else {
-            return new ResponseEntity<>("회원가입 실패", HttpStatus.NOT_ACCEPTABLE);
+            return null;
         }
     }
 
@@ -54,5 +57,36 @@ public class JoinService {
                 .build();
         userRepository.save(signupUser);
         return signupUser;
+    }
+    //회사 등록 프로세스
+    public Company registCompanyProcess(Company company){
+        if(checkCompany(company)){
+            return  registCompany(company);
+        }
+        return null;
+    }
+
+    //회사 중복 확인
+    public Boolean checkCompany (Company company){
+        Boolean result = true;
+        if(companyRepository.existsByCnum(company.getCnum())){
+            result = false;
+        }
+        return result;
+    }
+    //회사 등록
+    public Company registCompany(Company company){
+        if(checkCompany(company)){
+            return null;
+        }
+        Company newCompany = Company.builder()
+                .companyId(company.getCompanyId())
+                .cname(company.getCname())
+                .address(company.getAddress())
+                .ctel(company.getCtel())
+                .cnum(company.getCnum())
+                .build();
+        companyRepository.save(newCompany);
+        return newCompany;
     }
 }
