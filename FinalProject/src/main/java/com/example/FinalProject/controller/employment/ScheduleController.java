@@ -1,13 +1,8 @@
 package com.example.FinalProject.controller.employment;
 
-import com.example.FinalProject.dto.ScheduleDTO;
-import com.example.FinalProject.entity.employment.Schedule;
-import com.example.FinalProject.repository.employment.ScheduleRepository;
 import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -23,15 +18,22 @@ public class ScheduleController {
 
     @GetMapping("/schedules")
     public ResponseEntity<List<Map<String, Object>>> getSchedules(
-            @RequestParam String userId,
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String companyId,
             @RequestParam(required = false) LocalDate start,
             @RequestParam(required = false) LocalDate end) {
-//      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-
-        // UserId 사용자 전체 일정
-        List<Map<String, Object>> schedules = scheduleService.getUserSchedule(userId);
-        return ResponseEntity.ok(schedules);
+        if (userId != null) {
+            // 특정 사용자 일정 조회
+            List<Map<String, Object>> schedules = scheduleService.getUserSchedule(userId, start, end);
+            return ResponseEntity.ok(schedules);
+        } else if (companyId != null) {
+            // 특정 회사 일정 조회
+            List<Map<String, Object>> schedules = scheduleService.getCompanySchedule(companyId, start, end);
+            return ResponseEntity.ok(schedules);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
-
 }
+

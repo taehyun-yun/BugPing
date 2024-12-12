@@ -4,7 +4,7 @@
             <FullCalendar ref="calendarRef" :options="calendarOptions" />
         </div>
 
-        <!--  모달  -->
+        <!-- 모달 -->
         <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
             <div class="modal-content" @click.stop>
                 <h3>{{ modalData.title }}</h3>
@@ -18,8 +18,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import FullCalendar from '@fullcalendar/vue3'; // FullCalendar 
+import { ref, computed, watch } from 'vue';
+import FullCalendar from '@fullcalendar/vue3';  
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -39,7 +39,7 @@ const modalData = ref({
 const openModal = (event) => {
     modalData.value = {
         title: event.title,
-        description: event.extendedProps.description || '설명 없음',
+        description: event.extendedProps.description || '없음',
         start: event.start,
         end: event.end,
     };
@@ -49,58 +49,96 @@ const openModal = (event) => {
 // 모달 닫기
 const closeModal = () => {
     isModalVisible.value = false;
-}
+};
 
-// 서버에서 일정 데이터 가져오기
-    const calendarOptions = ref({
-        plugins: [dayGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
-        locale: 'ko', //한국어
-        headerToolbar: {
-            left: 'prev, next today',
-            center: 'title',
-            right: 'dayGridMonth, timeGridWeek, timeGridDay'
+// 나의 일정, 회사 일정 보기
+const selectedUserId = ref('jh'); // 사용자 ID
+const selectedCompanyId = ref(''); // 회사 ID
+const isUserView = ref(true); // 초기 상태: 내 근무 보기
+
+// 버튼 텍스트 동적 설정
+const buttonText = computed(() => (isUserView.value ? '회사 근무 보기' : '내 근무 보기'));
+
+// FullCalendar 옵션
+const calendarOptions = ref({
+    plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
+    initialView: 'dayGridMonth',
+    locale: 'ko', // 한국어
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton'
+    },
+    customButtons: {
+        toggleViewButton: {
+            text: buttonText.value, // 동적으로 텍스트 설정
+            click: () => {
+                isUserView.value = !isUserView.value;
+                if (isUserView.value) {
+                    selectedCompanyId.value = '';
+                    selectedUserId.value = 'jh';
+                } else {
+                    selectedUserId.value = '';
+                    selectedCompanyId.value = 'C001';
+                }
+                calendarRef.value.getApi().refetchEvents(); // 일정 새로 로드
+            },
         },
-        events: async (fetchInfo, successCallback, failureCallback) => {
-            try {
+    },
+    events: async (fetchInfo, successCallback, failureCallback) => {
+        try {
+            // 서버와 날짜 요청 형식을 맞추기
+            const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
+            const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
 
-                // 서버와 날짜 요청 형식을 맞추기
-                const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
-                const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
+            const params = {
+                start: startFormatted,
+                end: endFormatted,
+            };
 
-                const response = await axios.get('http://localhost:8707/api/schedules', {
-                    params: {
-                        userId: 'jh',
-                        start: startFormatted,
-                        end: endFormatted,
-                    },
-                });
-                successCallback(response.data);
-                console.log('Fetched Events:', response.data);
-            } catch (error) {
-                console.error('이벤트 데이터를 가져오는 중 오류 발생:', error);
-                failureCallback(error);
+            if (selectedUserId.value) {
+                params.userId = selectedUserId.value;
+            } else if (selectedCompanyId.value) {
+                params.companyId = selectedCompanyId.value;
+            } else {
+                throw new Error('userId 또는 companyId가 설정되지 않았습니다.');
             }
+
+            const response = await axios.get('http://localhost:8707/api/schedules', { params });
+            successCallback(response.data);
+            console.log('Fetched Events:', response.data);
+        } catch (error) {
+            console.error('이벤트 데이터를 가져오는 중 오류 발생:', error);
+            failureCallback(error);
+        }
     },
     editable: true,     // 드래그로 이벤트 수정 가능
     selectable: true,   // 드래그로 영역 선택 가능
     eventColor: '#3788d8',  // 기본 이벤트 색상
 
-    //  제목만 표시
-    eventContent: function (info) {
+    // 제목만 표시
+    eventContent: (info) => {
         return {
             html: `<div class="fc-event-title">${info.event.title}</div>`,
         };
     },
 
     // 이벤트 클릭시 모달 열기
-    eventClick: function (info) {
-        openModal(info.event);
-    }
+    eventClick: (info) => openModal(info.event),
 });
 
 const calendarRef = ref(null);
 
+// 버튼 텍스트 변경 시 FullCalendar 업데이트
+watch(buttonText, () => {
+    const calendarApi = calendarRef.value.getApi();
+    calendarApi.setOption('customButtons', {
+        toggleViewButton: {
+            text: buttonText.value,
+            click: calendarApi.getOption('customButtons').toggleViewButton.click,
+        },
+    });
+});
 </script>
 
 <style scoped>
@@ -170,5 +208,4 @@ const calendarRef = ref(null);
 .modal-content button:hover {
     background-color: #2c6fb2;
 }
-
 </style>
