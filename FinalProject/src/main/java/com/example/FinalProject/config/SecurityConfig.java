@@ -55,8 +55,7 @@ public class SecurityConfig {
 //                        hasAnyRole("employer","employee","admin")
 //                        .requestMatchers("/employer/**").hasAnyRole("employ","admin")
 //                        .requestMatchers("/employee/**").hasAnyRole("employee","admin")
-//                        .anyRequest().permitAll()//로그인하지 않아도 접근 가능한 곳
-                                .anyRequest().authenticated()
+                        .anyRequest().permitAll()//로그인하지 않아도 접근 가능한 곳
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 인증 필터 추가
                 //.formLogin(Customizer.withDefaults())
