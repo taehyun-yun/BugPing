@@ -375,7 +375,7 @@ const getStatusLabel = (status) => {
 };
 </script>
 
-<style>
+<style scoped>
 /* 전체 레이아웃 스타일 */
 .main-wrapper {
   display: flex;
