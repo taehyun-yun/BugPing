@@ -60,6 +60,7 @@
           <div class="payroll-header-item">지급</div>
         </div>
 
+        <!-- <div v-for="employee in employees" :key="employee.employeeId" class="payroll-row"> -->
         <div v-for="employee in employees" :key="employee.id" class="payroll-row">
           <div 
             class="payroll-item" 
@@ -68,16 +69,16 @@
             @mouseleave="handleMouseLeave"
             :class="{ 'hover': hoveredEmployeeId === employee.id }"
           >
-            {{ employee.name }}
+            {{ employee.name }} ({{ employee.employeeId }})
           </div>  
           <div class="payroll-item">{{ employee.startDate }}</div>
           <div class="payroll-item">{{ employee.hourlyWage }}</div>
           <div class="payroll-item">{{ employee.monthlyHours }}</div>
           <div class="payroll-item">{{ employee.workDays }}</div>
-          <div class="payroll-item">{{ employee.salary }}</div>
+          <div class="payroll-item">{{ employee.totalSalary }}</div>
           <div class="payroll-item">
-            <button @click="togglePaid(employee)" :class="employee.paid ? 'paid-button' : 'unpaid-button'">
-              {{ employee.paid ? '지급' : '미지급' }}
+            <button @click="togglePaid(employee)" :class="employee.isPaid ? 'paid-button' : 'unpaid-button'">
+              {{ employee.isPaid ? '지급' : '미지급' }}
             </button>
           </div>
         </div>
@@ -86,7 +87,7 @@
   </div>
 
   <!--명세서 모달-->
-  <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
+  <div v-if="isModalVisible && selectedEmployee" class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3 class="modal-title">{{ selectedEmployee.name }} 급여 명세서</h3>
@@ -97,40 +98,40 @@
       </div>
       <div class="modal-payment-date">
         <span class="modal-label">지급 일자</span>
-        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }} 2024.11.01  지급</span>
+        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }} 지급</span>
         <span class="dotted-line"></span>
       </div>
 
       <div class="modal-received-amount">
         <span class="modal-label">실 수령액</span>
-        <span class="modal-value">{{ selectedEmployee.salary }} 원</span>
+        <span class="modal-value">{{ selectedEmployee.totalSalary }} 원</span>
       </div>
       <hr class="bold-hr">
 
       <div class="modal-body">
         <div class="modal-section">
           <span class="modal-label">기본급</span>
-          <span class="modal-value">877,599 원</span>
+          <span class="modal-value"> {{ selectedEmployee.basicSalary }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">주휴 수당</span>
-          <span class="modal-value">30,000 원</span>
+          <span class="modal-value"> {{ selectedEmployee.weeklyAllowance }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">연장 수당</span>
-          <span class="modal-value">20,000 원</span>
+          <span class="modal-value"> {{ selectedEmployee.overtimePay }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">야간 수당</span>
-          <span class="modal-value">0 원</span>
+          <span class="modal-value"> {{ selectedEmployee.nightPay }} 원</span>
         </div>
         <hr />
         <div class="modal-section">
           <span class="modal-label">공제액</span>
-          <span class="modal-value">0 원</span>
+          <span class="modal-value"> {{ selectedEmployee.deduction }} 원</span>
         </div>
         <hr />
       </div>
@@ -139,48 +140,158 @@
 
   <!-- 페이지 네이션 관련 코드 -->
   <div class="pagination-container">
-    <button class="pagination-button"> &lt; </button>
-    <button v-for="page in pages" :key="page" :class="['pagination-button', { active: currentPage === page }]">
+    <button
+      class="pagination-button"
+      :disabled="currentPage === 1"
+      @click="handlePageChange(currentPage - 1)"
+    >
+      &lt;
+    </button>
+    <button
+      v-for="page in totalPages"
+      :key="page"
+      class="pagination-button"
+      :class="{ active: currentPage === page }"
+      @click="handlePageChange(page)"
+    >
       {{ page }}
     </button>
-    <span class="pagination-ellipsis">...</span>
-    <button class="pagination-button">10</button>
-    <button class="pagination-button"> &gt; </button>
+    <button
+      class="pagination-button"
+      :disabled="currentPage === totalPages"
+      @click="handlePageChange(currentPage + 1)"
+    >
+      &gt;
+    </button>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import axios from 'axios';
 
-const employees = ref([
-  { id: 1, name: '윤태현', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 2, name: '유지훈', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 3, name: '장종현', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: false },
-  { id: 4, name: '문준호', startDate: '2024/10/3', hourlyWage: '12,000', monthlyHours: 60, workDays: 12, salary: '907,599', paid: true },
-  { id: 5, name: '임은선', startDate: '2024/10/9', hourlyWage: '12,000', monthlyHours: 42, workDays: 9, salary: '504,000', paid: true },
-  { id: 6, name: '배영재', startDate: '2024/10/9', hourlyWage: '9,860', monthlyHours: 42, workDays: 9, salary: '504,000', paid: true },
-  { id: 7, name: '이경진', startDate: '2024/10/21', hourlyWage: '9,860', monthlyHours: 36, workDays: 6, salary: '354,960', paid: false },
-]);
-
+const employees = ref([]);
+const employeeIds = ref([]); // 페이징에 사용될 ID 리스트
 const isModalVisible = ref(false);
-const selectedEmployee = ref(null);
+const selectedEmployee = ref({
+  userId: null,
+  startDate: '2023-12-01',
+  endDate: '2023-12-31',
+});
 const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
 
-const pages = [1, 2, 3, 4]; // 단순히 예시로 페이지 숫자들만 배열로 정의
 const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = ref(10);
 
-const showModal = (employee) => {
-  selectedEmployee.value = employee;
-  isModalVisible.value = true;
+// 근무자 리스트 출력.
+const fetchEmployeeList = async () => {
+  try {
+    const response = await axios.get("http://localhost:8707/api/employees");
+    console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
+    employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
+  } catch (error) {
+    console.error("Error fetchEmployeeList : ", error);
+  }
+};
+
+// 페이징 처리 메서드
+const fetchEmployeePaging = async (page, size) => {
+  try {
+    const response = await axios.get("http://localhost:8707/api//employees/paging", {
+      params: {page: page - 1, size }, // 0 베이스 페이지로 요청
+    });
+    employeeIds.value = response.data.content; // 현재 페이지의 employeeId 리스트 저장
+    totalPages.value = response.data.totalPages; // 전체 페이지 수
+    console.log("페이징 데이터:", response.data);
+  } catch (error) {
+    console.error("Error 페이징 오류 : ", error);
+  }
+};
+
+// 지급 상태 여부
+const togglePaid = async (employee) => {
+  console.log("Employee Data:", employee);
+  console.log("PayRoll ID:", employee.payRollId);
+  try {
+    // 서버에 PATCH 요청 전송
+    await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
+      params: {
+        isPaid: !employee.isPaid,
+      },
+    });
+
+    // 서버에서 최신 데이터 가져오기
+    const response = await axios.get("http://localhost:8707/api/employees");
+    employees.value = response.data; // Vue 데이터 갱신
+    console.log("Updated Employee List:", employees.value);
+  } catch (error) {
+    console.error("Error updating payroll status: ", error);
+  }
+};
+
+
+// 페이지 변경시 호출
+const handlePageChange = (page) => {
+  if (page > 0 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchEmployeePaging(page, pageSize.value); // page와 size를 명시적으로 전달
+  } else {
+    console.error("Invalid page number");
+  }
+};
+
+
+// 초기 데이터 로드
+onMounted(() => {
+  fetchEmployeeList(); // fetchEmployeeList 함수 호출
+  console.log("employees 데이터 확인: ", employees.value); // employees의 상태 확인
+  //fetchEmployeePaging(currentPage.value, pageSize.value); // 페이징 데이터 요청
+});
+
+const showModal = async (employee) => {
+  console.log("선택된 직원 데이터:", employee); // 데이터 확인
+
+  console.log("전송 데이터:", {
+    userId: employee.employeeId,
+    startDate: "2023-12-01",
+    endDate: "2023-12-31"
+  });
+
+  try {
+    // 백엔드 API 호출
+    console.log("선택된 직원 데이터: ", employee);
+    const response = await axios.post("http://localhost:8707/api/payroll", {
+      userId: employee.employeeId, // // employeeId를 userId로 전달
+      startDate: "2023-12-01", // 시작일
+      endDate: "2023-12-31",   // 종료일
+    });
+    console.log('급여 계산 결과: ', response.data);
+
+    // 선택된 직원의 급여 데이터 모달에 출력
+    selectedEmployee.value = {
+      name: employee.name,
+      paymentDate: "2024-12-31", // 지급일 (하드코딩 추후 변경 예정)
+      basicSalary: response.data.basicSalary || 0,
+      weeklyAllowance: response.data.weeklyAllowance || 0,
+      overtimePay: response.data.overtimePay || 0,
+      nightPay: response.data.nightPay || 0,
+      deduction: response.data.deduction || 0,
+      totalSalary: response.data.totalSalary || 0,
+    };
+
+    isModalVisible.value = true;
+
+  } catch (error) {
+    console.error("Error payroll : ", error);
+    alert("급여 데이터를 가져오는 중 문제가 발생했습니다.");
+  }
 };
 
 const closeModal = () => {
   isModalVisible.value = false;
 };
 
-const togglePaid = (employee) => {
-  employee.paid = !employee.paid;
-};
 const handleMouseEnter = (employeeId) => {
   hoveredEmployeeId.value = employeeId;
 };

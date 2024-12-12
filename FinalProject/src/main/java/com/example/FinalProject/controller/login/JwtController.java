@@ -2,7 +2,7 @@ package com.example.FinalProject.controller.login;
 
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.repository.user.UserRepository;
-import com.example.FinalProject.service.JwtService;
+import com.example.FinalProject.service.jwt.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,15 +76,15 @@ public class JwtController {
     public ResponseEntity<String>checkuserid(String token){
         Claims claims = jwtService.getClaims(token);
         if(claims != null){
-            String userid = claims.get("userId").toString();
-            Optional<User> user = userRepository.findById(userid);
-            if (user.isEmpty()){
-                return new ResponseEntity<String>("유저를 찾을 수 없습니다",HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<String>(user.get().getUserId(),HttpStatus.OK);
-            }
+            return new ResponseEntity<String>("토큰이 유효하지 않습니다.",HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity<String>("토큰이 유효하지 않습니다.",HttpStatus.NOT_ACCEPTABLE);
+        String userid = claims.get("userId").toString();
+        Optional<User> user = userRepository.findById(userid);
+        if (user.isEmpty()){
+            return new ResponseEntity<String>("유저를 찾을 수 없습니다",HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<String>(user.get().getUserId(),HttpStatus.OK);
+        }
     }
     // <--토큰에서 아이디 가지고 오기 끝--
 
@@ -102,18 +102,29 @@ public class JwtController {
         response.put("roles", roles);
         return response;
     }
-    //쿠키에서 값 가져오기
-    //jwtToken으로 만든 쿠키는 필터에서 매번 authentic을 선언해주니까 상관 없지만,
-    //그 이외의 특정 쿠키를 가지고 오고 싶을 때 사용하면 된다.
-    @GetMapping("/getCookie")
-    public Map<String, Object> findRole(HttpServletRequest request) {
+    //특정 쿠키 가져오기
+    //jwtToken으로 만든 쿠키의 정보가 필요하면 필터에서 매번 authentic을 선언해주니까 상관 없지만,
+    //로그아웃을 하거나, 그 이외의 특정 쿠키를 가지고 오고 싶을 때 사용한다.
+    public Map<String, Object> findRole(String cookieName,HttpServletRequest request) {
         String token = null;
         Map<String, Object> response = new HashMap<>();
         for(Cookie cookie:request.getCookies()){
-            if("토큰이름".equals(cookie.getName())){
-                token = cookie.getValue();
+            if(cookieName.equals(cookie.getName())){
+                response.put(cookieName,cookie);
+                response.put("token" ,cookie.getValue());
             }
         }
         return response;
+    }
+    //로그아웃
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response, HttpServletRequest request){
+        Map<String,Object> map = findRole("jwtToken",request);
+        Cookie cookie = (Cookie) map.get("jwtToken");
+        if(cookie != null){
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

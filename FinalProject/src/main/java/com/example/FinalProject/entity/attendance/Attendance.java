@@ -31,6 +31,7 @@ public class Attendance {
 //    @ManyToOne
 //    @JoinColumn(name = "contract_id")
 //    private Contract contract;
+
     private LocalDateTime actualStart;
     private LocalDateTime actualEnd;
     private String commuteStatus;

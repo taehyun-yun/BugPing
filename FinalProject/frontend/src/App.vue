@@ -31,7 +31,7 @@ const sidebar = computed(()=>route?.meta?.sidebar === true)
 
 <style scoped>
    .app{
-      text-wrap: nowrap;
+      white-space: nowrap;
    }
    .appbody{
       display: flex;
@@ -49,4 +49,5 @@ const sidebar = computed(()=>route?.meta?.sidebar === true)
       width : 100%;
       display: inline-block;
    }
+   
 </style>

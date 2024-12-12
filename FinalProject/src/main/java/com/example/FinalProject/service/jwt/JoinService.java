@@ -1,4 +1,4 @@
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.jwt;
 
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.repository.user.UserRepository;

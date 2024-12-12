@@ -12,8 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 모든 엔드포인트에 대해
                 .allowedOrigins("http://localhost:5173") // Vue.js 서버 주소
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
+    //부분 업데이트
+    //PATCH는 리소스 전체를 수정하지 않고, 특정 부분만 수정할 때 사용됩니다.
+    //예: 데이터베이스에서 특정 컬럼 하나만 업데이트하는 경우.
 }

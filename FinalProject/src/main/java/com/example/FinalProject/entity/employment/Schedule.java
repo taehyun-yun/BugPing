@@ -14,19 +14,17 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class Schedule {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Integer scheduleId;
 
-    @JoinColumn(name = "contract_id")
-    @ManyToOne
+
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")//, nullable = false, insertable = false, updatable = false
     private Contract contract;
+
 
     private Integer day; // Monday == 1 , Sunday == 7
     private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
     private LocalTime officialEnd;
-    //참고용. 분 단위로 결과 얻기
-    //Duration duration = Duration.between(b, a);
-    //long minutes = duration.toMinutes();
     private Integer breakMinute; // 1 = 1분
-
 }

@@ -1,31 +1,32 @@
 package com.example.FinalProject.controller.employment;
 
-import com.example.FinalProject.entity.employment.Schedule;
-import com.example.FinalProject.repository.employment.ScheduleRepository;
-import com.example.FinalProject.repository.employment.WorkChangeRepository;
 import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/calendar")
 public class ScheduleController {
 
     @Autowired
     private ScheduleService scheduleService;
 
-    @Autowired
-    private WorkChangeRepository changeRepository;
+    public ResponseEntity<List<Map<String, Object>>> getSchedules(
+            @RequestParam String userId,
+            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false) LocalDate end) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    @Autowired
-    private ScheduleRepository scheduleRepository;
-
-    @PostMapping("/api/schedules")
-    public ResponseEntity<Schedule> saveSchedule(@RequestBody Schedule schedule) {
-        System.out.println("받은 데이터: " + schedule); // 요청 데이터 확인
-        Schedule savedSchedule = scheduleRepository.save(schedule);
-        return ResponseEntity.ok(savedSchedule);
+        // UserId 사용자 전체 일정
+        List<Map<String, Object>> schedules = scheduleService.getUserSchedule(userId);
+        return ResponseEntity.ok(schedules);
     }
 
 }
