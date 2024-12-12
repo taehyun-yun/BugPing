@@ -95,6 +95,7 @@
 
 <script setup>
 import { ref, defineProps, defineEmits, watch } from 'vue'
+import axios from 'axios' 
 import ScheduleModal from '@/components/employment/ScheduleModal.vue'; // ScheduleModal import
 
 const props = defineProps({
@@ -183,13 +184,44 @@ const closeModal = () => {
     emit('close')
 }
 
-const saveContract = () => {
-    emit('save', {
-        ...props.contract,
-        ...editedContract.value
-    })
+// const saveContract = () => {
+//     emit('save', {
+//         ...props.contract,
+//         ...editedContract.value
+//     })
+//     closeModal()
+// }
+
+
+
+const saveContract = async () => {
+    const baseUrl = import.meta.env.VITE_API_URL; 
+    console.log('baseUrl:', baseUrl); // 여기서 baseUrl이 undefined나 빈 문자열이 아닌지 확인
+
+    console.log('props.contract:', props.contract);
+    if (props.contract && props.contract.contractId) {
+        const updatedContract = {
+            ...props.contract,
+            ...editedContract.value,
+            // LocalDateTime 형식에 맞게 'T00:00:00' 추가
+            contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
+            contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
+            
+        };
+
+        try {
+            const response = await axios.put(`${baseUrl}/api/contracts/${props.contract.contractId}`, updatedContract);
+            console.log('계약 업데이트 성공:', response.data);
+        } catch (error) {
+            console.error('계약 업데이트 실패:', error);
+        }
+    }
+
     closeModal()
 }
+
+
+
 
 const getDayName = (dayNumber) => {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
