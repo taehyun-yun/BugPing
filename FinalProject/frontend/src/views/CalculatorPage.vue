@@ -190,7 +190,6 @@ const fetchEmployeeList = async () => {
     const response = await axios.get("http://localhost:8707/api/employees");
     console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
     employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
-    console.log("====================", employees.value);
   } catch (error) {
     console.error("Error fetchEmployeeList : ", error);
   }
@@ -253,24 +252,39 @@ onMounted(() => {
 const showModal = async (employee) => {
   console.log("선택된 직원 데이터:", employee); // 데이터 확인
 
+  console.log("전송 데이터:", {
+    userId: employee.employeeId,
+    startDate: "2023-12-01",
+    endDate: "2023-12-31"
+  });
+
   try {
-    // 선택된 직원 데이터를 직접 모달에 반영
+    // 백엔드 API 호출
+    console.log("선택된 직원 데이터: ", employee);
+    const response = await axios.post("http://localhost:8707/api/payroll", {
+      userId: employee.employeeId, // // employeeId를 userId로 전달
+      startDate: "2023-12-01", // 시작일
+      endDate: "2023-12-31",   // 종료일
+    });
+    console.log('급여 계산 결과: ', response.data);
+
+    // 선택된 직원의 급여 데이터 모달에 출력
     selectedEmployee.value = {
       name: employee.name,
-      paymentDate: "2024-12-31", // 지급일
-      basicSalary: employee.basicSalary || 0,
-      weeklyAllowance: employee.weeklyAllowance || 0, // 주휴 수당
-      overtimePay: employee.overtimePay || 0, // 연장 수당
-      nightPay: employee.nightPay || 0, // 야간 수당
-      deduction: employee.deduction || 0, // 공제액
-      totalSalary: employee.totalSalary || 0, // 총 급여
+      paymentDate: "2024-12-31", // 지급일 (하드코딩 추후 변경 예정)
+      basicSalary: response.data.basicSalary || 0,
+      weeklyAllowance: response.data.weeklyAllowance || 0,
+      overtimePay: response.data.overtimePay || 0,
+      nightPay: response.data.nightPay || 0,
+      deduction: response.data.deduction || 0,
+      totalSalary: response.data.totalSalary || 0,
     };
 
-    // 모달 표시
     isModalVisible.value = true;
+
   } catch (error) {
-    console.error("Error opening modal: ", error);
-    alert("모달 데이터를 설정하는 중 문제가 발생했습니다.");
+    console.error("Error payroll : ", error);
+    alert("급여 데이터를 가져오는 중 문제가 발생했습니다.");
   }
 };
 
