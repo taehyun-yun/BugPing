@@ -18,7 +18,7 @@
             alt="프로필 아이콘"
             class="profile-img"
           />
-          <span>{{ notice.work?.user?.name || "작성자 없음" }}</span>
+          <span>{{ notice.work.user.name }}</span>
           <!-- 작성자 이름 표시 -->
         </div>
         <div class="date-info">
@@ -43,26 +43,12 @@
     <div class="attachments" v-if="notice.files && notice.files.length > 0">
       <h2>첨부 파일</h2>
       <ul>
-        <li
-          v-for="file in notice.files"
-          :key="file.fileId"
-          class="attachment-item"
-        >
-          <!-- 이미지 미리보기 -->
-          <img
-            :src="`http://localhost:8707/notice/files/${file.filePath}`"
-            alt="첨부 이미지"
-            class="preview-image"
-            width="800"
-            height="500"
-          />
-          <!-- 이미지 원본 보기 -->
+        <li v-for="file in notice.files" :key="file.fileId">
           <a
             :href="`http://localhost:8707/notice/files/${file.filePath}`"
             target="_blank"
-            class="view-link"
           >
-            원본 보기
+            {{ file.filePath }}
           </a>
         </li>
       </ul>

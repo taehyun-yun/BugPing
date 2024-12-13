@@ -14,14 +14,12 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class Schedule {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer scheduleId;
 
-
-    @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contract_id")//, nullable = false, insertable = false, updatable = false
+    @JoinColumn(name = "contract_id")
+    @ManyToOne
     private Contract contract;
-
 
     private Integer day; // Monday == 1 , Sunday == 7
     private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분

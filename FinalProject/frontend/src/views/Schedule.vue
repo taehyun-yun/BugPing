@@ -22,7 +22,6 @@ import { ref } from 'vue';
 import FullCalendar from '@fullcalendar/vue3'; // FullCalendar 
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
 
@@ -55,12 +54,6 @@ const closeModal = () => {
     const calendarOptions = ref({
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
-        locale: 'ko', //한국어
-        headerToolbar: {
-            left: 'prev, next today',
-            center: 'title',
-            right: 'dayGridMonth, timeGridWeek, timeGridDay'
-        },
         events: async (fetchInfo, successCallback, failureCallback) => {
             try {
 
@@ -68,7 +61,7 @@ const closeModal = () => {
                 const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
                 const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd'); 
 
-                const response = await axios.get('http://localhost:8707/api/calendar', {
+                const response = await axios.get('http://localhost:8707/api/schedules/paged', {
                     params: {
                         start: startFormatted,
                         end: endFormatted,
@@ -87,7 +80,7 @@ const closeModal = () => {
     selectable: true,   // 드래그로 영역 선택 가능
     eventColor: '#3788d8',  // 기본 이벤트 색상
 
-    //  제목만 표시
+    // 이벤트 렌더링: 제목만 표시
     eventContent: function (info) {
         return {
             html: `<div class="fc-event-title">${info.event.title}</div>`,
@@ -104,7 +97,7 @@ const calendarRef = ref(null);
 
 </script>
 
-<style scoped>
+<style>
 /* 달력 전체 스타일 */
 .calendar-and-schedule {
     display: flex;
@@ -171,5 +164,4 @@ const calendarRef = ref(null);
 .modal-content button:hover {
     background-color: #2c6fb2;
 }
-
 </style>

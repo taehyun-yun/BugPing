@@ -1,7 +1,9 @@
 package com.example.FinalProject.entity.attendance;
 
+import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.entity.employment.WorkChange;
+import com.example.FinalProject.entity.work.Work;
 import jakarta.persistence.*;
 import lombok.*;
 

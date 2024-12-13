@@ -108,7 +108,7 @@ import java.util.stream.Collectors;
             if (work != null) {
                 WorkDTO workDTO = new WorkDTO();
                 workDTO.setWorkId(work.getWorkId());
-                if (work.getUser() != null) {   // User 정보 확인
+                if (work.getUser() != null) {
                     workDTO.setUserId(work.getUser().getUserId());
                     workDTO.setUserName(work.getUser().getName());
                 }

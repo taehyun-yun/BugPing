@@ -43,15 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 //토큰이 유효하다면 Authentication 객체를 생성하고 SecurityContext에 설정
                 Authentication authentication = jwtService.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                //System.out.println("토큰 유효성 검사 성공, 인증 객체 생성");
+                System.out.println("토큰 유효성 검사 성공, 인증 객체 생성");
             } else{
-                //System.out.println("토큰 유효성 검사 실패");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid JWT token");
+                System.out.println("토큰 유효성 검사 실패");
                 return;
             }
         } else {
-            //System.out.println("토큰이 쿠키에서 전달되지 않음");
+            System.out.println("토큰이 쿠키에서 전달되지 않음");
         }
 
         // 필터 체인 진행
