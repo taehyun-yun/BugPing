@@ -44,7 +44,14 @@ import java.util.stream.Collectors;
 
         @Override
         public void deleteNotices(List<Integer> noticeIds) {
-            noticeRepository.deleteAllByIdInBatch(noticeIds);
+            for (Integer noticeId : noticeIds) {
+                Notice notice = noticeRepository.findById(noticeId)
+                        .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다: " + noticeId));
+
+                // Notice와 연결된 파일 삭제
+                notice.getFiles().clear();
+                noticeRepository.delete(notice);
+            }
         }
 
         @Override

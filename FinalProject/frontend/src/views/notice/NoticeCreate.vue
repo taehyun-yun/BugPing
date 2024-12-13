@@ -69,7 +69,7 @@
               <div class="attachment-card1" @click="triggerFileUpload('image')">
                 <img
                   src="@/assets/noticeimg/add.png"
-                  alt="공지 아이콘"
+                  alt="업로드 아이콘"
                   class="upload-icon"
                 />
               </div>
@@ -95,7 +95,7 @@
               <div class="attachment-header">
                 <img
                   src="@/assets/noticeimg/file.png"
-                  alt="공지 아이콘"
+                  alt="파일 아이콘"
                   class="attachment-img"
                 />
                 <div class="attachment-text">파일 첨부</div>
@@ -103,7 +103,7 @@
               <div class="attachment-card2" @click="triggerFileUpload('file')">
                 <img
                   src="@/assets/noticeimg/add.png"
-                  alt="공지 아이콘"
+                  alt="업로드 아이콘"
                   class="upload-icon"
                 />
               </div>
@@ -119,6 +119,11 @@
               <ul v-if="uploadedFiles.length > 0" class="uploaded-files">
                 <li v-for="(file, index) in uploadedFiles" :key="index">
                   {{ file.name }}
+                  <img
+                    src="@/assets/noticeimg/remove.png"
+                    alt="삭제 아이콘"
+                    class="remove-icon"
+                  />
                 </li>
               </ul>
             </div>
@@ -493,12 +498,19 @@ const fileInput = ref(null);
 }
 
 .image-preview img {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 5px;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
 }
 
 .uploaded-files {
+  text-align: left;
   list-style: none;
   padding: 0;
   margin-top: 10px;
@@ -506,8 +518,13 @@ const fileInput = ref(null);
 
 .uploaded-files li {
   background: #f5f5f5;
-  padding: 5px 10px;
-  border-radius: 5px;
-  margin-bottom: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
 }
 </style>
