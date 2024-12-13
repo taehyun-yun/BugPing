@@ -1,9 +1,9 @@
+// NoticeService.java
 package com.example.FinalProject.service;
 
 import com.example.FinalProject.dto.NoticeDTO;
 import com.example.FinalProject.entity.notice.Notice;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -35,4 +35,9 @@ public interface NoticeService {
     NoticeDTO createNoticeAsDTO(Notice notice);
 
     NoticeDTO updatedNoticeAsDTO(Notice notice);
+
+    // 파일 삭제 관련 메서드
+    void removeFiles(Notice notice, List<Integer> removedFileIds);
+
+    List<Integer> parseRemovedFileIds(String removedFileIdsJson);
 }

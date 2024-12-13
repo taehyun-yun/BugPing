@@ -1,3 +1,4 @@
+// NoticeController.java
 package com.example.FinalProject.controller.notice;
 
 import com.example.FinalProject.dto.NoticeDTO;
@@ -11,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/notice")
-//@CrossOrigin(origins = "http://localhost:8080") // 프론트엔드의 도메인에 맞게 수정 필요
 public class NoticeController {
 
     private final NoticeService noticeService;
@@ -117,7 +116,8 @@ public class NoticeController {
             @RequestParam("content") String content,
             @RequestParam("type") String type,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "removedFileIds", required = false) String removedFileIdsJson
     ) {
         Notice existingNotice = noticeService.getNoticeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항이 존재하지 않습니다."));
@@ -147,6 +147,12 @@ public class NoticeController {
                         existingNotice.addFile(uploadedFile);
                     }
                 }
+            }
+
+            // 파일 삭제 처리
+            if (removedFileIdsJson != null && !removedFileIdsJson.isEmpty()) {
+                List<Integer> removedFileIds = noticeService.parseRemovedFileIds(removedFileIdsJson);
+                noticeService.removeFiles(existingNotice, removedFileIds);
             }
 
             NoticeDTO updatedNotice = noticeService.updatedNoticeAsDTO(existingNotice);
