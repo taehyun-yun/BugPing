@@ -127,12 +127,35 @@
               class="file-input-hidden"
               @change="handleFileUpload"
             />
-            <!-- 업로드된 파일 목록 -->
-            <ul v-if="uploadedFiles.length > 0" class="uploaded-files">
-              <li v-for="(file, index) in uploadedFiles" :key="index">
-                {{ file.name }}
-              </li>
-            </ul>
+            <!-- 기존 첨부 파일 -->
+            <div v-if="existingFiles.length > 0" class="existing-files">
+              <h3>기존 첨부 파일</h3>
+              <ul>
+                <li v-for="file in existingFiles" :key="file.fileId">
+                  <a
+                    :href="`http://localhost:8707/notice/files/${file.filePath}`"
+                    target="_blank"
+                  >
+                    {{ file.filePath }}
+                  </a>
+                  <button
+                    type="button"
+                    @click="removeExistingFile(file.fileId)"
+                  >
+                    삭제
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <!-- 새로 첨부한 파일 목록 -->
+            <div v-if="uploadedFiles.length > 0" class="uploaded-files-section">
+              <h3>새로 첨부한 파일</h3>
+              <ul class="uploaded-files">
+                <li v-for="(file, index) in uploadedFiles" :key="index">
+                  {{ file.name }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -147,7 +170,6 @@
     </form>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -180,6 +202,9 @@ const previewImage = ref("");
 const imageInput = ref(null);
 const fileInput = ref(null);
 
+// Removed file IDs
+const removedFileIds = ref([]);
+
 /**
  * 공지사항 데이터를 로드하는 함수
  */
@@ -190,8 +215,17 @@ const loadNotice = async () => {
       `http://localhost:8707/notice/${noticeId}`
     );
     notice.value = response.data;
-    activeCategory.value = notice.value.type;
+
+    // 백엔드에서 보내는 type 값에 따라 프론트엔드 카테고리 설정
+    const typeMapReverse = {
+      NOTICE: "공지",
+      MANUAL: "매뉴얼",
+      SPECIAL: "특이사항",
+    };
+    activeCategory.value = typeMapReverse[notice.value.type] || "공지";
+
     existingFiles.value = notice.value.files || [];
+
     // 이미지 미리보기 설정 (가정: 첫 번째 이미지가 메인 이미지)
     const imageFile = existingFiles.value.find((file) =>
       file.fileType.startsWith("image/")
@@ -222,6 +256,11 @@ const saveNotice = async () => {
   formData.append("title", notice.value.title);
   formData.append("content", notice.value.content);
   formData.append("type", typeMap[activeCategory.value]);
+
+  // 삭제된 파일 ID 포함
+  if (removedFileIds.value.length > 0) {
+    formData.append("removedFileIds", JSON.stringify(removedFileIds.value));
+  }
 
   // 이미지 파일 추가
   if (imageInput.value && imageInput.value.files[0]) {
@@ -258,7 +297,8 @@ const saveNotice = async () => {
  */
 const setActiveCategory = (category) => {
   activeCategory.value = category;
-  notice.value.type = category;
+  // 필요 시 notice.type 업데이트
+  // notice.value.type = category; // 만약 'type'을 유지하고 싶다면
 };
 
 /**
@@ -266,9 +306,9 @@ const setActiveCategory = (category) => {
  */
 const triggerFileUpload = (type) => {
   if (type === "image") {
-    document.querySelector('input[type="file"][accept="image/*"]').click();
+    imageInput.value.click();
   } else if (type === "file") {
-    document.querySelector('input[type="file"]:not([accept])').click();
+    fileInput.value.click();
   }
 };
 
@@ -310,11 +350,20 @@ const cancelEdit = () => {
   router.push({ name: "noticedetail", params: { id: noticeId } }); // 상세 페이지로 이동
 };
 
+/**
+ * 기존 파일 제거 함수
+ */
+const removeExistingFile = (fileId) => {
+  removedFileIds.value.push(fileId);
+  existingFiles.value = existingFiles.value.filter(
+    (file) => file.fileId !== fileId
+  );
+};
+
 onMounted(() => {
   loadNotice();
 });
 </script>
-
 <style scoped>
 .notice-edit {
   max-width: 800px;
@@ -443,11 +492,54 @@ textarea {
   border-radius: 5px;
 }
 
-/* 첨부 파일 목록 */
+/* 기존 첨부 파일 */
+.existing-files {
+  margin-top: 10px;
+}
+
+.existing-files h3 {
+  margin-bottom: 10px;
+}
+
+.existing-files ul {
+  list-style: none;
+  padding: 0;
+}
+
+.existing-files li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.existing-files a {
+  margin-right: 10px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.existing-files button {
+  padding: 2px 6px;
+  font-size: 12px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 새로 첨부한 파일 목록 */
+.uploaded-files-section {
+  margin-top: 10px;
+}
+
+.uploaded-files-section h3 {
+  margin-bottom: 10px;
+}
+
 .uploaded-files {
   list-style: none;
   padding: 0;
-  margin-top: 10px;
 }
 
 .uploaded-files li {
