@@ -25,4 +25,5 @@ public class Schedule {
     private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
     private LocalTime officialEnd;
     private Integer breakMinute; // 1 = 1분
+    private String status; // 비-활성화
 }

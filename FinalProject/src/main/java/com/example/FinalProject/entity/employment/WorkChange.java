@@ -27,4 +27,5 @@ public class WorkChange {
     private LocalDateTime changeEndTime;
     private String inOut;
     private boolean permit;
+    private String status; // 비-활성화
 }

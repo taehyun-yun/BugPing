@@ -16,13 +16,15 @@ import java.time.LocalDateTime;
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "contractId", nullable = false, updatable = false)
     private Integer contractId;
 
-    @JoinColumn(name = "work_id")
-    @ManyToOne
+    @ManyToOne//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_id")//, nullable = false, insertable = false, updatable = false
     private Work work;
 
-    private int hourlyWage; // 시급
-    private LocalDateTime contractStart; // 적용 시작일
-    private LocalDateTime contractEnd; // 적용 종료일
+    private int hourlyWage;
+    private LocalDateTime contractStart; //LocalDate -> LocalDateTime 변경 (캘린더 사용 시 변환 필요)
+    private LocalDateTime contractEnd;
+    private String status; // 계약 비-활성화
 }

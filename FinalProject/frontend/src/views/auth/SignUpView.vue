@@ -71,7 +71,9 @@ const golink = () =>{
         margin-bottom: 60px;
     }
     .modal-content{
-        min-height: 500px;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
     }

@@ -23,7 +23,20 @@
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/envelope-regular.svg">
-            <input type="email" class="input-field" placeholder="아이디, 비밀번호 분실시 사용할 이메일(선택)" v-model="localdata.email">
+            <div class="email-container">
+                <input type="email" class="input-field" placeholder="계정 분실시 사용할 이메일(선택)" maxlength="20" v-model="inputEmail">
+                <button type="button" @click="sendCode">
+                    <img v-show="wait" style="margin : 0 ;"src="/src/assets/Loginimg/Dual Ring.svg">
+                    <div v-show="!wait">{{sendButtonMsg}}</div>
+                </button>
+            </div>
+        </div>
+        <div class="input-group" v-show="useEmail">
+            <img src="/src/assets/Loginimg/envelope-regular.svg">
+            <div class="email-container">
+                <input type="text" class="input-field" placeholder="인증번호" maxlength="20" v-model="inputCode">
+                <button type="button" @click="checkCode">확인</button>
+            </div>
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/calendar.svg">
@@ -40,7 +53,62 @@
     </div>
 </template>
 <script setup>
-import { computed, reactive, watch } from 'vue';
+import { axiosAddress } from '@/stores/axiosAddress';
+import axios from 'axios';
+import { computed, reactive, watch, ref } from 'vue';
+const useEmail = ref(false);//이메일을 사용할지 말지에 따라 입력폼 등장.
+const inputEmail = ref('');
+const inputEmailSaved = ref('');
+const isCooltime = ref(false);
+const currentCooltime = ref(0);
+const sendCode = async() =>{
+    useEmail.value = true;
+    if(currentCooltime.value == 0 ){
+        //쿨타임 초기화
+        isCooltime.value =  true;
+        currentCooltime.value = 180;
+        //현재 입력한 이메일을 저장
+        inputEmailSaved.value = inputEmail.value;
+        //로딩이미지 보이기 설정
+        wait.value = true;
+        //메세지 전송
+        await axios.post(axiosAddress+"/sendCode",{ inputEmail : inputEmailSaved.value},{ withCredentials : true })
+        .then((res)=>{
+            alert(res.data);
+        })
+        //로딩이미지 안보이기 설정
+        wait.value = false;
+        //쿨타임
+        const cooldown = setInterval(()=>{currentCooltime.value -= 1;},1000);
+        setTimeout(()=>{
+        isCooltime.value = false;
+        currentCooltime.value = 0;
+        clearInterval(cooldown);
+        }, 3 * 60 * 1000);
+    }
+}
+const inputCode = ref(''); 
+const checkCode = async() =>{
+    axios.post(axiosAddress+"/checkCode",{ inputEmail : inputEmailSaved.value ,inputCode : inputCode.value},{withCredentials: true})
+    .then((res)=>{
+        localdata.email = inputEmailSaved.value;
+        alert("인증되었습니다.");
+    })
+    .catch((err)=>{
+        alert("인증번호가 일치하지 않습니다. 다시 발급 받아주세요.");
+        localdata.email = "";
+    })
+}
+const sendButtonMsg = ref('인증번호 발송');
+const wait = ref(false);
+watch(currentCooltime,(newValue)=>{
+    if(newValue != 0){
+        sendButtonMsg.value = newValue;
+    } else {
+        sendButtonMsg.value = '인증번호 발송';
+    }
+},{ deep : true})
+//전화번호 input 3개 합치기
 const t = reactive({
     num1 : '',
     num2 : '',
@@ -60,6 +128,7 @@ const localdata = reactive({
     birth : '',
     gender : '',
 });
+
 const emit = defineEmits(['update']);
 watch (()=> localdata,(newData) => emit('update',newData), {deep : true});
 //다음 input으로 자동으로 넘어가게 하기
@@ -101,6 +170,7 @@ const nextinput = (e,num) =>{
         background: none;
         width: calc(100% - 80px);
         text-align: center;
+        font-size: 20px;
     }
     .input-group input[type="radio"]{
         display: none;
@@ -132,5 +202,28 @@ const nextinput = (e,num) =>{
         text-align: center;
         border-radius: 5px;
         background-color: white;
+    }
+    button {
+        width: 200px;
+        display: inline-block;
+        background-color: #4FD1C5;
+        color: #ffffff;
+        border: none;
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: lightseagreen;
+    }
+    .email-container{
+        display: inline-flex;
+        width: calc(100% - 60px);
+        justify-content: space-evenly;
+    }
+    .email-container input{
+        width: calc(100% - 200px);
     }
 </style>

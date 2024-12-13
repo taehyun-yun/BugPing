@@ -1,182 +1,200 @@
+<!-- AdminContractTable.vue -->
 <template>
-    <div class="table-container">
-      <table class="employee-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Title</th>
-            <th>Status</th>
-            <th>Position</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="employee in employees" :key="employee.email">
+  <div class="table-container">
+    <h1>계약 목록</h1>
+    <div v-if="contractsStore.loading">로딩 중...</div>
+    <div v-if="contractsStore.error" class="error">{{ contractsStore.error }}</div>
+
+    <table class="employee-table" v-if="contractsStore.contracts.length">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ID</th>
+          <th>이름</th>
+          <th>시급</th>
+          <th>계약 시작</th>
+          <th>계약 종료</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <template v-for="contract in contractsStore.contracts" :key="contract.contractId">
+          <tr class="parent-row">
             <td>
-              <div class="employee-info">
-                <img :src="employee.image" :alt="employee.name" class="avatar" />
-                <div class="employee-details">
-                  <p class="employee-name">{{ employee.name }}</p>
-                  <p class="employee-email">{{ employee.email }}</p>
+              <button @click="toggleExpand(contract)" class="expand-button">
+                {{ contract.expanded ? '▼' : '▶' }}
+              </button>
+            </td>
+            <td>{{ contract.work.user.userId }}</td>
+            <td>{{ contract.work.user.name }}</td>
+            <td>{{ formatCurrency(contract.hourlyWage) }}</td>
+            <td>{{ formatDate(contract.contractStart) }}</td>
+            <td>{{ formatDate(contract.contractEnd) }}</td>
+            <td><button class="edit-button" @click="openModal(contract)">수정</button></td>
+          </tr>
+          <template v-if="contract.expanded">
+            <tr v-for="schedule in contract.schedules" :key="schedule.id" class="child-row">
+              <td></td>
+              <td colspan="6">
+                <div class="schedule-info">
+                  <span><strong>요일:</strong> {{ getDayName(schedule.day) }}</span>
+                  <span><strong>시작 시간:</strong> {{ formatTime(schedule.officialStart) }}</span>
+                  <span><strong>종료 시간:</strong> {{ formatTime(schedule.officialEnd) }}</span>
+                  <span><strong>휴게 시간:</strong> {{ formatDuration(schedule.breakMinute) }}</span>
                 </div>
-              </div>
-            </td>
-            <td>
-              <p class="title">{{ employee.title }}</p>
-              <p class="department">{{ employee.department }}</p>
-            </td>
-            <td>
-              <span :class="['status-badge', employee.status.toLowerCase()]">
-                {{ employee.status }}
-              </span>
-            </td>
-            <td>{{ employee.position }}</td>
-            <td>
-              <button class="edit-button">EDIT</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </template>
-  
-  <script setup>
-  const employees = [
-    {
-      name: 'John Doe',
-      email: 'john.doe@gmail.com',
-      image: 'https://mdbootstrap.com/img/new/avatars/8.jpg',
-      title: 'Software engineer',
-      department: 'IT department',
-      status: 'Active',
-      position: 'Senior'
-    },
-    {
-      name: 'Alex Ray',
-      email: 'alex.ray@gmail.com',
-      image: 'https://mdbootstrap.com/img/new/avatars/6.jpg',
-      title: 'Consultant',
-      department: 'Finance',
-      status: 'Onboarding',
-      position: 'Junior'
-    },
-    {
-      name: 'Kate Hunington',
-      email: 'kate.hunington@gmail.com',
-      image: 'https://mdbootstrap.com/img/new/avatars/7.jpg',
-      title: 'Designer',
-      department: 'UI/UX',
-      status: 'Awaiting',
-      position: 'Senior'
-    }
-  ]
-  </script>
-  
-  <style scoped>
-  .table-container {
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .employee-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-  }
-  
-  .employee-table th {
-    padding: 12px 16px;
-    text-align: left;
-    background-color: #f8f9fa;
-    color: #333;
-    font-weight: 500;
-    font-size: 0.875rem;
-  }
-  
-  .employee-table td {
-    padding: 16px;
-    border-bottom: 1px solid #f0f0f0;
-    vertical-align: middle;
-  }
-  
-  .employee-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .employee-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .employee-name {
-    margin: 0;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .employee-email {
-    margin: 0;
-    color: #666;
-    font-size: 0.875rem;
-  }
-  
-  .title {
-    margin: 0;
-    color: #333;
-    font-weight: 500;
-  }
-  
-  .department {
-    margin: 0;
-    color: #666;
-    font-size: 0.875rem;
-  }
-  
-  .status-badge {
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-  
-  .status-badge.active {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-  }
-  
-  .status-badge.onboarding {
-    background-color: #e3f2fd;
-    color: #1976d2;
-  }
-  
-  .status-badge.awaiting {
-    background-color: #fff3e0;
-    color: #f57c00;
-  }
-  
-  .edit-button {
-    padding: 6px 12px;
-    border: none;
-    background: none;
-    color: #1976d2;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.875rem;
-  }
-  
-  .edit-button:hover {
-    text-decoration: underline;
-  }
-  </style>
+              </td>
+            </tr>
+          </template>
+        </template>
+      </tbody>
+    </table>
+
+    <!-- ContractModal 추가 -->
+    <ContractModal 
+      :is-open="showModal" 
+      :contract="selectedContract" 
+      @close="closeModal" 
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useContractsStore } from '@/stores/contracts';
+import ContractModal from '@/components/employment/ContractModal.vue';
+
+// Pinia 스토어 사용
+const contractsStore = useContractsStore();
+
+// 모달 상태 관리
+const showModal = ref(false);
+const selectedContract = ref(null);
+
+// 계약 목록 가져오기
+onMounted(() => {
+  contractsStore.fetchContracts();
+});
+
+// 확장 상태 토글
+const toggleExpand = (contract) => {
+  contract.expanded = !contract.expanded;
+};
+
+// 수정 모달 열기
+const openModal = (contract) => {
+  selectedContract.value = contract;
+  showModal.value = true;
+};
+
+// 수정 모달 닫기
+const closeModal = () => {
+  showModal.value = false;
+};
+
+// 금액 포맷팅
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+};
+
+// 날짜 포맷팅
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('ko-KR');
+};
+
+// 시간 포맷팅
+const formatTime = (timeString) => {
+  return timeString;
+};
+
+// 분 단위 시간을 "시간 분"으로 포맷팅
+const formatDuration = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}시간 ${mins}분`;
+};
+
+// 요일 정보 가져오기 - getDayName 함수 (배열(Array) 기반 매핑)
+const getDayName = (dayNumber) => {
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  return days[dayNumber - 1] || '요일 정보 없음';
+};
+</script>
+
+<style scoped>
+.table-container {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.employee-table th {
+  padding: 12px 16px;
+  text-align: left;
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.employee-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.edit-button {
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  color: #1976d2;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.edit-button:hover {
+  text-decoration: underline;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+}
+
+.parent-row {
+  background-color: #ffffff;
+}
+
+.child-row {
+  background-color: #f9f9f9;
+}
+
+.schedule-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.85rem;
+}
+
+.schedule-info span {
+  margin-right: 16px;
+}
+
+.schedule-info strong {
+  color: #555;
+}
+
+.error {
+  color: red;
+}
+</style>
