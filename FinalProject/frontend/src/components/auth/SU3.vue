@@ -66,7 +66,7 @@ const sendCode = async() =>{
     if(currentCooltime.value == 0 ){
         //쿨타임 초기화
         isCooltime.value =  true;
-        currentCooltime.value = 180;
+        currentCooltime.value = 10;
         //현재 입력한 이메일을 저장
         inputEmailSaved.value = inputEmail.value;
         //로딩이미지 보이기 설정
@@ -84,19 +84,20 @@ const sendCode = async() =>{
         isCooltime.value = false;
         currentCooltime.value = 0;
         clearInterval(cooldown);
-        }, 3 * 60 * 1000);
+        }, 1 * 10 * 1000);
     }
 }
 const inputCode = ref(''); 
 const checkCode = async() =>{
     axios.post(axiosAddress+"/checkCode",{ inputEmail : inputEmailSaved.value ,inputCode : inputCode.value},{withCredentials: true})
     .then((res)=>{
-        localdata.email = inputEmailSaved.value;
-        alert("인증되었습니다.");
-    })
-    .catch((err)=>{
-        alert("인증번호가 일치하지 않습니다. 다시 발급 받아주세요.");
-        localdata.email = "";
+        if(res.data){
+            alert(inputEmailSaved.value + "인증되었습니다.")
+            localdata.email = inputEmailSaved.value;
+        } else {
+            alert("인증번호가 일치하지 않습니다. 다시 발급 받아주세요.");
+            localdata.email = "";
+        }
     })
 }
 const sendButtonMsg = ref('인증번호 발송');
