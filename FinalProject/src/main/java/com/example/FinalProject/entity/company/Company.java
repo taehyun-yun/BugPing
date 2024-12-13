@@ -11,7 +11,8 @@ import lombok.*;
 @NoArgsConstructor
 public class Company {
     @Id
-    private String companyId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer companyId;
 
     private String cname;
     private String ctel;

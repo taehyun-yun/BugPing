@@ -65,10 +65,10 @@ public class ScheduleService {
         return scheduleList;
     }
 
-    // 페이징 처리된 스케줄 데이터
-    public Page<Map<String, Object>> getPagedSchedulesByDateRange(LocalDate start, LocalDate end, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Schedule> schedulesPage = scheduleRepository.findByOfficialStartBetween(start, end, pageable);
-        return schedulesPage.map(this::convertScheduleToMap);
-    }
+//    // 페이징 처리된 스케줄 데이터
+//    public Page<Map<String, Object>> getPagedSchedulesByDateRange(LocalDate start, LocalDate end, int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Schedule> schedulesPage = scheduleRepository.findByOfficialStartBetween(start, end, pageable);
+//        return schedulesPage.map(this::convertScheduleToMap);
+//    }
 }

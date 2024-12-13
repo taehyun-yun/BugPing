@@ -94,10 +94,19 @@ public class PayrollService {
             User user = (User) result[2];
 
             // 근무 기록 조회
-            List<Attendance> attendanceList = findAttendanceData(user.getUserId(), work.getWorkId(), LocalDate.now().minusMonths(1), LocalDate.now());
+            List<Attendance> attendanceList = findAttendanceData(
+                    user.getUserId(),
+                    work.getWorkId(),
+                    LocalDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0),
+                    LocalDateTime.now().withHour(23).withMinute(59).withSecond(59)
+            );
 
             // 계약 정보 조회
-            Contract contract = findContractByWorkOrUser(user.getUserId(), work.getWorkId(), LocalDate.now().minusMonths(1), LocalDate.now());
+            Contract contract = findContractByWorkOrUser(
+                    user.getUserId(),
+                    work.getWorkId(),
+                    LocalDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0),
+                    LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
             if (contract == null) {
                 log.warn("유효한 계약 정보를 찾을 수 없습니다. Work ID: {}", work.getWorkId());
                 continue;
@@ -249,7 +258,8 @@ public class PayrollService {
 
 
     // 계약 정보 조회
-    private Contract findContractByWorkOrUser(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
+    private Contract findContractByWorkOrUser(
+            String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("계약 정보 조회 - User ID: {}, Start Date: {}, End Date: {}", userId, startDate, endDate);
         if (workId != null) {
             return contractRepository.findByWorkId(workId);
@@ -260,13 +270,13 @@ public class PayrollService {
     }
 
     // 출근 데이터 조회
-    public List<Attendance> findAttendanceData(String userId, Integer workId, LocalDate startDate, LocalDate endDate) {
+    public List<Attendance> findAttendanceData(String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("출근 데이터 조회 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
         List<Attendance> attendanceList;
         if (workId != null) {
-            attendanceList = attendanceRepository.findAttendancesByWorkIdAndDateRange(workId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+            attendanceList = attendanceRepository.findAttendancesByWorkIdAndDateRange(workId, startDate, endDate);
         } else {
-            attendanceList = attendanceRepository.findAttendancesByDateRange(userId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+            attendanceList = attendanceRepository.findAttendancesByDateRange(userId, startDate, endDate);
         }
 
         if (attendanceList.isEmpty()) {

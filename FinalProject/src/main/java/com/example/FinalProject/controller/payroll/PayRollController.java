@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 @Slf4j
 @RestController
@@ -60,10 +61,16 @@ public class PayRollController {
         // 급여 계산을 각 직원에 대해 수행
         for (EmployeeDTO employee : employeeList) {
             try {
+                // LocalDateTime으로 시작일과 종료일 생성
+                LocalDateTime startDateTime = LocalDate.parse(employee.getStartDate())
+                        .atStartOfDay(); // 시작일의 자정을 기준으로 LocalDateTime 생성
+                LocalDateTime endDateTime = LocalDateTime.now()
+                        .withHour(23).withMinute(59).withSecond(59); // 종료일은 현재 날짜의 끝 시간
+
                 PayrollRequestDTO requestDTO = new PayrollRequestDTO(
                         employee.getEmployeeId(),
-                        LocalDate.parse(employee.getStartDate()), // 정산 시작일
-                        LocalDate.now() // 현재 날짜를 정산 종료일로 사용
+                        startDateTime, // LocalDateTime 시작일
+                        endDateTime // LocalDateTime 종료일
                 );
                 PayrollResponseDTO responseDTO = payrollService.calculatePayroll(requestDTO);
 
