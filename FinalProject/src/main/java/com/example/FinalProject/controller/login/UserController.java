@@ -1,5 +1,6 @@
 package com.example.FinalProject.controller.login;
 
+import com.example.FinalProject.dto.UserFindIdDTO;
 import com.example.FinalProject.service.jwt.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,13 +28,21 @@ public class UserController {
     }
     //인증번호 확인
     @PostMapping("/checkCode")
-    public ResponseEntity<String>checkcode(@RequestBody Map<String,String> map){
+    public Boolean checkcode(@RequestBody Map<String,String> map){
         String inputEmail = map.get("inputEmail");
         String inputCode = map.get("inputCode");
-        if(emailService.isValidCode(inputEmail,inputCode)){
-            return new ResponseEntity<>("인증번호 성공",HttpStatus.OK);
-        }
-        return new ResponseEntity<>("인증번호 실패",HttpStatus.NOT_ACCEPTABLE);
+        return emailService.isValidCode(inputEmail,inputCode);
     }
-
+    @PostMapping("/findId")
+    public List<UserFindIdDTO> findId(@RequestBody Map<String,String>map){
+        String inputEmail = map.get("inputEmail");
+        return emailService.findId(inputEmail);
+    }
+    @PostMapping("/setNewPassword")
+    public ResponseEntity<String> setNewPassword(@RequestBody Map<String,String>map){
+        String userId = map.get("userId");
+        String newPassword = map.get("newPassword");
+        emailService.newPassword(userId,newPassword);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
