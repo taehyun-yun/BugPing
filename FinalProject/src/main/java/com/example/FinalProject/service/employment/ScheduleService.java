@@ -121,4 +121,20 @@ public class ScheduleService {
         Work work = workRepository.findByUser_UserId(userId); // userId로 Work 조회
         return work != null ? work.getCompany().getCompanyId() : null;
     }
+
+    // 사용자 역할에 대한 스케줄 조회
+    public List<Map<String, Object>> getSchedulesByRole(String userId, String role, LocalDate start, LocalDate end, boolean viewCompanySchedule) {
+        if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
+            // employer 또는 viewCompanySchedule=true인 경우 회사 전체 일정 조회
+            Integer companyId = getCompanyIdByUserId(userId); // 회사 ID 조회
+            if (companyId != null) {
+                return getCompanySchedule(companyId, start, end);
+            } else {
+                throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
+            }
+        } else {
+            // 개인 일정 조회
+            return getUserSchedule(userId, start, end);
+        }
+    }
 }

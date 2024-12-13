@@ -19,7 +19,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import FullCalendar from '@fullcalendar/vue3';  
+import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -38,13 +38,14 @@ const modalData = ref({
 // 모달 열기
 const openModal = (event) => {
     modalData.value = {
-        title: event.title,
-        description: event.extendedProps.description || '없음',
+        title: event.title || '제목 없음',
+        description: event.extendedProps?.description || '설명 없음',
         start: format(new Date(event.start), 'yyyy-MM-dd HH:mm'),
-        end: format(new (event.end), 'yyyy-MM-dd HH:MM'),
+        end: event.end ? format(new Date(event.end), 'yyyy-MM-dd HH:mm') : '종료 시간이 없습니다.',
     };
     isModalVisible.value = true;
 };
+
 
 // 모달 닫기
 const closeModal = () => {
@@ -54,6 +55,7 @@ const closeModal = () => {
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
 const selectedCompanyId = ref(''); // 회사 ID
+const userRole = ref(""); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 
 const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
@@ -66,11 +68,29 @@ const calendarOptions = ref({
     plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
     initialView: 'dayGridMonth',
     locale: 'ko', // 한국어
-    headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton'
+    headerToolbar: computed(() => {
+        // role이 employer인 경우 toggleViewButton을 숨김
+        return userRole.value === 'employer'
+            ? {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay',
+            }
+            : {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton',
+            };
+    }),
+    dayCellDidMount: (info) => {
+        const day = info.date.getDay(); // 0: 일요일, 6: 토요일
+        if (day === 6) {
+            info.el.style.backgroundColor = '#E6E6FA'; // 연한 보라색
+        } else if (day === 0) {
+            info.el.style.backgroundColor = '#F3E5F5'; // 연한 분홍색
+        }
     },
+
     customButtons: {
         toggleViewButton: {
             text: buttonText.value, // 동적으로 텍스트 설정
@@ -102,7 +122,7 @@ const calendarOptions = ref({
                 params.companyId = selectedCompanyId.value;
             }
 
-            const [existingSchedulesResponse, holidaysResponse] = await Promise.all([
+            const [serverResponse, holidaysResponse] = await Promise.all([
                 axios.get('http://localhost:8707/api/calendar', { params }),
                 axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
                     params: {
@@ -114,24 +134,32 @@ const calendarOptions = ref({
                     },
                 }),
             ]);
-            
-            // 서버에서 받아온 userId와 companyId 사용
-            selectedUserId.value = existingSchedulesResponse.data.userId;
-            selectedCompanyId.value = existingSchedulesResponse.data.companyId;
 
-            
-            const existingSchedules = existingSchedulesResponse.data.schedules.map((event) => ({
+            // 서버 데이터 처리
+            const { userId, role, companyId, schedules } = serverResponse.data;
+            selectedUserId.value = userId; // userId 설정
+            userRole.value = role; // role 설정
+            selectedCompanyId.value = companyId; // companyId 설정
+
+            const existingSchedules = schedules.map((event) => ({
                 title: event.title,
                 start: event.start,
                 end: event.end,
                 color: event.color || '#3788d8',
+                extendedProps: {
+                description: event.description, // 서버에서 받은 description
+                },
             }));
 
-            const holidaySchedules = holidaysResponse.data.items.map((event) => ({
+            // 공휴일 데이터 처리
+            const holidaySchedules = holidaysResponse.data.items
+            .filter((event) => event.summary !== '섣달 그믐날')     
+            .map((event) => ({
                 title: event.summary,
                 start: event.start.date || event.start.dateTime,
                 end: event.end.date || event.end.dateTime,
-                color: '#FF0000', // 공휴일 색상
+                color: '#FF0000',
+                editable: false, //드래그 앤 드롭 비활성화
             }));
 
             // 기존 일정 + 공휴일 
@@ -141,7 +169,7 @@ const calendarOptions = ref({
             failureCallback(error);
         }
     },
-    
+
     editable: true,     // 드래그로 이벤트 수정 가능
     selectable: true,   // 드래그로 영역 선택 가능
     eventColor: '#3788d8',  // 기본 이벤트 색상
@@ -238,11 +266,14 @@ watch(buttonText, () => {
 .modal-content button:hover {
     background-color: #2c6fb2;
 }
-.fc-day-sat, .fc-day-sun {
+
+.fc-daygrid-day.fc-saturday {
     background-color: #E6E6FA !important;
+    /* 토요일 색상 */
 }
 
-.fc-day-sun {
+.fc-daygrid-day.fc-sunday {
     background-color: #F3E5F5 !important;
+    /* 일요일 색상 */
 }
 </style>
