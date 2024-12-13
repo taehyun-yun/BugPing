@@ -125,7 +125,7 @@
               <!-- 공지사항 제목 -->
               <td>{{ item.title }}</td>
               <!-- 작성자 이름 (work.user.name) -->
-              <td>{{ item.work.user.name }}</td>
+              <td>{{ item.work?.user?.name || "작성자 없음" }}</td>
               <!-- 보기 권한 -->
               <td>{{ item.viewers }}</td>
               <!-- 작성 날짜 형식 변경 후 표시 -->
@@ -388,7 +388,7 @@ const getStatusLabel = (status) => {
 };
 </script>
 
-<style>
+<style scoped>
 /* 전체 레이아웃 스타일 */
 .main-wrapper {
   display: flex;

@@ -1261,7 +1261,7 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="360" parent="283" name="schedule_id">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>43</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>

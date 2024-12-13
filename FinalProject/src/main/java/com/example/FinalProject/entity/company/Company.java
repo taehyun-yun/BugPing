@@ -15,7 +15,6 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer companyId;
-
     private String cname;
     private String ctel;
     private String address;
