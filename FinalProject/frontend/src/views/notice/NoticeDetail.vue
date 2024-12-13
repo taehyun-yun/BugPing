@@ -134,7 +134,7 @@ const deleteNotice = async () => {
         data: [notice.value.noticeId],
       });
       alert("공지사항이 삭제되었습니다.");
-      router.push({ name: "NoticeMain" });
+      router.push({ name: "notice" });
     } catch (error) {
       console.error("공지사항 삭제 중 오류 발생:", error);
       alert("공지사항 삭제 중 오류가 발생했습니다.");
@@ -150,15 +150,20 @@ const deleteNotice = async () => {
 const formatDate = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  return date
-    .toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .replace(/\./g, "-");
+
+  // 날짜
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // 시간
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const period = hours >= 12 ? "오후" : "오전";
+
+  const formattedHours = hours % 12 || 12;
+
+  return `${year}-${month}-${day} ${period} ${formattedHours}:${minutes}`;
 };
 
 /**
