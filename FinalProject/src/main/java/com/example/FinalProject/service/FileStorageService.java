@@ -1,10 +1,10 @@
+// FileStorageService.java
 package com.example.FinalProject.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -62,6 +62,15 @@ public class FileStorageService {
             return uniqueFileName;
         } catch (IOException ex) {
             throw new RuntimeException("파일 저장 중 오류 발생: " + uniqueFileName, ex);
+        }
+    }
+
+    public void deleteFile(String fileName) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Files.deleteIfExists(filePath);
+        } catch (IOException ex) {
+            throw new RuntimeException("파일을 삭제할 수 없습니다: " + fileName, ex);
         }
     }
 }
