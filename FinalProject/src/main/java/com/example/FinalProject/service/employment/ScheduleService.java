@@ -115,4 +115,10 @@ public class ScheduleService {
         }
         return scheduleList;
     }
+
+    // userId로 work의 companyId 조회
+    public Integer getCompanyIdByUserId(String userId) {
+        Work work = workRepository.findByUser_UserId(userId); // userId로 Work 조회
+        return work != null ? work.getCompany().getCompanyId() : null;
+    }
 }

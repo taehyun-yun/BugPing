@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';  
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -52,10 +52,12 @@ const closeModal = () => {
 };
 
 // 나의 일정, 회사 일정 보기
-const selectedUserId = ref('user2'); // 사용자 ID
-const selectedCompanyId = ref('45'); // 회사 ID
+const selectedUserId = ref(''); // 사용자 ID
+const selectedCompanyId = ref(''); // 회사 ID
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 
+const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
+const holidayCalendarId = 'ko.south_korea%23holiday@group.v.calendar.google.com';
 // 버튼 텍스트 동적 설정
 const buttonText = computed(() => (isUserView.value ? '회사 근무 보기' : '내 근무 보기'));
 
@@ -76,10 +78,10 @@ const calendarOptions = ref({
                 isUserView.value = !isUserView.value;
                 if (isUserView.value) {
                     selectedCompanyId.value = '';
-                    selectedUserId.value = 'user2';
+                    selectedUserId.value = '';
                 } else {
                     selectedUserId.value = '';
-                    selectedCompanyId.value = '45';
+                    selectedCompanyId.value = '';
                 }
                 calendarRef.value.getApi().refetchEvents(); // 일정 새로 로드
             },
@@ -96,22 +98,50 @@ const calendarOptions = ref({
                 end: endFormatted,
             };
 
-            if (selectedUserId.value) {
-                params.userId = selectedUserId.value;
-            } else if (selectedCompanyId.value) {
+            if (selectedCompanyId.value) {
                 params.companyId = selectedCompanyId.value;
-            } else {
-                throw new Error('userId 또는 companyId가 설정되지 않았습니다.');
             }
 
-            const response = await axios.get('http://localhost:8707/api/calendar', { params });
-            successCallback(response.data);
-            console.log('Fetched Events:', response.data);
+            const [existingSchedulesResponse, holidaysResponse] = await Promise.all([
+                axios.get('http://localhost:8707/api/calendar', { params }),
+                axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
+                    params: {
+                        key: apiKey,
+                        timeMin: fetchInfo.start.toISOString(),
+                        timeMax: fetchInfo.end.toISOString(),
+                        singleEvents: true,
+                        orderBy: 'startTime',
+                    },
+                }),
+            ]);
+            
+            // 서버에서 받아온 userId와 companyId 사용
+            selectedUserId.value = existingSchedulesResponse.data.userId;
+            selectedCompanyId.value = existingSchedulesResponse.data.companyId;
+
+            
+            const existingSchedules = existingSchedulesResponse.data.schedules.map((event) => ({
+                title: event.title,
+                start: event.start,
+                end: event.end,
+                color: event.color || '#3788d8',
+            }));
+
+            const holidaySchedules = holidaysResponse.data.items.map((event) => ({
+                title: event.summary,
+                start: event.start.date || event.start.dateTime,
+                end: event.end.date || event.end.dateTime,
+                color: '#FF0000', // 공휴일 색상
+            }));
+
+            // 기존 일정 + 공휴일 
+            successCallback([...existingSchedules, ...holidaySchedules]);
         } catch (error) {
             console.error('이벤트 데이터를 가져오는 중 오류 발생:', error);
             failureCallback(error);
         }
     },
+    
     editable: true,     // 드래그로 이벤트 수정 가능
     selectable: true,   // 드래그로 영역 선택 가능
     eventColor: '#3788d8',  // 기본 이벤트 색상
@@ -207,5 +237,12 @@ watch(buttonText, () => {
 
 .modal-content button:hover {
     background-color: #2c6fb2;
+}
+.fc-day-sat, .fc-day-sun {
+    background-color: #E6E6FA !important;
+}
+
+.fc-day-sun {
+    background-color: #F3E5F5 !important;
 }
 </style>

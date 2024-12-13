@@ -4,6 +4,8 @@ import com.example.FinalProject.service.employment.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,12 +22,22 @@ public class ScheduleController {
 
     @GetMapping("/calendar")
     public ResponseEntity<?> getSchedules(
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false) Integer companyId,
+            //@RequestParam(required = false) String userId,
+            //@RequestParam(required = false) Integer companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         try {
+            // 로그인한 UserId 가져오기
+          //  Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+            String userId = "user111";     //로그인 아이디
+            System.out.println("userId : "+ userId);
+
+            // 사용자와 연결된 companyId 가져오기
+            Integer companyId = scheduleService.getCompanyIdByUserId(userId);
+            System.out.println("company ID: " + companyId);
+
+            Map<String, Object> response = new HashMap<>();
             List<Map<String, Object>> schedules;
 
             if (userId != null) {
@@ -38,13 +50,13 @@ public class ScheduleController {
                 return ResponseEntity.badRequest().body("userId 또는 companyId를 제공해야 합니다.");
             }
 
-            return ResponseEntity.ok(schedules);
+            response.put("userId", userId);
+            response.put("schedules", schedules);
 
-        } catch (IllegalArgumentException e) {
-            // 잘못된 요청 처리
-            return ResponseEntity.badRequest().body("요청 처리 중 오류 발생: " + e.getMessage());
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            // 일반적인 서버 오류 처리
             return ResponseEntity.status(500).body("서버에서 오류가 발생했습니다: " + e.getMessage());
         }
     }
