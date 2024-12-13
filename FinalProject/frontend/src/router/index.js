@@ -13,10 +13,9 @@ import NoticeEdit from "@/views/notice/NoticeEdit.vue";
 import SignUpView from '@/views/auth/SignUpView.vue';
 import SU1 from '@/components/auth/SU1.vue';
 import SU2 from '@/components/auth/SU2.vue';
-import Employer from '@/views/Employer.vue';
-import Employee from '@/views/Employee.vue';
 import FindIdPwView from '@/views/auth/FindIdPwView.vue';
-import Find1 from '@/components/auth/Find1.vue';
+import Find from '@/components/auth/Find.vue';
+import Enroll from "@/components/employee/enroll.vue";
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -92,15 +91,17 @@ routes: [
         ],},
     { path : '/findIdPw', name : 'findIdPw', component : FindIdPwView, meta : { title : '아이디/비밀번호 찾기', onlyBeforeLogin : true },
         children : [
-            {path: 'find1', name : 'find1', component : Find1,},
+            {path: 'find', name : 'find', component : Find,},
         ]
     },
-    { path : '/employer', name : 'employer', component : Employer, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employer"]},
+    {
+        path : '', meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
         children : [
-            //이 안에 넣으시면 됩니다.
+            {path: 'enroll', name: 'enroll', component : Enroll, title : '근무지 등록'}
         ]
     },
-    { path : '/employee', name : 'employee', component : Employee, meta : {header : true, sidebar : true, requiresAuth: false, roles : ["employee"]},
+    {
+        path : '', meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employer"]} ,
         children : [
             //이 안에 넣으시면 됩니다.
         ]
@@ -137,18 +138,19 @@ router.beforeEach(async(to, from, next) => {
         let auth = await getRole();
         return !auth[0] ? next() : next("/");
     }
+    //로그인이 필요 없다면,
     if (!to?.meta?.requiresAuth) {
         return next(); // 바로 통과
     }
     //로그인이 필요할 때
     let auth = await getRole();
-    alert(auth[0]);
-    if(to?.meta?.requiresAuth && auth[0]){
+    alert("로그인 하였나요? "+auth[0]);
+    if(to?.meta?.requiresAuth && auth[0] && !to?.meta?.roles){
         return next();
     }
     //역할까지 분리해야한다면
     const userRoles = auth[1];
-    alert(userRoles);
+    alert("역할이 맞나요? "+userRoles);
     const routeRoles = to?.meta?.roles || [];
     const hasRequireRole = routeRoles.length === 0 || routeRoles.some((role)=>userRoles.includes(role))
     if(hasRequireRole){
