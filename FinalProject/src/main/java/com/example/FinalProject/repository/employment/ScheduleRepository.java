@@ -1,23 +1,28 @@
 package com.example.FinalProject.repository.employment;
 
 
+import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.util.List;
 
+
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
-
     //----------------------------------- JH ---------------------------------
-
-    // userId의 모든 일정
+    //UserId로 조회
     List<Schedule> findByContract_Work_User_UserId(String userId);
 
-    // 날짜 범위로 스케줄 검색
-    List<Schedule> findByContract_ContractStartBetween(LocalDate start, LocalDate end);
+    // Contract와 관련된 모든 일정 조회
+    List<Schedule> findByContract(Contract contract);
+
+    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
+    List<Schedule> findByCompanyId(@Param("companyId") Integer companyId);
+
+    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
+    List<Schedule> findSchedulesByCompanyId(@Param("companyId") Integer companyId);
 
 
     //----------------------------------- ES ---------------------------------
@@ -49,3 +54,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 }
+
+

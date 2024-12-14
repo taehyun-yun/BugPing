@@ -39,8 +39,8 @@ public class Attendance {
     private String remark; //특이사항
 
     private String isNormalAttendance; //정상출근여부 (지각했지만 출근인정 시 사용)
-    private LocalDateTime recognizedWorkStart; //인정근무시작시간
-    private LocalDateTime recognizedWorkEnd; //인정근무종료시간
+    private LocalDateTime recognizedWorkStart; //인정근무시작시간간
+    private LocalDateTime recognizedWorkEnd; //인정근무종료시
     private int recognizedWorkBreakMinute; //인정휴게시간
     private int recognizedWorkMinute; //인정근무시간( 시작~종료 - 휴게시간 )
 
