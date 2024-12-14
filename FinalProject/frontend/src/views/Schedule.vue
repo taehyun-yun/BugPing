@@ -7,7 +7,7 @@
             <h3>이번달의 근무자</h3>
             <ul>
                 <li v-for="(name, index) in employeeNames" :key="index">
-                    <span class="employee-dot" :style="{ backgroundColor: getRandomColor(index) }"></span>
+                    <span class="employee-dot" :style="{ backgroundColor: getEmployeeColor(name) }"></span>
                     {{ name }}
                 </li>
             </ul>
@@ -35,12 +35,27 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
 
-// Function to generate random pastel colors
-const getRandomColor = (index) => {
-    const hue = (index * 137.5) % 360;
-    return `hsl(${hue}, 70%, 80%)`;
-};
+// 이름 기반 색상 반환
+const getEmployeeColor = (name) => {
+    if (!employeeColorMap.value[name]) {
+        let newHue;
+        const MIN_DIFFERENCE = 30;  // 색상 간 최소 차이 (Hue 값)
 
+        do {
+            // 0~360 범위에서 랜덤한 Hue 값 생성
+            newHue = Math.floor(Math.random() * 360);
+        } while (usedHues.value.some(hue => Math.abs(hue - newHue) < MIN_DIFFERENCE)); // 기존 색상과 비교
+
+        // 사용된 Hue 값에 추가
+        usedHues.value.push(newHue);
+        
+        // HSL 값으로 색상 생서
+        const newColor = `hsl(${newHue}, 70%, 80%)`;
+        employeeColorMap.value[name] = newColor;
+    }
+    
+    return employeeColorMap.value[name];
+};
 
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
@@ -48,6 +63,9 @@ const selectedCompanyId = ref(''); // 회사 ID
 const userRole = ref(''); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 const scheduleItems = ref([]);
+const employeeColorMap = ref({});
+const usedHues = ref([]);  // 사용된 Hue 값을 저장
+
 
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
@@ -82,31 +100,18 @@ const closeModal = () => {
     isModalVisible.value = false;
 };
 
-
+// 구글 Calendar API
 const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
 const holidayCalendarId = 'ko.south_korea%23holiday@group.v.calendar.google.com';
+
 // 버튼 텍스트 동적 설정
 const buttonText = computed(() => (isUserView.value ? '내 근무 보기' : '회사 근무 보기'));
 
-// FullCalendar 옵션
-const calendarOptions = ref({
+// 공통 옵션 설정
+const commonOptions = {
     plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
     initialView: 'dayGridMonth',
-    locale: 'ko', // 한국어
-    headerToolbar: computed(() => {
-        // role이 employer인 경우 toggleViewButton을 숨김
-        return userRole.value === 'ROLE_EMPLOYER'
-            ? {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay',
-            }
-            : {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton',
-            };
-    }),
+    locale: 'ko',
     dayCellDidMount: (info) => {
         const day = info.date.getDay(); // 0: 일요일, 6: 토요일
         if (day === 6) {
@@ -115,7 +120,52 @@ const calendarOptions = ref({
             info.el.style.backgroundColor = '#F3E5F5'; // 연한 분홍색
         }
     },
+};
 
+const headerToolbarOptions = computed(() => {
+    return userRole.value === 'ROLE_EMPLOYER'
+        ? {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        }
+        : {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton',
+        };
+});
+
+// 공휴일과 일반 이벤트 처리 함수
+const renderEventContent = (info) => {
+    if (info.event.extendedProps?.isHoliday) {
+        // 공휴일 이벤트
+        return {
+            html: `
+            <div style="display: flex; align-items: center;">
+                <div class="fc-event-title">${info.event.title}</div>
+            </div>
+            `,
+        };
+    } else {
+        const color = getEmployeeColor(info.event.title); // 이름 기반으로 색상 가져오기
+        return {
+            html: `
+            <div style="display: flex; align-items: center;">
+                <span class="employee-dot" 
+                    style="background-color: ${color}; margin-right: 5px; width: 10px; height: 10px; border-radius: 50%;">
+                </span>
+                <div class="fc-event-title">${info.event.title}</div>
+            </div>
+            `,
+        };
+    }
+};
+
+// FullCalendar 옵션
+const calendarOptions = ref({
+    ...commonOptions,
+    headerToolbar: headerToolbarOptions,
     customButtons: {
         toggleViewButton: {
             text: buttonText.value, // 동적으로 텍스트 설정
@@ -137,7 +187,7 @@ const calendarOptions = ref({
                 viewCompanySchedule: !isUserView.value, // 회사 근무 보기 활성화 여부
             };
 
-            const serverResponse = axios.get('http://localhost:8707/api/calendar', {
+            const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
                 params,
                 withCredentials: true, // 서버 요청에는 자격 증명 필요
             });
@@ -150,7 +200,6 @@ const calendarOptions = ref({
                     singleEvents: true,
                     orderBy: 'startTime',
                 },
-                // withCredentials: true 제거
             });
 
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);
@@ -167,8 +216,9 @@ const calendarOptions = ref({
                 title: event.title,
                 start: event.start,
                 end: event.end,
-                color: event.color || '#3788d8',
+                color: getEmployeeColor(event.title),  // 이름 기반 색상 적용
                 extendedProps: {
+                    isHoliday: false,
                     description: event.description,
                 },
             }));
@@ -183,10 +233,22 @@ const calendarOptions = ref({
                     color: '#FF9999',
                     textColor: '#8B0000',
                     editable: false, //드래그 앤 드롭 비활성화
+                    extendedProps: {
+                        isHoliday: true,  // 공휴일 여부 플래그 추가
+                    }
                 }));
 
             // 기존 일정 + 공휴일 
-            const allEvents = [...scheduleItems.value, ...holidaySchedules]
+            const allEvents = [
+                ...scheduleItems.value.map((event) => ({
+                    ...event,
+                    extendedProps: {
+                        isHoliday: false, // 일반 일정은 공휴일 아님
+                        ...event.extendedProps,
+                    },
+                })),
+                ...holidaySchedules,
+            ];
             successCallback(allEvents);
         } catch (error) {
             console.error('이벤트 데이터를 가져오는 중 오류 발생:', error);
@@ -199,12 +261,7 @@ const calendarOptions = ref({
     eventColor: '#3788d8',  // 기본 이벤트 색상
 
     // 제목만 표시
-    eventContent: (info) => {
-        return {
-            html: `<div class="fc-event-title">${info.event.title}</div>`,
-        };
-    },
-
+    eventContent: renderEventContent,
     // 이벤트 클릭시 모달 열기
     eventClick: (info) => openModal(info.event),
 });
@@ -223,10 +280,8 @@ watch(buttonText, () => {
 });
 </script>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-
-/* 전체 캘린더 스타일 */
 
 /* 전체 캘린더 스타일 */
 .calendar-and-schedule {
@@ -235,6 +290,8 @@ watch(buttonText, () => {
     --secondary-color: #f3f4f6;
     --text-color: #333;
     --border-color: #e2e8f0;
+    --button-padding: 12px; /* 버튼 공통 스타일 변수 */
+    --button-border-radius: 6px; /* 버튼 둥근 테두리 변수 */
     display: flex;
     gap: 20px;
     max-width: 1200px;
@@ -375,11 +432,11 @@ watch(buttonText, () => {
 .modal-content button {
     display: block;
     width: 100%;
-    padding: 12px;
+    padding: var(--button-padding);
     background-color: var(--main-color);
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--button-border-radius);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -438,8 +495,9 @@ watch(buttonText, () => {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    margin-right: 10px;
+    margin-right: 5px;
 }
+
 /* 달력 구분선 스타일 수정 */
 .fc-theme-standard td,
 .fc-theme-standard th {
@@ -448,7 +506,6 @@ watch(buttonText, () => {
 }
 
 .fc .fc-scrollgrid {
-    border: 1px solid #ddd;
-    /* 더 진한 색상으로 변경 */
+    border: 1px
 }
 </style>

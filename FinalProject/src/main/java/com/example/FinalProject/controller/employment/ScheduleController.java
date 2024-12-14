@@ -36,15 +36,17 @@ public class ScheduleController {
             String userId = authentication.getName(); // 로그인된 userId
 
             // role 확인
+//            boolean isEmployer = authentication.getAuthorities().stream()
+//                    .anyMatch(authority -> "ROLE_EMPLOYER".equals(authority.getAuthority()));
+//            String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
             boolean isEmployer = authentication.getAuthorities().stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_EMPLOYER"));
+                    .anyMatch(authority -> authority.getAuthority().equalsIgnoreCase("ROLE_EMPLOYER"));
             String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
+            authentication.getAuthorities().forEach(System.out::println);
 
-            System.out.println("User ID: " + userId);
-            System.out.println("Role: " + role);
-
+            System.out.println("현재의 userId : " +userId);
+            System.out.println("현재의 role : " +role);
             // 역할 기반 스케줄 조회
-            List<Map<String, Object>> schedules;
 
                 // 회사 일정 조회
                 Integer companyId = scheduleService.getCompanyIdByUserId(userId); // 회사 ID 조회
@@ -53,15 +55,16 @@ public class ScheduleController {
                 }
 
                 // 역할 및 보기 옵션에 따른 스케줄 처리 (employer이거나,
-                if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
+                List<Map<String, Object>> schedules;
+                if ("ROLE_EMPLOYER".equalsIgnoreCase(role) || viewCompanySchedule) {
                     // 회사 일정 조회
                     schedules = scheduleService.getUserSchedule(userId, start, end);
                 } else {
                     // 개인, 회사 일정 조회
-                    List<Map<String, Object>> userSchedules = scheduleService.getUserSchedule(userId, start, end);
+                    //List<Map<String, Object>> userSchedules = scheduleService.getUserSchedule(userId, start, end);
                     List<Map<String, Object>> companySchedules = scheduleService.getCompanySchedule(companyId, start, end);
                     schedules = new ArrayList<>();
-                    schedules.addAll(userSchedules);
+                    //schedules.addAll(userSchedules);
                     schedules.addAll(companySchedules);
                 }
 
@@ -71,7 +74,7 @@ public class ScheduleController {
             response.put("role", role);
             response.put("schedules", schedules);
             response.put("companyId", companyId);
-            System.out.println("User ID: " + userId);
+
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

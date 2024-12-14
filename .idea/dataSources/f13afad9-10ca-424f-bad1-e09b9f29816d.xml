@@ -1354,7 +1354,7 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="381" parent="285" name="work_id">
-      <AutoIncrement>21</AutoIncrement>
+      <AutoIncrement>42</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
