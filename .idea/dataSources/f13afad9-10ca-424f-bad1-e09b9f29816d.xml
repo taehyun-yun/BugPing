@@ -931,18 +931,18 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <CollationName>utf8_general_ci</CollationName>
     </table>
     <column id="287" parent="277" name="attendance_id">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>41</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
     <column id="288" parent="277" name="actual_end">
       <Position>2</Position>
-      <StoredType>time(6)|0s</StoredType>
+      <StoredType>datetime(6)|0s</StoredType>
     </column>
     <column id="289" parent="277" name="actual_start">
       <Position>3</Position>
-      <StoredType>time(6)|0s</StoredType>
+      <StoredType>datetime(6)|0s</StoredType>
     </column>
     <column id="290" parent="277" name="commute_status">
       <Position>4</Position>
@@ -983,56 +983,57 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <Position>12</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="299" parent="277" name="is_normal_attendace">
+    <column id="299" parent="277" name="overtime_break_minute">
+      <NotNull>1</NotNull>
       <Position>13</Position>
-      <StoredType>varchar(255)|0s</StoredType>
-    </column>
-    <column id="300" parent="277" name="overtime_hours">
-      <Position>14</Position>
-      <StoredType>time(6)|0s</StoredType>
-    </column>
-    <column id="301" parent="277" name="recognizedwork_hour">
-      <Position>15</Position>
-      <StoredType>time(6)|0s</StoredType>
-    </column>
-    <column id="302" parent="277" name="totaltime">
-      <Position>16</Position>
-      <StoredType>time(6)|0s</StoredType>
-    </column>
-    <column id="303" parent="277" name="contract_id">
-      <Position>17</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="304" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
+    <column id="300" parent="277" name="overtime_end">
+      <Position>14</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <column id="301" parent="277" name="overtime_start">
+      <Position>15</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <column id="302" parent="277" name="recognized_work_break_minute">
+      <NotNull>1</NotNull>
+      <Position>16</Position>
+      <StoredType>int(11)|0s</StoredType>
+    </column>
+    <column id="303" parent="277" name="recognized_work_end">
+      <Position>17</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <column id="304" parent="277" name="recognized_work_start">
+      <Position>18</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <column id="305" parent="277" name="status">
+      <Position>19</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <foreign-key id="306" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
       <ColNames>schedule_id</ColNames>
       <RefColNames>schedule_id</RefColNames>
       <RefTableName>schedule</RefTableName>
     </foreign-key>
-    <foreign-key id="305" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
+    <foreign-key id="307" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
       <ColNames>change_id</ColNames>
-      <RefColNames>change_id</RefColNames>
+      <RefColNames>work_change_id</RefColNames>
       <RefTableName>work_change</RefTableName>
     </foreign-key>
-    <foreign-key id="306" parent="277" name="FKqdi69vpwlq1ynldl2bef77hqx">
-      <ColNames>contract_id</ColNames>
-      <RefColNames>contract_id</RefColNames>
-      <RefTableName>contract</RefTableName>
-    </foreign-key>
-    <index id="307" parent="277" name="PRIMARY">
+    <index id="308" parent="277" name="PRIMARY">
       <ColNames>attendance_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="308" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
+    <index id="309" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
       <ColNames>schedule_id</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="309" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
+    <index id="310" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
       <ColNames>change_id</ColNames>
-      <Type>btree</Type>
-    </index>
-    <index id="310" parent="277" name="FKqdi69vpwlq1ynldl2bef77hqx">
-      <ColNames>contract_id</ColNames>
       <Type>btree</Type>
     </index>
     <key id="311" parent="277" name="PRIMARY">

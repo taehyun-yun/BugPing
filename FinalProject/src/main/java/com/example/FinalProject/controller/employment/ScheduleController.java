@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,43 +31,47 @@ public class ScheduleController {
         try {
             // 로그인된 사용자 정보 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            
-            // security 보완 되면 사용
-    //      String userId = authentication.getName(); // 로그인된 userId
-            String userId = "user111";
-            String role = "employer";
-            // role 확인  security 보완 되면 사용
-            /*boolean isEmployer = authentication.getAuthorities().stream()
+
+
+            String userId = authentication.getName(); // 로그인된 userId
+
+            // role 확인
+            boolean isEmployer = authentication.getAuthorities().stream()
                     .anyMatch(authority -> authority.getAuthority().equals("ROLE_EMPLOYER"));
-            String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";*/
+            String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
 
             System.out.println("User ID: " + userId);
             System.out.println("Role: " + role);
 
-            // security 보완되면 사용
             // 역할 기반 스케줄 조회
-            //List<Map<String, Object>> schedules;
-            /*if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
-                // 회사 일정 조회 (employee가 viewCompanySchedule=true인 경우도 포함)
+            List<Map<String, Object>> schedules;
+
+                // 회사 일정 조회
                 Integer companyId = scheduleService.getCompanyIdByUserId(userId); // 회사 ID 조회
-                if (companyId != null) {
-                    schedules = scheduleService.getCompanySchedule(companyId, start, end);
-                } else {
+                if (companyId == null) {
                     throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
                 }
-            } else {
-                // 개인 일정 조회
-                schedules = scheduleService.getUserSchedule(userId, start, end);
-            }*/
-            // 일정 조회 (role에 따라 다르게 처리 가능)
-            List<Map<String, Object>> schedules = scheduleService.getCompanySchedule(1, start, end);
+
+                // 역할 및 보기 옵션에 따른 스케줄 처리 (employer이거나,
+                if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
+                    // 회사 일정 조회
+                    schedules = scheduleService.getUserSchedule(userId, start, end);
+                } else {
+                    // 개인, 회사 일정 조회
+                    List<Map<String, Object>> userSchedules = scheduleService.getUserSchedule(userId, start, end);
+                    List<Map<String, Object>> companySchedules = scheduleService.getCompanySchedule(companyId, start, end);
+                    schedules = new ArrayList<>();
+                    schedules.addAll(userSchedules);
+                    schedules.addAll(companySchedules);
+                }
 
             // 응답 구성
             Map<String, Object> response = new HashMap<>();
             response.put("userId", userId);
             response.put("role", role);
             response.put("schedules", schedules);
-
+            response.put("companyId", companyId);
+            System.out.println("User ID: " + userId);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
