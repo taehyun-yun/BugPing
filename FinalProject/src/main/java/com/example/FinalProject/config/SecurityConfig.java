@@ -71,6 +71,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                 )
                 ;
-     return http.build();
+    return http.build();
     }
 }
