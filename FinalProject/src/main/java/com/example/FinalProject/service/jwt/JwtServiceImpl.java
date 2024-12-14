@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -88,4 +89,14 @@ public class JwtServiceImpl implements JwtService {
             return null;
         }
     }
+
+    // 로그인 사용자 ID 추출 메서드
+    public String getLoggedInUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName(); // 로그인된 사용자의 ID 반환
+        }
+        return null; // 인증되지 않은 경우
+    }
+
 }

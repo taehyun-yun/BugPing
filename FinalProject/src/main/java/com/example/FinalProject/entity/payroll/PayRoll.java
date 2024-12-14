@@ -16,8 +16,10 @@ public class PayRoll {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer payRollId; // 기본 증가 고유 ID
+
     private LocalDate paymentDate; // 지급 일자
     private boolean isPaid;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "work_id")
     private Work work;

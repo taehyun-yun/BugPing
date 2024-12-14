@@ -27,11 +27,6 @@ public class Attendance {
     @JoinColumn(name = "change_id")//, nullable = false, insertable = false, updatable = false
     private WorkChange workChange;
 
-//    2안
-//    @ManyToOne
-//    @JoinColumn(name = "contract_id")
-//    private Contract contract;
-
     private LocalDateTime actualStart; //출근찍은시간
     private LocalDateTime actualEnd; //퇴근찍은시간
     private String commuteStatus; //근무상태(지각 조퇴 결근)
@@ -39,9 +34,9 @@ public class Attendance {
     private String remark; //특이사항
 
     private String isNormalAttendance; //정상출근여부 (지각했지만 출근인정 시 사용)
-    private LocalDateTime recognizedWorkStart; //인정근무시작시간간
-    private LocalDateTime recognizedWorkEnd; //인정근무종료시
-    private int recognizedWorkBreakMinute; //인정휴게시간
+    private LocalDateTime recognizedWorkStart; //인정근무시작시간
+    private LocalDateTime recognizedWorkEnd; //인정근무종료시간
+    private int recognizedWorkBreakMinute; //인정휴게시간 (기준 : 분 )
     private int recognizedWorkMinute; //인정근무시간( 시작~종료 - 휴게시간 )
 
     private String overtimeStatus; //추가근무여부

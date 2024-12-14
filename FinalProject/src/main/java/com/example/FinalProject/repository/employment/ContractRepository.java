@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ContractRepository extends JpaRepository<Contract, Integer> {
@@ -19,12 +20,24 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
             "AND c.contractEnd >= :startDate")
     Contract findValidContractByUserIdAndDateRange(
             @Param("userId") String userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT c FROM Contract c " +
+            "WHERE c.work.user.userId = :userId " +
+            "AND c.contractStart <= :endDate " +
+            "AND c.contractEnd >= :startDate")
+    List<Contract> findAllValidContractsByUserIdAndDateRange(
+            @Param("userId") String userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
 
-    @Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
-    Contract findByWorkId(@Param("workId") Integer workId);
+//    @Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
+//    Contract findByWorkId(@Param("workId") Integer workId);
+@Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
+List<Contract> findAllByWorkId(@Param("workId") Integer workId);
+
 
 
 //---------------------ES----------------------

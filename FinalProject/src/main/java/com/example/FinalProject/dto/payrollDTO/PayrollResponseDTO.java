@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,4 +22,6 @@ public class PayrollResponseDTO { // 급여 계산 결과 반환하는 DTO (기�
     private double nightPay;      // 야간 수당
     private double deduction;     // 공제액
     private double totalSalary;   // 총 급여(실 수령액)
+    private double hourlyWage; // 시급
+    private LocalDateTime startDate;
 }

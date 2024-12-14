@@ -15,7 +15,7 @@ public class TestController {
     public Map<String,Object> authtest(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         System.out.println(authentication.getName());//로그인 아이디
-        System.out.println(authentication.getAuthorities());//[Role_역할]
+        System.out.println(authentication.getAuthorities());//[Role_역할
         System.out.println(authentication.getCredentials());//null
         System.out.println(authentication.getDetails());//WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null]
         System.out.println(authentication.getPrincipal());//org.springframework.security.core.userdetails.User [Username=heart, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_admin]]
