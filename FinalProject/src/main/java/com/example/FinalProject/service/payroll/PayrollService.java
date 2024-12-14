@@ -9,12 +9,13 @@ import com.example.FinalProject.entity.payroll.PayRoll;
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
+import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.payroll.PayrollRepository;
 import com.example.FinalProject.repository.user.UserRepository;
+import com.example.FinalProject.repository.work.WorkRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -40,6 +41,12 @@ public class PayrollService {
 
     @Autowired
     private PayrollRepository payrollRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private WorkRepository workRepository;
 
     // 급여 계산 메서드
     public PayrollResponseDTO calculatePayroll(PayrollRequestDTO requestDTO) {
@@ -115,11 +122,12 @@ public class PayrollService {
     }
 
     // 근무자 리스트와 급여 정보를 포함한 데이터 생성
-    public List<EmployeeDTO> getEmployeeListWithPayroll() {
+    public List<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId) {
         log.info("getEmployeeListWithPayroll 호출");
 
         List<Object[]> results = payrollRepository.findPayRollWithWorkAndUser();
         List<EmployeeDTO> employeeList = new ArrayList<>();
+        //List<Work> workList = workRepository.findAllByCompanyId(company.getCompanyId());
 
         for (Object[] result : results) {
             PayRoll payRoll = (PayRoll) result[0];

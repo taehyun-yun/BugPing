@@ -197,14 +197,14 @@ const sortedEmployees = computed(() => {
 
   return filteredEmployees.value.slice().sort((a, b) => {
     switch (sortKey) {
-      case "shortest":
-        return a.workDays - b.workDays; // 가장 적게 일한 순
+      // case "shortest":
+      //   return a.workDays - b.workDays; // 가장 적게 일한 순
       case "highestSalary":
         return b.totalSalary - a.totalSalary; // 월급 많은 순
       case "lowestSalary":
         return a.totalSalary - b.totalSalary; // 월급 적은 순
       default: // "longest"
-        return b.workDays - a.workDays; // 오랜 기간 일한 순
+        return b.totalSalary - a.totalSalary; // 월급 많은 순
     }
   });
 });
@@ -237,7 +237,9 @@ const pageSize = ref(10);
 // 근무자 리스트 출력.
 const fetchEmployeeList = async () => {
   try {
-    const response = await axios.get("http://localhost:8707/api/employees");
+    const response = await axios.get("http://localhost:8707/api/employees", {
+      withCredentials: true // 쿠키를 서버로 넘길 것 인가?
+    });
     console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
     employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
     console.log("====================", employees.value);
@@ -256,6 +258,7 @@ const unpaidEmployees = computed(() => employees.value.filter(emp => !emp.isPaid
 const fetchEmployeePaging = async (page, size) => {
   try {
     const response = await axios.get("http://localhost:8707/api//employees/paging", {
+      withCredentials: true,
       params: {page: page - 1, size }, // 0 베이스 페이지로 요청
     });
     employeeIds.value = response.data.content; // 현재 페이지의 employeeId 리스트 저장
@@ -273,13 +276,16 @@ const togglePaid = async (employee) => {
   try {
     // 서버에 PATCH 요청 전송
     await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
+      withCredentials: true,
       params: {
         isPaid: !employee.isPaid,
       },
     });
 
     // 서버에서 최신 데이터 가져오기
-    const response = await axios.get("http://localhost:8707/api/employees");
+    const response = await axios.get("http://localhost:8707/api/employees", {
+      withCredentials: true,
+    });
     employees.value = response.data; // Vue 데이터 갱신
     console.log("Updated Employee List:", employees.value);
   } catch (error) {

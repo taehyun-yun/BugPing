@@ -5,9 +5,12 @@ import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
 import com.example.FinalProject.entity.payroll.PayRoll;
 import com.example.FinalProject.repository.payroll.PayrollRepository;
+import com.example.FinalProject.service.jwt.JwtService;
+import com.example.FinalProject.service.jwt.JwtServiceImpl;
 import com.example.FinalProject.service.payroll.PayrollService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +24,10 @@ public class PayRollController {
 
     @Autowired
     private PayrollService payrollService;
+
+    @Autowired
+    private JwtServiceImpl jwtService;
+
     @Autowired
     private PayrollRepository payrollRepository;
 
@@ -42,10 +49,19 @@ public class PayRollController {
     // 근무자 리스트 정보 반환
     @GetMapping("/employees")
     public ResponseEntity<List<EmployeeDTO>> getEmployeeList() {
+
+        // 로그인된 사용자 ID 가져오기
+        String loggedInUserId = jwtService.getLoggedInUserId();
+        if (loggedInUserId == null) {
+            log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        log.info("로그인된 사용자 ID: {}", loggedInUserId);
+
         log.info("근무자 리스트 요청을 받았습니다.");
 
         // 근무자 리스트 조회
-        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll();
+        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId);
 
         // 급여 계산을 각 직원에 대해 수행
         for (EmployeeDTO employee : employeeList) {
@@ -83,20 +99,5 @@ public class PayRollController {
         log.info("계산된 근무자 리스트 데이터: {}", employeeList);
         return ResponseEntity.ok(employeeList);
     }
-
-//    // 검색 및 정렬 기능 추가
-//    @GetMapping("/employees/search")
-//    public ResponseEntity<List<EmployeeDTO>> searchAndSortEmployees(
-//            @RequestParam(required = false) String search, // 검색 키워드
-//            @RequestParam(required = false, defaultValue = "longest") String sort // 정렬 옵션
-//    ) {
-//        log.info("검색 및 정렬 요청 - 검색어 {}, 정렬 옵션 {}", search, sort);
-//
-//        // 검색 및 정렬 데이터 가져오기
-//        List<EmployeeDTO> employeeList = payrollService.searchAndSortEmployees(search, sort);
-//        log.info("검색 및 정렬 데이터 : {}", employeeList);
-//        return ResponseEntity.ok(employeeList);
-//    }
-
 
 }
