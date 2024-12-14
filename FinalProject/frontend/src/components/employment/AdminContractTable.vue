@@ -32,7 +32,8 @@
             <td>{{ formatDate(contract.contractEnd) }}</td>
             <td><button class="edit-button" @click="openModal(contract)">수정</button></td>
           </tr>
-          <template v-if="contract.expanded">
+          <!-- <template v-if="contract.expanded"> -->
+          <template v-if="isExpanded(contract)">
             <tr v-for="schedule in contract.schedules" :key="schedule.id" class="child-row">
               <td></td>
               <td colspan="6">
@@ -50,11 +51,7 @@
     </table>
 
     <!-- ContractModal 추가 -->
-    <ContractModal 
-      :is-open="showModal" 
-      :contract="selectedContract" 
-      @close="closeModal" 
-    />
+    <ContractModal :is-open="showModal" :contract="selectedContract" @close="closeModal" @save="updateContract" />
   </div>
 </template>
 
@@ -75,10 +72,27 @@ onMounted(() => {
   contractsStore.fetchContracts();
 });
 
+// // 확장 상태 토글
+// const toggleExpand = (contract) => {
+//   contract.expanded = !contract.expanded;
+// };
+const expandedContracts = ref([]);
+
 // 확장 상태 토글
 const toggleExpand = (contract) => {
-  contract.expanded = !contract.expanded;
+  const index = expandedContracts.value.indexOf(contract.contractId);
+  if (index === -1) {
+    expandedContracts.value.push(contract.contractId);
+  } else {
+    expandedContracts.value.splice(index, 1);
+  }
+  console.log('Expanded Contracts:', expandedContracts.value);
 };
+
+
+// 확장 상태 확인
+const isExpanded = (contract) => expandedContracts.value.includes(contract.contractId);
+
 
 // 수정 모달 열기
 const openModal = (contract) => {
@@ -97,8 +111,9 @@ const formatCurrency = (value) => {
 };
 
 // 날짜 포맷팅
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('ko-KR');
+const formatDate = (dateString) => { 
+  return dateString ? new Date(dateString).toLocaleDateString('ko-KR') : '날짜 없음';
+  //return new Date(dateString).toLocaleDateString('ko-KR');
 };
 
 // 시간 포맷팅
@@ -118,6 +133,21 @@ const getDayName = (dayNumber) => {
   const days = ['월', '화', '수', '목', '금', '토', '일'];
   return days[dayNumber - 1] || '요일 정보 없음';
 };
+
+// 계약 업데이트 처리
+const updateContract = (updatedContract) => {
+  console.log('Updating contract:', updatedContract);
+  const index = contractsStore.contracts.findIndex((c) => c.contractId === updatedContract.contractId);
+  if (index !== -1) {
+    contractsStore.contracts[index] = { ...contractsStore.contracts[index], ...updatedContract };
+    console.log('Updated Contract:', contractsStore.contracts[index]);
+  } else {
+    console.error('Contract not found for update:', updatedContract.contractId);
+  }
+};
+
+
+
 </script>
 
 <style scoped>

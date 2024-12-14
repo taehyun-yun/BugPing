@@ -1,3 +1,5 @@
+<!-- ScheduleModal.vue -->
+
 <template>
   <div v-if="isOpen" class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
@@ -194,13 +196,22 @@ const closeModal = () => {
 }
 
 const handleConfirm = () => {
-  const totalBreakMinutes = (breakHour.value || 0) * 60 + (breakMinute.value || 0); // 기본값 0
-  emit('confirm', {
-    day: selectedDay.value || '',
+  const totalBreakMinutes = (breakHour.value || 0) * 60 + (breakMinute.value || 0);
+
+  //console.log("props.schedule.contract.contractId:", JSON.stringify(props.schedule.contract.contractId, null, 2));
+
+  const scheduleData = {
+    //contractId: props.schedule.contract.contractId || null, // contractId 추가
+    scheduleId: props.schedule.scheduleId || null, // 스케줄 ID 존재 여부 확인
+    day: selectedDay.value,
     officialStart: startHour.value && startMinute.value ? `${startHour.value}:${startMinute.value}` : '',
     officialEnd: endHour.value && endMinute.value ? `${endHour.value}:${endMinute.value}` : '',
     breakMinute: totalBreakMinutes
-  });
+  };
+  
+  //console.log("scheduleData:", JSON.stringify(scheduleData, null, 2));
+
+  emit('confirm', scheduleData);
   closeModal();
 };
 

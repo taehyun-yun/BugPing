@@ -1,3 +1,4 @@
+<!-- ContractModal.vue -->
 <template>
     <div v-if="isOpen" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
@@ -85,7 +86,7 @@
       </div>
       <!-- ScheduleModal 추가 -->
       <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
-        @save="saveSchedule" />
+      @confirm="saveSchedule"/>
     </div>
   </template>
   
@@ -142,20 +143,26 @@
   const editSchedule = (schedule) => {
     currentSchedule.value = { ...schedule }
     showScheduleModal.value = true
+    console.log("editSchedule schedule:", JSON.stringify(schedule, null, 2));
   }
-  
+
   // 스케줄 저장 함수
   const saveSchedule = async (schedule) => {
+    console.log("saveSchedule schedule:", JSON.stringify(schedule, null, 2));
     if (props.contract) {
-      if (schedule.id) {
+      if (schedule.scheduleId) {
         // 기존 스케줄 수정
         try {
-          await contractsStore.editSchedule(props.contract.contractId, schedule.id, schedule)
+          await contractsStore.editSchedule(props.contract.contractId, schedule.scheduleId, schedule)
           message.value = '스케줄이 성공적으로 수정되었습니다.'
           messageType.value = 'success'
+          emit('save', schedule); // 부모 컴포넌트로 수정된 스케줄 전달
         } catch (error) {
           message.value = '스케줄 수정에 실패했습니다. 다시 시도해주세요.'
           messageType.value = 'error'
+
+          console.log("newSchedule:", JSON.stringify(newSchedule, null, 2));
+          emit('save', newSchedule); // 부모 컴포넌트로 새 스케줄 전달
         }
       } else {
         // 새 스케줄 추가
@@ -163,6 +170,7 @@
           await contractsStore.addSchedule(props.contract.contractId, schedule)
           message.value = '스케줄이 성공적으로 추가되었습니다.'
           messageType.value = 'success'
+          props.contract.schedules.push(newSchedule); // 새 스케줄 추가
         } catch (error) {
           message.value = '스케줄 추가에 실패했습니다. 다시 시도해주세요.'
           messageType.value = 'error'
@@ -174,9 +182,9 @@
   
   // 스케줄 삭제 함수
   const deleteSchedule = async (schedule) => {
-    if (props.contract && schedule.id) {
+    if (props.contract && schedule.scheduleId) {
       try {
-        await contractsStore.deleteSchedule(props.contract.contractId, schedule.id)
+        await contractsStore.deleteSchedule(props.contract.contractId, schedule.scheduleId)
         message.value = '스케줄이 성공적으로 삭제되었습니다.'
         messageType.value = 'success'
       } catch (error) {
@@ -254,10 +262,12 @@
         // LocalDateTime 형식에 맞게 'T00:00:00' 추가
         contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
         contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
-      }
+      };
+
   
       try {
         await contractsStore.updateContract(props.contract.contractId, updatedContract)
+        emit('save', updatedContract); // 부모로 이벤트 전달
         console.log('계약 업데이트 성공')
         message.value = '계약 정보가 성공적으로 업데이트되었습니다.'
         messageType.value = 'success'

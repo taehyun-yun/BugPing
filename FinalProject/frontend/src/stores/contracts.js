@@ -71,7 +71,7 @@ export const useContractsStore = defineStore("contracts", {
         }
       } catch (err) {
         this.error = "계약 업데이트에 실패했습니다.";
-        console.error(err);
+        console.error('Failed to update contract:', err);
       } finally {
         this.loading = false;
       }
@@ -82,7 +82,7 @@ export const useContractsStore = defineStore("contracts", {
       this.error = null;
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
-        const response = await axios.post(`${baseUrl}/api/contracts/${contractId}/schedules`, newSchedule);
+        const response = await axios.post(`${baseUrl}/api/schedules`, newSchedule);//contracts/${contractId}
         const addedSchedule = response.data;
 
         const contractIndex = this.contracts.findIndex(contract => contract.contractId === contractId);
@@ -98,23 +98,27 @@ export const useContractsStore = defineStore("contracts", {
     },
 
     async editSchedule(contractId, scheduleId, updatedSchedule) {
+
+    console.log("pinia editSchedule updatedSchedule:", JSON.stringify(updatedSchedule, null, 2));
       this.loading = true;
       this.error = null;
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
-        const response = await axios.put(`${baseUrl}/api/contracts/${contractId}/schedules/${scheduleId}`, updatedSchedule);
+        const response = await axios.put(`${baseUrl}/api/schedules/${scheduleId}`, updatedSchedule);//contracts/${contractId}
         const updatedScheduleData = response.data;
+
+        console.log("updatedScheduleData:", JSON.stringify(updatedScheduleData, null, 2));
 
         const contractIndex = this.contracts.findIndex(contract => contract.contractId === contractId);
         if (contractIndex !== -1) {
-          const scheduleIndex = this.contracts[contractIndex].schedules.findIndex(schedule => schedule.id === scheduleId);
+          const scheduleIndex = this.contracts[contractIndex].schedules.findIndex(schedule => schedule.scheduleId === scheduleId);
           if (scheduleIndex !== -1) {
             this.contracts[contractIndex].schedules[scheduleIndex] = updatedScheduleData;
           }
         }
       } catch (err) {
         this.error = "스케줄 수정에 실패했습니다.";
-        console.error(err);
+        console.error('Failed to edit schedule:', err);
       } finally {
         this.loading = false;
       }
@@ -125,11 +129,11 @@ export const useContractsStore = defineStore("contracts", {
       this.error = null;
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
-        await axios.delete(`${baseUrl}/api/contracts/${contractId}/schedules/${scheduleId}`);
+        await axios.delete(`${baseUrl}/api/schedules/${scheduleId}`);//contracts/${contractId}
 
         const contractIndex = this.contracts.findIndex(contract => contract.contractId === contractId);
         if (contractIndex !== -1) {
-          const scheduleIndex = this.contracts[contractIndex].schedules.findIndex(schedule => schedule.id === scheduleId);
+          const scheduleIndex = this.contracts[contractIndex].schedules.findIndex(schedule => schedule.scheduleId === scheduleId);
           if (scheduleIndex !== -1) {
             this.contracts[contractIndex].schedules.splice(scheduleIndex, 1);
           }
