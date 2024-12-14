@@ -121,7 +121,7 @@ public class EmploymentController {
     @PutMapping("/schedules/{id}")
     public ResponseEntity<Schedule> updateSchedule(@PathVariable Integer id, @RequestBody Schedule scheduleDetails) {
         Optional<Schedule> optionalSchedule = scheduleRepository.findById(id);
-        System.out.println(scheduleDetails);
+        //System.out.println(scheduleDetails);
         if (optionalSchedule.isPresent()) {
             Schedule schedule = optionalSchedule.get();
             schedule.setDay(scheduleDetails.getDay());
