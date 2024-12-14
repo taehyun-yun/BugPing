@@ -40,7 +40,7 @@
         <div class="employee-list">
           <div v-for="employee in filteredEmployees" :key="employee.id" class="employee-item">
             <label class="employee-label">
-              <input type="checkbox" v-model="employee.selected" />
+              <input type="radio" v-model="employee.selected" />
               <div class="avatar">{{ employee.name.charAt(0) }}</div>
               <div class="employee-info">
                 <div class="employee-name">{{ employee.name }}</div>
@@ -101,6 +101,19 @@ const saveSelection = () => {
   console.log('선택된 직원:', selectedEmployees)
   closeModal()
 }
+
+//`selectAllSubgroups` 체크박스 동작 구현
+// watch(selectAllSubgroups, (newVal) => {
+//   if (newVal) {
+//     filteredEmployees.value.forEach(employee => {
+//       employee.selected = true
+//     })
+//   } else {
+//     filteredEmployees.value.forEach(employee => {
+//       employee.selected = false
+//     })
+//   }
+// })
 </script>
 
 <style scoped>
