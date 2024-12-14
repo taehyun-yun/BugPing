@@ -7,5 +7,4 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company,String> {
     Boolean existsByCnum(String cnum);
 
-    Optional<Company> findByUserId(String userId);
 }

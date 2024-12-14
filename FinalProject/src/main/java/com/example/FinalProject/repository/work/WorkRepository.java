@@ -14,5 +14,4 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
     // userId로 company 조회할때 사용
     Work findByUser_UserId(String userId);
 
-    List<Work> findAllByCompanyId(Long companyId);
 }
