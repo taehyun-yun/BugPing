@@ -7,8 +7,8 @@
     </div>
     <div class="input-group">
         <img src="/src/assets/Loginimg/lock.svg" alt="Password Icon">
-        <input type="password" class="input-field" placeholder="비밀번호" v-model="password" @keyup.enter="login">
-        <img src="/src/assets/Loginimg/eye-slash.svg">
+        <input :type="showInputPw?'text':'password'" class="input-field" placeholder="비밀번호" v-model="password" @keyup.enter="login">
+        <img :src="showInputPw?'/src/assets/Loginimg/eye-solid.svg':'/src/assets/Loginimg/eye-slash.svg'" @click="changeType">
     </div>
     <button type="button" class="login-button" @click="login">로그인</button>
     </form>
@@ -24,6 +24,11 @@ import { axiosAddress } from '@/stores/axiosAddress';
 import router from '@/router';
     const userId = ref('');
     const password = ref('');
+    const showInputPw = ref(false);
+    const changeType = () => {
+        showInputPw.value = !showInputPw.value;
+    }
+
     const login = () =>{
         axios
         .post(axiosAddress+"/login",{

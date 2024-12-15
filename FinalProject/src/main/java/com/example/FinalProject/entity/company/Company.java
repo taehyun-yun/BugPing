@@ -21,4 +21,6 @@ public class Company {
     private String detailAddress;
     @Column(unique = true)
     private String cnum;//사업자 등록번호
+    @Column(unique = true)
+    private String companyCode;
 }

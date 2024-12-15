@@ -1,5 +1,6 @@
 package com.example.FinalProject.service.jwt;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.entity.work.Work;
@@ -26,6 +27,9 @@ public class JoinService {
         this.companyRepository = companyRepository;
         this.workRepository = workRepository;
     }
+    //회사코드 생성시 사용할 알파벳
+    private final char[] customAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    
     //아이디 중복 확인
     public Boolean check (User user){
         Boolean result = true;
@@ -60,6 +64,14 @@ public class JoinService {
         }
         return result;
     }
+    //회사 코드 생성
+    public String createCode (){
+        String code;
+        do {
+           code = NanoIdUtils.randomNanoId(NanoIdUtils.DEFAULT_NUMBER_GENERATOR,customAlphabet,21);
+        } while (companyRepository.existsByCompanyCode(code));
+        return code;
+    }
     //회사 등록
     public Company registCompany(Company company){
         Company newCompany = Company.builder()
@@ -70,6 +82,7 @@ public class JoinService {
                 .detailAddress(company.getDetailAddress())
                 .ctel(company.getCtel())
                 .cnum(company.getCnum())
+                .companyCode(createCode())
                 .build();
         companyRepository.save(newCompany);
         return newCompany;

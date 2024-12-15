@@ -64,6 +64,7 @@ const submitData = async() => {
         await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
         .then((res)=>{
             alert(res.data);
+            push({name : ''})
         })
         .catch((err)=>{
             alert(err.response.data);
