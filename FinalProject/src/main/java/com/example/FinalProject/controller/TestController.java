@@ -31,4 +31,24 @@ public class TestController {
 
         return map;
     }
+    @GetMapping("/api/authtest")
+    public Map<String,Object> apiauthtest(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(authentication.getName());//로그인 아이디
+        System.out.println(authentication.getAuthorities());//[Role_역할]
+        System.out.println(authentication.getCredentials());//null
+        System.out.println(authentication.getDetails());//WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null]
+        System.out.println(authentication.getPrincipal());//org.springframework.security.core.userdetails.User [Username=heart, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_admin]]
+        System.out.println(authentication.getClass());//class org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("getName",authentication.getName());
+        map.put("getAuthorities",authentication.getAuthorities());
+        map.put("getCredentials",authentication.getCredentials());
+        map.put("getDetails",authentication.getDetails());
+        map.put("getPrincipal",authentication.getPrincipal());
+        map.put("getClass",authentication.getClass());
+
+        return map;
+    }
 }

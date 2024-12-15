@@ -16,10 +16,10 @@
     <div class="input-group">
         <img src="/src/assets/Loginimg/user.svg">
         <div class="tel-container">
-            <p>전화번호</p>
-            <input type="num" class="input-field divide-box" minlength="3" v-model="t.num1" @input="nextinput($event,3)" required>
-            <input type="num" class="input-field divide-box" minlength="4" v-model="t.num2" @input="nextinput($event,4)" required>
-            <input type="num" class="input-field divide-box" minlength="4" v-model="t.num3" @input="nextinput($event,4)" required>
+            <p>사업체 전화번호</p>
+            <input type="num" class="input-field divide-box" minlength="2" maxlength="3" v-model="t.num1" @input="nextinput($event,3)" required>
+            <input type="num" class="input-field divide-box" minlength="3" maxlength="4" v-model="t.num2" @input="nextinput($event,4)" required>
+            <input type="num" class="input-field divide-box" minlength="4" maxlength="4" v-model="t.num3" @input="nextinput($event,4)" required>
         </div>
     </div>
 </div>
