@@ -1,6 +1,8 @@
+<!-- UserModal.vue -->
+
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
+  <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
+    <div class="modal-content"  @click.stop>
       <h2 class="title">직원 선택</h2>
       
       <div class="search-container">
@@ -62,6 +64,19 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+import { defineProps, defineEmits } from 'vue' 
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true,
+    default: false
+  }
+})
+
+const emit = defineEmits(['close', 'save']) // **emits 선언 추가**
+
+
 const searchQuery = ref('')
 const selectAllSubgroups = ref(false)
 const showCurrentJobOnly = ref(false)
@@ -69,9 +84,9 @@ const employees = ref([
   { id: 1, name: '이철수', department: '개발팀', selected: false, currentJob: true },
   { id: 2, name: '박지민', department: '마케팅팀', selected: false, currentJob: true },
   { id: 3, name: '최수진', department: '디자인팀', selected: false, currentJob: false },
-  { id: 1, name: '이철수', department: '개발팀', selected: false, currentJob: true },
-  { id: 2, name: '박지민', department: '마케팅팀', selected: false, currentJob: true },
-  { id: 3, name: '최수진', department: '디자인팀', selected: false, currentJob: false },
+  { id: 4, name: '이철', department: '개발팀', selected: false, currentJob: true },
+  { id: 5, name: '박민', department: '마케팅팀', selected: false, currentJob: true },
+  { id: 6, name: '최진', department: '디자인팀', selected: false, currentJob: false },
 ])
 
 const filteredEmployees = computed(() => {
@@ -93,12 +108,14 @@ const resetSelection = () => {
 }
 
 const closeModal = () => {
-  // 모달 닫기 로직
+  emit('close')
 }
-
 const saveSelection = () => {
   const selectedEmployees = employees.value.filter(employee => employee.selected)
   console.log('선택된 직원:', selectedEmployees)
+  if (selectedEmployees.length > 0) {
+    emit('save', selectedEmployees[0]) // **선택된 직원 emit**
+  }
   closeModal()
 }
 

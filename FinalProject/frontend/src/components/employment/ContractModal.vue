@@ -12,11 +12,11 @@
         <div class="modal-body">
           <section class="members-section">
             <h3>편집 대상 구성원</h3>
-            <div class="member-item">
+            <div class="member-item" @click="openUserModal">
               <div class="profile-image">
                 <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
               </div>
-              <span class="member-name">{{ contract?.work?.user?.name || '이름 없음' }}</span>
+              <span class="member-name">{{ selectedEmployee?.name || contract?.work?.user?.name || '이름 없음' }}</span>
             </div>
           </section>
   
@@ -87,6 +87,12 @@
       <!-- ScheduleModal 추가 -->
       <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
       @confirm="saveSchedule"/>
+      <!-- **UserModal 추가** -->
+    <UserModal 
+      :is-open="showUserModal" 
+      @close="closeUserModal" 
+      @save="handleUserSelection" 
+    />
     </div>
   </template>
   
@@ -94,7 +100,8 @@
   import { ref, defineProps, defineEmits, watch } from 'vue'
   import { useContractsStore } from '@/stores/contracts' // Pinia 스토어 import
   import ScheduleModal from '@/components/employment/ScheduleModal.vue'
-  
+  import UserModal from '@/components/employment/UserModal.vue'
+
   // Props 정의
   const props = defineProps({
     isOpen: {
@@ -124,9 +131,43 @@
   const message = ref('')
   const messageType = ref('') // 'success' 또는 'error'
   
+
+  const showUserModal = ref(false) // **추가된 부분**
+  const selectedEmployee = ref(null) // **추가된 부분**
+
+// **UserModal 열기 메서드**
+const openUserModal = () => {
+  showUserModal.value = true
+}
+
+// **UserModal에서 선택한 직원 처리 메서드**
+const handleUserSelection = (employee) => {
+  selectedEmployee.value = employee
+  message.value = `${employee.name}이(가) 선택되었습니다.`
+  messageType.value = 'success'
+  console.log('선택된 직원:', employee)
+
+  // 예시: 계약에 선택된 직원 반영
+  if (props.contract) {
+    props.contract.work.user = employee
+    // 필요 시 스토어에 업데이트 요청
+  }
+}
+
+// **UserModal 닫기 메서드**
+const closeUserModal = () => {
+  showUserModal.value = false
+}
+
+
+
+
+
+
   // ScheduleModal 상태 관리
   const showScheduleModal = ref(false)
   const currentSchedule = ref({})
+  
   
   // 스케줄 추가 함수
   const addSchedule = () => {
