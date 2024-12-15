@@ -51,4 +51,9 @@ public class TestController {
 
         return map;
     }
+    @GetMapping("/employee/sayhi")
+    public String sayhi(){
+        System.out.println("hi");
+        return "hi";
+    }
 }

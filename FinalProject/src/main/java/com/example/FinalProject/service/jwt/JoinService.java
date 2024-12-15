@@ -87,7 +87,7 @@ public class JoinService {
         companyRepository.save(newCompany);
         return newCompany;
     }
-    //신규회사에 사장 등록
+    //신규회사에 사장, 직원 등록
     public Work registWork(User user, Company company){
         Work newWork = Work.builder()
                 .user(user)
@@ -97,4 +97,9 @@ public class JoinService {
         workRepository.save(newWork);
         return newWork;
     }
+    //퇴사하지 않고 회사 재등록 방지 기능
+    public boolean notWorkingHere (User user, Company company){
+        return !workRepository.existsByUser_UserIdAndCompany_CompanyIdAndResignDateIsNull(user.getUserId(),company.getCompanyId());
+    }
+
 }

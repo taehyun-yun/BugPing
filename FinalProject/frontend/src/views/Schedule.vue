@@ -223,7 +223,7 @@ watch(buttonText, () => {
 });
 </script>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
 /* 전체 캘린더 스타일 */

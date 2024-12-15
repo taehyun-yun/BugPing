@@ -79,8 +79,9 @@ public class JwtServiceImpl implements JwtService {
             List<GrantedAuthority>authorities = new ArrayList<>();
             for (String r : roles) {
                 //authentication.getAuthorities()했을 때 ROLE_employee로 나온다.
-                //.requestMatchers("/api/**").hasAnyRole("employee") 이렇게 'ROLE_' 이 없어도
+                //config에서 .requestMatchers("/api/**").hasAnyRole("employee") 이렇게 'ROLE_' 이 없어도
                 //String Security에서 ROLE_ 을 생각하기 때문에 ROLE_ 붙이는 작업을 해야한다.
+                //System.out.println("추가된 authority : " + "ROLE_" + r.trim());
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + r.trim()));
             }
 

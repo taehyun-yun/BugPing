@@ -4,6 +4,8 @@
    </div>
 </template>
 <script setup>
+import axios from 'axios';
+axios.defaults.withCredentials = true;
 </script>
 <style scoped>
    .app{

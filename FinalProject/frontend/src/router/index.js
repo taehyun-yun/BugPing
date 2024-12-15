@@ -16,7 +16,7 @@ import SU2 from '@/components/auth/SU2.vue';
 import FindIdPwView from '@/views/auth/FindIdPwView.vue';
 import Find from '@/components/auth/Find.vue';
 import Main from "@/views/Main.vue";
-import Workplace from "@/views/workplace/workplace.vue";
+import Enroll from "@/views/enroll/enroll.vue";
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,7 +40,7 @@ routes: [
     {
         path : '/', component: Main , meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
         children : [
-            {path: 'workplace', name: 'workplace', component : Workplace, meta : {title : '근무지 등록'}, },
+            {path: 'enroll', name: 'enroll', component : Enroll, meta : {title : '근무지 등록'}, },
         ]
     },
     //고용자 전용

@@ -7,7 +7,22 @@
         </div>
     </div>
     <div class="companyInfo">
-
+        <table>
+            <thead>
+                <tr>
+                    <th>근무지</th>
+                    <th>입사일</th>
+                    <th>퇴사일</th>
+                    <th>전화번호</th>
+                    <th>주소</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <Teleport to="body">
         <div class="modal-overlay" v-show="showChangeModal" @click.self="closeModal">
@@ -42,7 +57,7 @@ const companyInfo = reactive({
     
 })
 const getInfo = async() => {
-    await axios.get(`${axiosAddress}/getCompanyInfo?code=${inputCompanyCodeCut.value}`,{withCredential : true})
+    await axios.get(`${axiosAddress}/employee/getCompanyInfo?code=${inputCompanyCodeCut.value}`,{ withCredentials : true})
     .then((res)=>{
         companyInfo.companyId = res.data.companyId;
         companyInfo.cname = res.data.cname;
@@ -51,22 +66,28 @@ const getInfo = async() => {
     })
     showChangeModal.value = true;
 }
+//등록
 const enroll = () =>{
-    axios.post(`${axiosAddress}/enroll`,{ companyId : companyInfo.companyId, },{withCredential : true})
-    .then(alert("등록되었습니다."))
+    axios.post(`${axiosAddress}/employee/enroll`,{ companyId : companyInfo.companyId, },{withCredentials : true})
+    .then((res)=>{alert(res.data);})
+    .catch((err)=>{alert(err.response.data);})
 }
 //모달창 여닫기
 const showChangeModal = ref(false);
 const closeModal = () => {
     showChangeModal.value = false;
 }
+//과거근무계약기록
+axios.get(`${axiosAddress}/employee/getMyAllContract`,{withCredentials : true})
+
 </script>
 <style scoped>
     .wrap-workplace{
-        display: flex;
         width: 100%;
-        justify-content: center; /*가로*/
-        align-items: center; /*세로*/
+        display: flex;
+        flex-direction: column; /* 세로로 배치 */
+        justify-content: center; /*가로 중앙에 배치*/
+        align-items: center; /*세로 중앙에 배치*/
     }
     .search-bar-container{
         display: flex;
