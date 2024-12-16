@@ -18,8 +18,8 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="work in myCompanies" :key="work.id">
-                    <tr>
+                <template v-for="(work, index) in myCompanies" :key="work.id">
+                    <tr @click="showThisCompanyContract(index)">
                         <td class="work-td">{{ work.company.cname }}</td>
                         <td>{{ work.hireDate }}</td>
                         <td>{{ work.resignDate || '근무중' }}</td>
@@ -28,7 +28,7 @@
                     </tr>
                     <tr v-if="work.contracts.length>0">
                         <td colspan="5">
-                            <table class="contract-table">
+                            <table class="contract-table" v-show="showContract[index]">
                                 <thead>
                                     <tr>
                                         <th>계약 시작</th>
@@ -123,7 +123,9 @@ const getMyAllContract = ()=> {
         }
     });
 };
-
+const showThisCompanyContract = (number) =>{
+    showContract[number] = !showContract[number];
+}
 onMounted(()=>{
     getMyAllContract();
 })
