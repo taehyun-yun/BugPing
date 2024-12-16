@@ -7,9 +7,9 @@
         </div>
     </div>
     <div class="companyInfo">
-        <table>
+        <table class="work-table">
             <thead>
-                <tr>
+                <tr class="work-thead">
                     <th>근무지</th>
                     <th>입사일</th>
                     <th>퇴사일</th>
@@ -18,17 +18,38 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="work in myCompanies">
-                    <td>{{ work.company.cname }}</td>
-                    <td>{{ work.hireDate }}</td>
-                    <td>{{ work.resignDate || '근무중' }}</td>
-                    <td>{{ work.company.ctel }}</td>
-                    <td>{{ work.company.address + " " + work.company.detailAddress }}</td>
-                </tr>
+                <template v-for="work in myCompanies" :key="work.id">
+                    <tr>
+                        <td class="work-td">{{ work.company.cname }}</td>
+                        <td>{{ work.hireDate }}</td>
+                        <td>{{ work.resignDate || '근무중' }}</td>
+                        <td>{{ work.company.ctel }}</td>
+                        <td>{{ work.company.address + " " + work.company.detailAddress }}</td>
+                    </tr>
+                    <tr v-if="work.contracts.length>0">
+                        <td colspan="5">
+                            <table class="contract-table">
+                                <thead>
+                                    <tr>
+                                        <th>계약 시작</th>
+                                        <th>계약 종료</th>
+                                        <th>시급</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="contract in work.contracts" :key="contract.id">
+                                        <td>{{ contract.contractStart.split("T")[0] }}</td>
+                                        <td>{{ contract.contractEnd.split("T")[0] }}</td>
+                                        <td> ￦ {{ contract.hourlyWage }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
-    <button @click="getMyAllContract">test</button>
     <Teleport to="body">
         <div class="modal-overlay" v-show="showChangeModal" @click.self="closeModal">
             <div class="modal">
@@ -48,7 +69,7 @@
 <script setup>
 import { axiosAddress } from '@/stores/axiosAddress';
 import axios from 'axios';
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 //검색
 const inputCompanyCode =  ref('');
 const inputCompanyCodeCut = computed(()=>{
@@ -84,6 +105,7 @@ const closeModal = () => {
 }
 //과거근무계약기록
 const myCompanies = reactive([]);
+const showContract = reactive([]);
 const getMyAllContract = ()=> {
     axios
     .get(`${axiosAddress}/employee/getMyAllContract`,{withCredentials : true})
@@ -91,13 +113,20 @@ const getMyAllContract = ()=> {
         myCompanies.splice(0,myCompanies.length, ...res.data.work);
         const myContracts = [...res.data.contract];
         myCompanies.forEach(work =>{
-            work.contract = myContracts.filter(contract =>
+            work.contracts = myContracts.filter(contract =>
                 contract.work.company.companyId === work.company.companyId
             )
         })
+        showContract = [];
+        for(i in myCompanies){
+            showContract.push(false);
+        }
     });
 };
 
+onMounted(()=>{
+    getMyAllContract();
+})
 </script>
 <style scoped>
     .wrap-workplace{
@@ -213,5 +242,74 @@ const getMyAllContract = ()=> {
             transform: translate(-50%, -50%);
             opacity: 1;
         }
+    }
+    .work-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    color: #333;
+    }
+
+    .work-table th,
+    .work-table td {
+        padding: 10px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .work-table thead th {
+        background-color: #f1f1f1;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .work-table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .contract-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .contract-table th,
+    .contract-table td {
+        padding: 8px 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .contract-table thead th {
+        background-color: #e7f7f9;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .contract-table tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .work-thead {
+        border-bottom: 2px solid #4FD1C5;
+    }
+
+    .work-td {
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* 전체적인 테이블을 감싸는 영역 */
+    .companyInfo {
+        width: 90%;
+        margin-top: 20px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden; /* 테두리 밖 요소 제거 */
+        background-color: #fff;
+        padding: 20px;
     }
 </style>
