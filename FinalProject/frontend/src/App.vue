@@ -5,7 +5,7 @@
 </template>
 <script setup>
 import axios from 'axios';
-
+axios.defaults.withCredentials=true; // 쿠키전달 - 권한확인을 위해 필요
 </script>
 <style scoped>
    .app{
