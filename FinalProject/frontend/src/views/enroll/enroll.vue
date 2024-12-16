@@ -18,12 +18,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td></td>
+                <tr v-for="work in myCompanies">
+                    <td>{{ work.company.cname }}</td>
+                    <td>{{ work.hireDate }}</td>
+                    <td>{{ work.resignDate || '근무중' }}</td>
+                    <td>{{ work.company.ctel }}</td>
+                    <td>{{ work.company.address + " " + work.company.detailAddress }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
+    <button @click="getMyAllContract">test</button>
     <Teleport to="body">
         <div class="modal-overlay" v-show="showChangeModal" @click.self="closeModal">
             <div class="modal">
@@ -78,7 +83,20 @@ const closeModal = () => {
     showChangeModal.value = false;
 }
 //과거근무계약기록
-axios.get(`${axiosAddress}/employee/getMyAllContract`,{withCredentials : true})
+const myCompanies = reactive([]);
+const getMyAllContract = ()=> {
+    axios
+    .get(`${axiosAddress}/employee/getMyAllContract`,{withCredentials : true})
+    .then((res)=>{
+        myCompanies.splice(0,myCompanies.length, ...res.data.work);
+        const myContracts = [...res.data.contract];
+        myCompanies.forEach(work =>{
+            work.contract = myContracts.filter(contract =>
+                contract.work.company.companyId === work.company.companyId
+            )
+        })
+    });
+};
 
 </script>
 <style scoped>

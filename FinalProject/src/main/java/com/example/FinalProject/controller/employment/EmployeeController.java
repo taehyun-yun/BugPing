@@ -3,6 +3,7 @@ package com.example.FinalProject.controller.employment;
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.user.User;
+import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.user.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,13 +62,18 @@ public class EmployeeController {
         return new ResponseEntity<>("비정상적인 접근입니다.",HttpStatus.BAD_REQUEST);
     }
     @GetMapping("/getMyAllContract")
-    public ResponseEntity<List<Contract>>myAllContract(){
+    public ResponseEntity<Map<String,Object>>myAllContract(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Optional<List<Contract>>contract = contractRepository.findAllContractsByUserId(authentication.getName());
-        if(contract.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        String userId = authentication.getName();
+        Optional<List<Work>>work = workRepository.findByUser_userId(userId);
+        Optional<List<Contract>>contract = contractRepository.findAllContractsByUserId(userId);
+        Map<String,Object> response = new HashMap<>();
+        if(work.isPresent()){
+            response.put("work",work.get());
         }
-        System.out.println(contract.get());
-        return new ResponseEntity(contract.get(), HttpStatus.OK);
+        if(contract.isPresent()){
+            response.put("contract",contract.get());
+        }
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

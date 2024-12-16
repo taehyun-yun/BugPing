@@ -38,7 +38,8 @@ import router from '@/router';
             withCredentials: true
         })
         .then((res)=>{
-            alert(res.data+"페이지로 이동하는 로직 짜셈");
+            alert(res.data+"입니다.");
+            router.push("/");
         })
         .catch((err)=>{
             alert(err.response.data);
