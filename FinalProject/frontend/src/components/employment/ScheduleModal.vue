@@ -1,3 +1,5 @@
+<!-- ScheduleModal.vue -->
+
 <template>
   <div v-if="isOpen" class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
@@ -8,7 +10,7 @@
 
       <div class="modal-body">
         <section class="weekday-section">
-          <h3>요일</h3>
+          <h3>요일<span class="required">*</span></h3>
           <div class="weekday-buttons">
             <button v-for="day in weekdays" :key="day.value"
               :class="['weekday-button', { active: selectedDay === day.value }]" @click="selectedDay = day.value">
@@ -80,18 +82,21 @@
           <div class="break-time-input">
             <div class="select-wrapper">
               <select v-model="breakHour">
+                <option value="0">00</option> <!-- 기본값 0 -->
                 <option value="">선택</option>
-                <option v-for="m in 60" :key="`break-${m}`">
-                  {{ String(m - 1).padStart(2, '0') }}
+                <option v-for="h in 24" :key="`break-hour-${h}`" :value="h">
+                  {{ String(h).padStart(2, '0') }}
                 </option>
               </select>
             </div>
             <span>시간</span>
             <div class="select-wrapper">
               <select v-model="breakMinute">
+                <option value="0">00</option> <!-- 기본값 0 -->
                 <option value="">선택</option>
-                <option v-for="m in 60" :key="`break-${m}`">
-                  {{ String(m - 1).padStart(2, '0') }}
+                <option v-for="m in 60" :key="`break-minute-${m}`" :value="m">
+                  {{ String(m).padStart(2, '0') }}
+
                 </option>
               </select>
             </div>
@@ -128,54 +133,111 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  schedule: {
+    type: Object,
+    default: () => ({})
   }
 })
 
 const emit = defineEmits(['close', 'confirm'])
 
-const weekdays = [
-  { label: '월', value: 'MON' },
-  { label: '화', value: 'TUE' },
-  { label: '수', value: 'WED' },
-  { label: '목', value: 'THU' },
-  { label: '금', value: 'FRI' },
-  { label: '토', value: 'SAT' },
-  { label: '일', value: 'SUN' }
-]
-
-const selectedDay = ref('')
-const workType = ref('근무')
+// Modal 내부 상태 관리
+const selectedDay = ref(props.schedule.day || '')
 const startHour = ref('')
 const startMinute = ref('')
 const endHour = ref('')
 const endMinute = ref('')
-const breakHour = ref('')
-const breakMinute = ref('')
-const workplace = ref('')
-const memo = ref('')
+const breakHour = ref(0)
+const breakMinute = ref(0)
 
+watch(
+  () => props.schedule,
+  (newSchedule) => {
+    if (newSchedule) {
+      selectedDay.value = newSchedule.day || '';
+      if (newSchedule.officialStart) {
+        const [startH, startM] = newSchedule.officialStart.split(':');
+        startHour.value = startH;
+        startMinute.value = startM;
+      }
+      if (newSchedule.officialEnd) {
+        const [endH, endM] = newSchedule.officialEnd.split(':');
+        endHour.value = endH;
+        endMinute.value = endM;
+      }
+      const breakTime = newSchedule.breakMinute ?? 0; // `null` 또는 `undefined`일 경우 기본값 0
+      breakHour.value = Math.floor(breakTime / 60); // 분 -> 시간 변환
+      breakMinute.value = breakTime % 60; // 나머지 분
+    } else {
+      // props.schedule이 비어있을 경우 초기화
+      selectedDay.value = '';
+      startHour.value = '';
+      startMinute.value = '';
+      endHour.value = '';
+      endMinute.value = '';
+      breakHour.value = 0; // 기본값 설정
+      breakMinute.value = 0; // 기본값 설정
+    }
+  },
+  { immediate: true }
+);
+
+// Modal 닫기
 const closeModal = () => {
   emit('close')
 }
 
 const handleConfirm = () => {
-  emit('confirm', {
+  const totalBreakMinutes = (breakHour.value || 0) * 60 + (breakMinute.value || 0);
+
+  //console.log("props.schedule.contract.contractId:", JSON.stringify(props.schedule.contract.contractId, null, 2));
+
+  const scheduleData = {
+    //contractId: props.schedule.contract.contractId || null, // contractId 추가
+    scheduleId: props.schedule.scheduleId || null, // 스케줄 ID 존재 여부 확인
     day: selectedDay.value,
-    workType: workType.value,
-    startTime: `${startHour.value}:${startMinute.value}`,
-    endTime: `${endHour.value}:${endMinute.value}`,
-    breakTime: `${breakHour.value}:${breakMinute.value}`,
-    workplace: workplace.value,
-    memo: memo.value
-  })
-  closeModal()
-}
+    officialStart: startHour.value && startMinute.value ? `${startHour.value}:${startMinute.value}` : '',
+    officialEnd: endHour.value && endMinute.value ? `${endHour.value}:${endMinute.value}` : '',
+    breakMinute: totalBreakMinutes
+  };
+  
+  //console.log("scheduleData:", JSON.stringify(scheduleData, null, 2));
+
+  emit('confirm', scheduleData);
+  closeModal();
+};
+
+
+const weekdays = [
+  { label: '월', value: 1 },
+  { label: '화', value: 2 },
+  { label: '수', value: 3 },
+  { label: '목', value: 4 },
+  { label: '금', value: 5 },
+  { label: '토', value: 6 },
+  { label: '일', value: 7 },
+];
+
+
+// const weekdays = [
+//   { label: '월', value: 'MON' },
+//   { label: '화', value: 'TUE' },
+//   { label: '수', value: 'WED' },
+//   { label: '목', value: 'THU' },
+//   { label: '금', value: 'FRI' },
+//   { label: '토', value: 'SAT' },
+//   { label: '일', value: 'SUN' }
+// ]
+
+
 </script>
 
 <style scoped>
