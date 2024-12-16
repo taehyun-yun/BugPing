@@ -35,27 +35,49 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
 
+// HSL 색상에서 Hue와 Lightness를 추출하는 함수
+const extractHue = (hsl) => {
+    const matches = hsl.match(/hsl\((\d+), \d+%, (\d+)%\)/);
+    return matches ? { h: parseInt(matches[1]), l: parseInt(matches[2]) } : { h: 0, l: 0 };
+};
+// 로컬 스토리지 키 설정
+const COLOR_STORAGE_KEY = 'employeeColors';
+
+const employeeColorMap = ref(JSON.parse(localStorage.getItem(COLOR_STORAGE_KEY)) || {});
+const usedHues = ref(Object.values(employeeColorMap.value).map(color => extractHue(color)));
+
+const MIN_HUE_DIFFERENCE = 30;
+const MIN_LIGHTNESS_DIFFERENCE = 20;
+
 // 이름 기반 색상 반환
 const getEmployeeColor = (name) => {
     if (!employeeColorMap.value[name]) {
-        let newHue;
-        const MIN_DIFFERENCE = 30;  // 색상 간 최소 차이 (Hue 값)
+        let newHue, newLightness, newColor;
 
         do {
-            // 0~360 범위에서 랜덤한 Hue 값 생성
+            // 랜덤한 Hue(0~360), Lightness(70~85)를 생성
             newHue = Math.floor(Math.random() * 360);
-        } while (usedHues.value.some(hue => Math.abs(hue - newHue) < MIN_DIFFERENCE)); // 기존 색상과 비교
+            newLightness = Math.floor(Math.random() * 15) + 70; // 70% ~ 85%
 
-        // 사용된 Hue 값에 추가
-        usedHues.value.push(newHue);
-        
-        // HSL 값으로 색상 생서
-        const newColor = `hsl(${newHue}, 70%, 80%)`;
+            // 색상 값 생성
+            newColor = `hsl(${newHue}, 70%, ${newLightness}%)`;
+        } while (
+            usedHues.value.some(hue => Math.abs(hue.h - newHue) < MIN_HUE_DIFFERENCE &&
+                                        Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
+        );
+
+        // 색상 등록
         employeeColorMap.value[name] = newColor;
+        usedHues.value.push({ h: newHue, l: newLightness });
+
+        // 로컬 스토리지에 저장
+        localStorage.setItem(COLOR_STORAGE_KEY, JSON.stringify(employeeColorMap.value));
     }
-    
+
     return employeeColorMap.value[name];
 };
+
+
 
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
@@ -63,9 +85,6 @@ const selectedCompanyId = ref(''); // 회사 ID
 const userRole = ref(''); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 const scheduleItems = ref([]);
-const employeeColorMap = ref({});
-const usedHues = ref([]);  // 사용된 Hue 값을 저장
-
 
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
@@ -105,7 +124,7 @@ const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
 const holidayCalendarId = 'ko.south_korea%23holiday@group.v.calendar.google.com';
 
 // 버튼 텍스트 동적 설정
-const buttonText = computed(() => (isUserView.value ? '내 근무 보기' : '회사 근무 보기'));
+const buttonText = computed(() => (isUserView.value ? '회사 근무 보기' : '내 근무 보기'));
 
 // 공통 옵션 설정
 const commonOptions = {
@@ -180,15 +199,12 @@ const calendarOptions = ref({
             // 서버와 날짜 요청 형식을 맞추기
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
-
-            const params = {
-                start: startFormatted,
-                end: endFormatted,
-                viewCompanySchedule: !isUserView.value, // 회사 근무 보기 활성화 여부
-            };
-
             const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
-                params,
+                params: {
+                    start: startFormatted,
+                    end: endFormatted,
+                    viewCompanySchedule: !isUserView.value, // 회사 근무 보기 활성화 여부
+                },
                 withCredentials: true, // 서버 요청에는 자격 증명 필요
             });
 
@@ -290,8 +306,10 @@ watch(buttonText, () => {
     --secondary-color: #f3f4f6;
     --text-color: #333;
     --border-color: #e2e8f0;
-    --button-padding: 12px; /* 버튼 공통 스타일 변수 */
-    --button-border-radius: 6px; /* 버튼 둥근 테두리 변수 */
+    --button-padding: 12px;
+    /* 버튼 공통 스타일 변수 */
+    --button-border-radius: 6px;
+    /* 버튼 둥근 테두리 변수 */
     display: flex;
     gap: 20px;
     max-width: 1200px;
