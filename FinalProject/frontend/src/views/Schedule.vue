@@ -150,6 +150,7 @@ const calendarOptions = ref({
                     singleEvents: true,
                     orderBy: 'startTime',
                 },
+                withCredentials : false,
                 // withCredentials: true 제거
             });
 
