@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="right-section">
-            <img src="/src/assets/Loginimg/instancelogo2.png" alt="로고" draggable="false">
+            <img src="/src/assets/Loginimg/logo.png" alt="로고" draggable="false" class="logo">
         </div>
     </div>
 </template>
@@ -43,5 +43,9 @@ import LoginForm from '@/components/auth/LoginForm.vue';
 .loginform{
     padding-left :50px;
     padding-right :50px;
+}
+.logo{
+    width: 250px;
+    height: 250px;
 }
 </style>

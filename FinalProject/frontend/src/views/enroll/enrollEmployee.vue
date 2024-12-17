@@ -68,6 +68,7 @@
 </template>
 <script setup>
 import { axiosAddress } from '@/stores/axiosAddress';
+import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
 import { computed, onMounted, reactive, ref } from 'vue';
 //검색
@@ -93,10 +94,17 @@ const getInfo = async() => {
     showChangeModal.value = true;
 }
 //등록
-const enroll = () =>{
-    axios.post(`${axiosAddress}/employee/enroll`,{ companyId : companyInfo.companyId, },{withCredentials : true})
-    .then((res)=>{alert(res.data);})
-    .catch((err)=>{alert(err.response.data);})
+const enroll = async() =>{
+    try{
+        const res = await axios.post(`${axiosAddress}/employee/enroll`,{ companyId : companyInfo.companyId, },{withCredentials : true})
+        alert(res.data);
+        const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
+        const userStore = useUserStore()
+        userStore.setCompanies(companyRes.data);
+        userStore.setCompany({ companyId : companyInfo.companyId, cname : companyInfo.cname});
+    } catch (err) {
+        alert(err.response.data);
+    }
 }
 //모달창 여닫기
 const showChangeModal = ref(false);

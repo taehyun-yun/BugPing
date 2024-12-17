@@ -8,6 +8,7 @@ import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.user.UserRepository;
 import com.example.FinalProject.repository.work.WorkRepository;
+import com.example.FinalProject.service.employment.ContractService;
 import com.example.FinalProject.service.jwt.JoinService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class EmployeeController {
     final private WorkRepository workRepository;
     final private ContractRepository contractRepository;
 
-    EmployeeController(JoinService joinService, UserRepository userRepository, CompanyRepository companyRepository, WorkRepository workRepository, ContractRepository contractRepository){
+    EmployeeController(JoinService joinService, UserRepository userRepository, CompanyRepository companyRepository, WorkRepository workRepository, ContractRepository contractRepository, ContractService contractService){
         this.joinService = joinService;
         this.userRepository = userRepository;
         this.workRepository = workRepository;
@@ -65,7 +66,7 @@ public class EmployeeController {
     public ResponseEntity<Map<String,Object>>myAllContract(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        Optional<List<Work>>work = workRepository.findByUser_userId(userId);
+        Optional<List<Work>>work = workRepository.findByUser_userIdOrderByHireDateDesc(userId);
         Optional<List<Contract>>contract = contractRepository.findAllContractsByUserId(userId);
         Map<String,Object> response = new HashMap<>();
         if(work.isPresent()){
