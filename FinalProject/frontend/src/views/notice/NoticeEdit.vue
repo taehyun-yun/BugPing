@@ -489,9 +489,83 @@ textarea {
 }
 
 .image-preview img {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 5px;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+/* 이미지, 파일 첨부 */
+
+.attachment-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.attachment-item {
+  text-align: left; /* 왼쪽 정렬 */
+}
+
+.attachment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px; /* 아이콘과 텍스트 위쪽 간격 */
+}
+
+.attachment-img {
+  width: 25px;
+  height: 25px;
+  margin-right: 10px; /* 아이콘과 텍스트 사이 간격 */
+  vertical-align: middle; /* 텍스트와 아이콘을 중앙 정렬 */
+}
+
+.attachment-text {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 20px; /* 텍스트와 아이콘의 높이를 맞추기 위해 line-height 설정 */
+  display: flex;
+  align-items: center; /* 텍스트를 세로 중앙에 위치 */
+}
+
+.attachment-card1 {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.attachment-card2 {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+  height: 38px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.attachment-card1:hover,
+.attachment-card2:hover {
+  background: #e7e7e7;
+}
+
+/* 숨겨진 파일 입력창 스타일 */
+.file-input-hidden {
+  display: none;
 }
 
 /* 기존 첨부 파일 */
