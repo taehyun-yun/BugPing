@@ -42,6 +42,7 @@ dependencies {
 	implementation 'org.slf4j:slf4j-api:2.0.9'
 	runtimeOnly 'ch.qos.logback:logback-classic:1.4.11'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
 }
 
 tasks.named('test') {

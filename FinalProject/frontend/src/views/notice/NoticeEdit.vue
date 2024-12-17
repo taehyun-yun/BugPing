@@ -212,7 +212,8 @@ const loadNotice = async () => {
   const noticeId = route.params.id; // URL에서 공지사항 ID 가져오기
   try {
     const response = await axios.get(
-      `http://localhost:8707/notice/${noticeId}`
+      `http://localhost:8707/notice/${noticeId}`,
+      { withCredentials: true }
     );
     notice.value = response.data;
 
@@ -231,7 +232,8 @@ const loadNotice = async () => {
       file.fileType.startsWith("image/")
     );
     if (imageFile) {
-      previewImage.value = `http://localhost:8707/notice/files/${imageFile.filePath}`;
+      (previewImage.value = `http://localhost:8707/notice/files/${imageFile.filePath}`),
+        { withCredentials: true };
     }
   } catch (error) {
     console.error("공지사항을 불러오는 중 오류 발생:", error);

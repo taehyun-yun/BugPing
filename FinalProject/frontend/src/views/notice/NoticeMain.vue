@@ -205,7 +205,9 @@ const fetchNotices = async () => {
       // '전체 게시물' 탭인 경우
       if (activeCategory.value === "전체") {
         // '전체' 카테고리 선택 시 모든 공지사항 조회
-        response = await axios.get("http://localhost:8707/notice/list");
+        response = await axios.get("http://localhost:8707/notice/list", {
+          withCredentials: true,
+        });
       } else {
         // 특정 카테고리 선택 시 해당 타입의 공지사항 조회
         // 카테고리 이름을 타입 값으로 매핑
@@ -216,6 +218,7 @@ const fetchNotices = async () => {
         };
         response = await axios.get("http://localhost:8707/notice/list/type", {
           params: { type: typeMap[activeCategory.value] },
+          withCredentials: true,
         });
       }
     } else if (activeTab.value === "my") {
@@ -223,7 +226,8 @@ const fetchNotices = async () => {
       // 현재 예제에서는 모든 공지사항을 가져오지만,
       // 실제로는 로그인된 사용자의 work_id를 사용하여 필터링해야 합니다.
       const currentUserWorkId = 1; // 예시: 현재 사용자의 work_id (실제 로그인 로직에 따라 변경)
-      response = await axios.get("http://localhost:8707/notice/list");
+      (response = await axios.get("http://localhost:8707/notice/list")),
+        { withCredentials: true };
       // 모든 공지사항 중에서 작성자가 현재 사용자와 일치하는 것만 필터링
       items.value = response.data.filter(
         (notice) => notice.work.workId === currentUserWorkId
@@ -401,8 +405,10 @@ const getStatusLabel = (status) => {
 
 .notice-main {
   max-width: 1400px; /* 최대 너비 설정 */
+  width: 100%; /* 전체 너비로 확장 */
   margin: 0 auto; /* 중앙 정렬 */
   padding: 20px;
+  box-sizing: border-box; /* padding 포함한 전체 너비 */
 }
 
 /* 탭 스타일 */
@@ -515,6 +521,12 @@ const getStatusLabel = (status) => {
 
 .board-table th {
   background-color: #f9f9f9;
+}
+
+.board-table th:first-child,
+.board-table td:first-child {
+  padding: 10px; /* 체크박스 셀 간격 축소 */
+  width: 60px; /* 체크박스 셀 너비 설정 */
 }
 
 /* 체크박스 및 삭제 버튼 정렬 */

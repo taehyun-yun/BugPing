@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -78,8 +79,9 @@ public class JwtServiceImpl implements JwtService {
             List<GrantedAuthority>authorities = new ArrayList<>();
             for (String r : roles) {
                 //authentication.getAuthorities()했을 때 ROLE_employee로 나온다.
-                //.requestMatchers("/api/**").hasAnyRole("employee") 이렇게 'ROLE_' 이 없어도
+                //config에서 .requestMatchers("/api/**").hasAnyRole("employee") 이렇게 'ROLE_' 이 없어도
                 //String Security에서 ROLE_ 을 생각하기 때문에 ROLE_ 붙이는 작업을 해야한다.
+                //System.out.println("추가된 authority : " + "ROLE_" + r.trim());
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + r.trim()));
             }
 
@@ -88,4 +90,14 @@ public class JwtServiceImpl implements JwtService {
             return null;
         }
     }
+
+    // 로그인 사용자 ID 추출 메서드
+    public String getLoggedInUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName(); // 로그인된 사용자의 ID 반환
+        }
+        return null; // 인증되지 않은 경우
+    }
+
 }

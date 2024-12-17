@@ -1,6 +1,8 @@
 package com.example.FinalProject.repository.payroll;
 
+import com.example.FinalProject.dto.EmployeeDTO;
 import com.example.FinalProject.entity.payroll.PayRoll;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,9 +16,11 @@ public interface PayrollRepository extends JpaRepository<PayRoll, Integer> {
             "JOIN p.work w " +
             "JOIN w.user u " +
             "WHERE w.resignDate IS NULL OR w.resignDate >= CURRENT_DATE")
-    List<Object[]> findPayRollWithWorkAndUser(); // 조합된 데이터 반환
+    List<Object[]> findPayRollWithWorkAndUser();
 
     @Query("SELECT p FROM PayRoll p WHERE p.work.user.userId = :userId AND p.paymentDate BETWEEN :startDate AND :endDate")
-    Optional<PayRoll> findByUserIdAndDateRange(@Param("userId") String userId,
-    @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    Optional<PayRoll> findByUserIdAndDateRange(
+            @Param("userId") String userId,
+            @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
 }

@@ -1,3 +1,4 @@
+<!-- ContractModal.vue -->
 <template>
     <div v-if="isOpen" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
@@ -11,11 +12,11 @@
         <div class="modal-body">
           <section class="members-section">
             <h3>편집 대상 구성원</h3>
-            <div class="member-item">
+            <div class="member-item" @click="openUserModal">
               <div class="profile-image">
                 <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
               </div>
-              <span class="member-name">{{ contract?.work?.user?.name || '이름 없음' }}</span>
+              <span class="member-name">{{ selectedEmployee?.name || contract?.work?.user?.name || '이름 없음' }}</span>
             </div>
           </section>
   
@@ -85,7 +86,13 @@
       </div>
       <!-- ScheduleModal 추가 -->
       <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
-        @save="saveSchedule" />
+      @confirm="saveSchedule"/>
+      <!-- **UserModal 추가** -->
+    <UserModal 
+      :is-open="showUserModal" 
+      @close="closeUserModal" 
+      @save="handleUserSelection" 
+    />
     </div>
   </template>
   
@@ -93,7 +100,8 @@
   import { ref, defineProps, defineEmits, watch } from 'vue'
   import { useContractsStore } from '@/stores/contracts' // Pinia 스토어 import
   import ScheduleModal from '@/components/employment/ScheduleModal.vue'
-  
+  import UserModal from '@/components/employment/UserModal.vue'
+
   // Props 정의
   const props = defineProps({
     isOpen: {
@@ -123,9 +131,43 @@
   const message = ref('')
   const messageType = ref('') // 'success' 또는 'error'
   
+
+  const showUserModal = ref(false) // **추가된 부분**
+  const selectedEmployee = ref(null) // **추가된 부분**
+
+// **UserModal 열기 메서드**
+const openUserModal = () => {
+  showUserModal.value = true
+}
+
+// **UserModal에서 선택한 직원 처리 메서드**
+const handleUserSelection = (employee) => {
+  selectedEmployee.value = employee
+  message.value = `${employee.name}이(가) 선택되었습니다.`
+  messageType.value = 'success'
+  console.log('선택된 직원:', employee)
+
+  // 예시: 계약에 선택된 직원 반영
+  if (props.contract) {
+    props.contract.work.user = employee
+    // 필요 시 스토어에 업데이트 요청
+  }
+}
+
+// **UserModal 닫기 메서드**
+const closeUserModal = () => {
+  showUserModal.value = false
+}
+
+
+
+
+
+
   // ScheduleModal 상태 관리
   const showScheduleModal = ref(false)
   const currentSchedule = ref({})
+  
   
   // 스케줄 추가 함수
   const addSchedule = () => {
@@ -142,20 +184,26 @@
   const editSchedule = (schedule) => {
     currentSchedule.value = { ...schedule }
     showScheduleModal.value = true
+    console.log("editSchedule schedule:", JSON.stringify(schedule, null, 2));
   }
-  
+
   // 스케줄 저장 함수
   const saveSchedule = async (schedule) => {
+    console.log("saveSchedule schedule:", JSON.stringify(schedule, null, 2));
     if (props.contract) {
-      if (schedule.id) {
+      if (schedule.scheduleId) {
         // 기존 스케줄 수정
         try {
-          await contractsStore.editSchedule(props.contract.contractId, schedule.id, schedule)
+          await contractsStore.editSchedule(props.contract.contractId, schedule.scheduleId, schedule)
           message.value = '스케줄이 성공적으로 수정되었습니다.'
           messageType.value = 'success'
+          emit('save', schedule); // 부모 컴포넌트로 수정된 스케줄 전달
         } catch (error) {
           message.value = '스케줄 수정에 실패했습니다. 다시 시도해주세요.'
           messageType.value = 'error'
+
+          console.log("newSchedule:", JSON.stringify(newSchedule, null, 2));
+          emit('save', newSchedule); // 부모 컴포넌트로 새 스케줄 전달
         }
       } else {
         // 새 스케줄 추가
@@ -163,6 +211,7 @@
           await contractsStore.addSchedule(props.contract.contractId, schedule)
           message.value = '스케줄이 성공적으로 추가되었습니다.'
           messageType.value = 'success'
+          props.contract.schedules.push(newSchedule); // 새 스케줄 추가
         } catch (error) {
           message.value = '스케줄 추가에 실패했습니다. 다시 시도해주세요.'
           messageType.value = 'error'
@@ -174,9 +223,9 @@
   
   // 스케줄 삭제 함수
   const deleteSchedule = async (schedule) => {
-    if (props.contract && schedule.id) {
+    if (props.contract && schedule.scheduleId) {
       try {
-        await contractsStore.deleteSchedule(props.contract.contractId, schedule.id)
+        await contractsStore.deleteSchedule(props.contract.contractId, schedule.scheduleId)
         message.value = '스케줄이 성공적으로 삭제되었습니다.'
         messageType.value = 'success'
       } catch (error) {
@@ -254,10 +303,12 @@
         // LocalDateTime 형식에 맞게 'T00:00:00' 추가
         contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
         contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
-      }
+      };
+
   
       try {
         await contractsStore.updateContract(props.contract.contractId, updatedContract)
+        emit('save', updatedContract); // 부모로 이벤트 전달
         console.log('계약 업데이트 성공')
         message.value = '계약 정보가 성공적으로 업데이트되었습니다.'
         messageType.value = 'success'

@@ -21,6 +21,17 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
+    // Work ID와 날짜 범위로 Attendance 조회
+    @Query("SELECT a FROM Attendance a " +
+            "JOIN a.schedule s " +
+            "JOIN s.contract c " +
+            "WHERE c.work.workId = :workId " +
+            "AND a.actualStart BETWEEN :startDate AND :endDate")
+    List<Attendance> findAttendancesByWorkIdAndDateRange(
+            @Param("workId") Integer workId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
     @Query("SELECT a FROM Attendance a " +
             "JOIN a.schedule s " +
             "JOIN s.contract c " +
@@ -28,6 +39,14 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "WHERE w.user.userId = :userId " +
             "AND w.workId = :workId")
     List<Attendance> findAttendancesByUserIdAndWorkId(@Param("userId") String userId, @Param("workId") Integer workId);
+
+    @Query("SELECT a FROM Attendance a " +
+            "WHERE a.schedule.contract.work.user.userId = :userId " +
+            "AND a.actualStart >= :startDate AND a.actualEnd <= :endDate")
+    List<Attendance> findAttendancesByUserIdAndDateRange(
+            @Param("userId") String userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
 
     //-------------------------------------------------------------- ES --------------------------------------------------------------
@@ -81,4 +100,5 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "JOIN FETCH w.user u " +
             "WHERE a.id = :attendanceId")
     Attendance findAttendanceWithAll(@Param("attendanceId") Long attendanceId);
+
 }
