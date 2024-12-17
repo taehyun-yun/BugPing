@@ -230,6 +230,7 @@ const submitNotice = async () => {
     const response = await axios.post(
       "http://localhost:8707/notice/create",
       formData,
+      { withCredentials: true },
       {
         headers: {
           "Content-Type": "multipart/form-data",
