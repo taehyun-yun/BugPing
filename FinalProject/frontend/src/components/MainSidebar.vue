@@ -24,18 +24,19 @@
       <img src="../assets/SidebarImg/alert-circle.png" alt="Help Icon" class="icon" />
       <div class="menu-title">Help</div>
     </div>
-    <div class="menu-item" @click="goPage('enrollEmployee')">
+    <div class="menu-item" @click="goPage('enrollEmployee')" v-if="forEmployee">
       <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollEmployee Icon" class="icon" />
       <div class="menu-title">근무지 등록</div>
     </div>
-    <div class="menu-item" @click="goPage('enrollWorkplace')">
-      <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollWorkplace Icon" class="icon" />
+    <div class="menu-item" @click="goPage('enrollWorkplace')" v-if="forEmployer">
+      <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollWorkplace Icon" class="icon"/>
       <div class="menu-title">사업장 등록</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useUserStore } from '@/stores/userStore';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -44,6 +45,10 @@ const goPage = (pageName)=>{
   router.push({name : pageName});
 }
 
+//메뉴 권한
+const userStore = useUserStore();
+const forEmployer = userStore.roles.includes("employer");
+const forEmployee = userStore.roles.includes("employee");
 </script>
 
 <style scoped>

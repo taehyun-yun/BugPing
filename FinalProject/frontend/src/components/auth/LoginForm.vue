@@ -42,7 +42,7 @@ import { useUserStore } from '@/stores/userStore';
             //피니아 저장
             const userStore = useUserStore();
             userStore.setUserId(userId.value);
-            userStore.setRoles(res.data);
+            userStore.setRoles(res.data.split(","));// index.js에서는 여러 role을 가진 한 계정을 대비하여 split하고 배열로 나누었지만, 시간이 부족하고 프로젝트에서 역할이 그렇지 아니하므로 그냥 스트링으로 받겠다.
             const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
             userStore.setCompany(companyRes.data[0]);
             userStore.setCompanies(companyRes.data);
