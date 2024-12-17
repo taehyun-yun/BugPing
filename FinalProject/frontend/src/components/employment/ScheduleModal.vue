@@ -19,12 +19,8 @@
           <h3>요일<span class="required">*</span></h3>
           <!-- 요일 버튼 그룹: 사용자가 근무 요일을 선택할 수 있습니다. -->
           <div class="weekday-buttons">
-            <button 
-              v-for="day in weekdays" 
-              :key="day.value"
-              :class="['weekday-button', { active: selectedDay === day.value }]" 
-              @click="selectedDay = day.value"
-            >
+            <button v-for="day in weekdays" :key="day.value"
+              :class="['weekday-button', { active: selectedDay === day.value }]" @click="selectedDay = day.value">
               {{ day.label }}
             </button>
           </div>
@@ -234,240 +230,346 @@ const weekdays = [
 
 /* 모달의 배경 오버레이 스타일 */
 .modal-overlay {
-  position: fixed; /* 화면에 고정 */
+  position: fixed;
+  /* 화면에 고정 */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 가운데 정렬 */
-  justify-content: center; /* 수평 가운데 정렬 */
-  z-index: 1000; /* 다른 요소들보다 위에 표시 */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* 반투명 검은색 배경 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 가운데 정렬 */
+  justify-content: center;
+  /* 수평 가운데 정렬 */
+  z-index: 1000;
+  /* 다른 요소들보다 위에 표시 */
 }
 
 /* 모달 내용 영역 스타일 */
 .modal-content {
-  background: white; /* 흰색 배경 */
-  width: 90%; /* 너비를 화면의 90%로 설정 */
-  max-width: 500px; /* 최대 너비는 500px */
-  max-height: 90vh; /* 최대 높이는 화면의 90% */
-  border-radius: 16px; /* 둥근 모서리 */
-  overflow-y: auto; /* 세로 스크롤 가능 */
+  background: white;
+  /* 흰색 배경 */
+  width: 90%;
+  /* 너비를 화면의 90%로 설정 */
+  max-width: 500px;
+  /* 최대 너비는 500px */
+  max-height: 90vh;
+  /* 최대 높이는 화면의 90% */
+  border-radius: 16px;
+  /* 둥근 모서리 */
+  overflow-y: auto;
+  /* 세로 스크롤 가능 */
 }
 
 /* 모달 헤더 스타일 */
 .modal-header {
-  padding: 20px; /* 내부 여백 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: space-between; /* 양 끝으로 요소 배치 */
-  align-items: center; /* 수직 정렬 */
-  border-bottom: 1px solid #eee; /* 하단 테두리 */
+  padding: 20px;
+  /* 내부 여백 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: space-between;
+  /* 양 끝으로 요소 배치 */
+  align-items: center;
+  /* 수직 정렬 */
+  border-bottom: 1px solid #eee;
+  /* 하단 테두리 */
 }
 
 /* 모달 헤더 제목 스타일 */
 .modal-header h2 {
-  font-size: 20px; /* 글자 크기 */
-  font-weight: 600; /* 글자 두께 */
-  margin: 0; /* 여백 없음 */
+  font-size: 20px;
+  /* 글자 크기 */
+  font-weight: 600;
+  /* 글자 두께 */
+  margin: 0;
+  /* 여백 없음 */
 }
 
 /* 닫기 버튼 스타일 */
 .close-button {
-  background: none; /* 배경 없음 */
-  border: none; /* 테두리 없음 */
-  font-size: 24px; /* 글자 크기 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  padding: 0; /* 내부 여백 없음 */
-  color: #666; /* 글자 색상 회색 */
+  background: none;
+  /* 배경 없음 */
+  border: none;
+  /* 테두리 없음 */
+  font-size: 24px;
+  /* 글자 크기 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  padding: 0;
+  /* 내부 여백 없음 */
+  color: #666;
+  /* 글자 색상 회색 */
 }
 
 /* 모달 본문 스타일 */
 .modal-body {
-  padding: 20px; /* 내부 여백 */
+  padding: 20px;
+  /* 내부 여백 */
 }
 
 /* 각 섹션의 마진 설정 */
 section {
-  margin-bottom: 24px; /* 아래 여백 */
+  margin-bottom: 24px;
+  /* 아래 여백 */
 }
 
 /* 섹션 제목 스타일 */
 h3 {
-  font-size: 16px; /* 글자 크기 */
-  margin-bottom: 12px; /* 아래 여백 */
-  font-weight: 500; /* 글자 두께 */
+  font-size: 16px;
+  /* 글자 크기 */
+  margin-bottom: 12px;
+  /* 아래 여백 */
+  font-weight: 500;
+  /* 글자 두께 */
 }
 
 /* 필수 입력 항목 표시 스타일 */
 .required {
-  color: #ff4444; /* 글자 색상 빨간색 */
+  color: #ff4444;
+  /* 글자 색상 빨간색 */
 }
 
 /* 요일 버튼 그룹 스타일 */
 .weekday-buttons {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  gap: 8px; /* 버튼 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  gap: 8px;
+  /* 버튼 간 간격 */
 }
 
 /* 요일 버튼 기본 스타일 */
 .weekday-button {
-  width: 40px; /* 너비 */
-  height: 40px; /* 높이 */
-  border-radius: 50%; /* 원형 */
-  border: 1px solid #ddd; /* 테두리 */
-  background: white; /* 배경 흰색 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  transition: all 0.2s; /* 모든 속성에 대해 0.2초 동안 전환 효과 */
+  width: 40px;
+  /* 너비 */
+  height: 40px;
+  /* 높이 */
+  border-radius: 50%;
+  /* 원형 */
+  border: 1px solid #ddd;
+  /* 테두리 */
+  background: white;
+  /* 배경 흰색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  transition: all 0.2s;
+  /* 모든 속성에 대해 0.2초 동안 전환 효과 */
 }
 
 /* 활성화된 요일 버튼 스타일 */
 .weekday-button.active {
-  background: #2196f3; /* 배경색 파란색 */
-  color: white; /* 글자 색상 흰색 */
-  border-color: #2196f3; /* 테두리 색상 파란색 */
+  background: #2196f3;
+  /* 배경색 파란색 */
+  color: white;
+  /* 글자 색상 흰색 */
+  border-color: #2196f3;
+  /* 테두리 색상 파란색 */
 }
 
 /* 선택 박스 래퍼 스타일 */
 .select-wrapper {
-  position: relative; /* 자식 요소의 위치 기준 */
-  background: white; /* 흰색 배경 */
-  border: 1px solid #ddd; /* 테두리 */
-  border-radius: 8px; /* 둥근 모서리 */
-  overflow: hidden; /* 넘치는 내용 숨김 */
+  position: relative;
+  /* 자식 요소의 위치 기준 */
+  background: white;
+  /* 흰색 배경 */
+  border: 1px solid #ddd;
+  /* 테두리 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  overflow: hidden;
+  /* 넘치는 내용 숨김 */
 }
 
 /* 셀렉트 박스 스타일 */
 .select-wrapper select {
-  width: 100%; /* 너비 100% */
-  padding: 10px; /* 내부 여백 */
-  border: none; /* 테두리 없음 */
-  background: transparent; /* 투명 배경 */
-  appearance: none; /* 기본 셀렉트 스타일 제거 */
-  outline: none; /* 외곽선 없음 */
-  font-size: 14px; /* 글자 크기 */
+  width: 100%;
+  /* 너비 100% */
+  padding: 10px;
+  /* 내부 여백 */
+  border: none;
+  /* 테두리 없음 */
+  background: transparent;
+  /* 투명 배경 */
+  appearance: none;
+  /* 기본 셀렉트 스타일 제거 */
+  outline: none;
+  /* 외곽선 없음 */
+  font-size: 14px;
+  /* 글자 크기 */
 }
 
 /* 전체 너비를 사용하는 셀렉트 래퍼 */
 .full-width {
-  width: 100%; /* 너비 100% */
+  width: 100%;
+  /* 너비 100% */
 }
 
 /* 근무시간 입력 그룹 스타일 */
 .time-inputs {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  flex-direction: column; /* 세로 방향으로 배치 */
-  gap: 12px; /* 요소 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  flex-direction: column;
+  /* 세로 방향으로 배치 */
+  gap: 12px;
+  /* 요소 간 간격 */
 }
 
 /* 개별 시간 그룹 스타일 */
 .time-group {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
 }
 
 /* 시간 그룹 내 셀렉트 래퍼의 너비 설정 */
 .time-group .select-wrapper {
-  width: 80px; /* 너비 80px */
+  width: 80px;
+  /* 너비 80px */
 }
 
 /* 시간 레이블 스타일 */
 .time-label {
-  margin-left: 8px; /* 왼쪽 여백 */
-  color: #666; /* 글자 색상 회색 */
+  margin-left: 8px;
+  /* 왼쪽 여백 */
+  color: #666;
+  /* 글자 색상 회색 */
 }
 
 /* 휴식시간 입력 그룹 스타일 */
 .break-time-input {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
 }
 
 /* 휴식시간 입력 그룹 내 셀렉트 래퍼의 너비 설정 */
 .break-time-input .select-wrapper {
-  width: 80px; /* 너비 80px */
+  width: 80px;
+  /* 너비 80px */
 }
 
 /* 메모 입력 스타일 (현재는 주석 처리됨) */
 .memo-input {
-  position: relative; /* 자식 요소의 위치 기준 */
+  position: relative;
+  /* 자식 요소의 위치 기준 */
 }
 
 textarea {
-  width: 100%; /* 너비 100% */
-  height: 100px; /* 높이 100px */
-  padding: 12px; /* 내부 여백 */
-  border: 1px solid #ddd; /* 테두리 */
-  border-radius: 8px; /* 둥근 모서리 */
-  resize: none; /* 크기 조절 불가 */
-  font-size: 14px; /* 글자 크기 */
+  width: 100%;
+  /* 너비 100% */
+  height: 100px;
+  /* 높이 100px */
+  padding: 12px;
+  /* 내부 여백 */
+  border: 1px solid #ddd;
+  /* 테두리 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  resize: none;
+  /* 크기 조절 불가 */
+  font-size: 14px;
+  /* 글자 크기 */
 }
 
 /* 메모 입력 시 글자 수 표시 스타일 */
 .memo-count {
-  position: absolute; /* 부모를 기준으로 위치 */
-  right: 12px; /* 오른쪽에서 12px 위치 */
-  bottom: 12px; /* 아래에서 12px 위치 */
-  font-size: 12px; /* 글자 크기 */
-  color: #666; /* 글자 색상 회색 */
+  position: absolute;
+  /* 부모를 기준으로 위치 */
+  right: 12px;
+  /* 오른쪽에서 12px 위치 */
+  bottom: 12px;
+  /* 아래에서 12px 위치 */
+  font-size: 12px;
+  /* 글자 크기 */
+  color: #666;
+  /* 글자 색상 회색 */
 }
 
 /* 모달 푸터 스타일 */
 .modal-footer {
-  padding: 20px; /* 내부 여백 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: flex-end; /* 오른쪽으로 요소 정렬 */
-  gap: 12px; /* 요소 간 간격 */
-  border-top: 1px solid #eee; /* 상단 테두리 */
+  padding: 20px;
+  /* 내부 여백 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: flex-end;
+  /* 오른쪽으로 요소 정렬 */
+  gap: 12px;
+  /* 요소 간 간격 */
+  border-top: 1px solid #eee;
+  /* 상단 테두리 */
 }
 
 /* 취소 및 확인 버튼 기본 스타일 */
 .cancel-button,
 .confirm-button {
-  padding: 8px 24px; /* 내부 여백 */
-  border-radius: 8px; /* 둥근 모서리 */
-  font-size: 14px; /* 글자 크기 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  transition: all 0.2s; /* 모든 속성에 대해 0.2초 동안 전환 효과 */
+  padding: 8px 24px;
+  /* 내부 여백 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  font-size: 14px;
+  /* 글자 크기 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  transition: all 0.2s;
+  /* 모든 속성에 대해 0.2초 동안 전환 효과 */
 }
 
 /* 취소 버튼 스타일 */
 .cancel-button {
-  background: #f5f5f5; /* 배경색 연한 회색 */
-  border: 1px solid #ddd; /* 테두리 */
+  background: #f5f5f5;
+  /* 배경색 연한 회색 */
+  border: 1px solid #ddd;
+  /* 테두리 */
 }
 
 /* 확인 버튼 스타일 */
 .confirm-button {
-  background: #2196f3; /* 배경색 파란색 */
-  color: white; /* 글자 색상 흰색 */
-  border: none; /* 테두리 없음 */
+  background: #2196f3;
+  /* 배경색 파란색 */
+  color: white;
+  /* 글자 색상 흰색 */
+  border: none;
+  /* 테두리 없음 */
 }
 
 /* 취소 버튼 호버 시 스타일 */
 .cancel-button:hover {
-  background: #eee; /* 호버 시 배경색 약간 진한 회색 */
+  background: #eee;
+  /* 호버 시 배경색 약간 진한 회색 */
 }
 
 /* 확인 버튼 호버 시 스타일 */
 .confirm-button:hover {
-  background: #1976d2; /* 호버 시 배경색 더 어두운 파란색 */
+  background: #1976d2;
+  /* 호버 시 배경색 더 어두운 파란색 */
 }
 
 /* 반응형 스타일: 화면 너비가 480px 이하일 때 적용 */
 @media (max-width: 480px) {
   .modal-content {
-    width: 100%; /* 너비 100% */
-    height: 100%; /* 높이 100% */
-    max-height: 100vh; /* 최대 높이 화면의 100% */
-    border-radius: 0; /* 모서리 없애기 */
+    width: 100%;
+    /* 너비 100% */
+    height: 100%;
+    /* 높이 100% */
+    max-height: 100vh;
+    /* 최대 높이 화면의 100% */
+    border-radius: 0;
+    /* 모서리 없애기 */
   }
 
   .weekday-buttons {
-    flex-wrap: wrap; /* 버튼을 여러 줄로 감싸기 */
-    justify-content: center; /* 가운데 정렬 */
+    flex-wrap: wrap;
+    /* 버튼을 여러 줄로 감싸기 */
+    justify-content: center;
+    /* 가운데 정렬 */
   }
 }
 </style>

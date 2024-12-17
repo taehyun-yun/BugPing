@@ -58,7 +58,7 @@
         <!-- 스케줄 목록 섹션: 계약에 스케줄이 있을 때만 표시됩니다. -->
         <section v-if="contract?.schedules?.length">
           <!-- 각 스케줄을 반복하여 표시합니다. -->
-          <div v-for="schedule in contract.schedules" :key="schedule.id" class="schedule-section">
+          <div v-for="schedule in contract.schedules" :key="schedule.scheduleId" class="schedule-section">
             <!-- 스케줄 헤더: 요일을 표시합니다. -->
             <div class="schedule-header day-box">
               <span class="day">{{ getDayName(schedule.day) }}</span>
@@ -68,7 +68,7 @@
               <button @click="editSchedule(schedule)" class="action-button edit-button">
                 <span class="icon">✏️</span>
               </button>
-              <button @click="deleteSchedule(schedule)" class="action-button delete-button">
+              <button @click="handleDeleteSchedule(schedule)" class="action-button delete-button">
                 <span class="icon">🗑️</span>
               </button>
             </div>
@@ -108,19 +108,11 @@
     </div>
 
     <!-- 스케줄 추가/수정 모달 컴포넌트 -->
-    <ScheduleModal
-      :is-open="showScheduleModal"
-      :schedule="currentSchedule"
-      @close="closeScheduleModal"
-      @confirm="saveSchedule"
-    />
-    
+    <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
+      @confirm="handleScheduleConfirm" />
+
     <!-- 사용자 선택 모달 컴포넌트 -->
-    <UserModal 
-      :is-open="showUserModal" 
-      @close="closeUserModal" 
-      @save="handleUserSelection" 
-    />
+    <UserModal :is-open="showUserModal" @close="closeUserModal" @save="handleUserSelection" />
   </div>
 </template>
 
@@ -141,9 +133,15 @@ const props = defineProps({
     default: false // 기본값은 모달이 닫혀 있는 상태
   },
   contract: {
-    type: [Object, null],
-    required: false, // 계약 정보는 필수가 아님
+    type: Object, // 계약 정보는 객체 타입으로 설정 (빈 객체 기본값)
+    default: () => ({
+      schedules: []
+    }),
   }
+  // contract: {
+  //   type: [Object, null],
+  //   required: false, // 계약 정보는 필수가 아님
+  // }
 })
 
 // Emits 정의: 부모 컴포넌트로 이벤트를 보낼 때 사용
@@ -167,6 +165,20 @@ const messageType = ref('') // 'success' 또는 'error'
 const showUserModal = ref(false) // 사용자 모달이 열려 있는지 여부
 const selectedEmployee = ref(null) // 선택된 직원 정보
 
+// 🟢 수정: 스케줄 모달 상태 관리 추가
+const showScheduleModal = ref(false) // 스케줄 모달 열림 상태
+const currentSchedule = ref({}) // 현재 스케줄 정보
+
+// 🟢 수정: 스케줄 변경 사항을 저장할 로컬 리스트 추가
+const addedSchedules = ref([]) // 추가된 스케줄 목록
+const editedSchedules = ref([]) // 수정된 스케줄 목록
+const deletedSchedules = ref([]) // 삭제된 스케줄 목록
+
+
+// 🟢 수정: closeScheduleModal 메서드 정의
+const closeScheduleModal = () => {
+  showScheduleModal.value = false
+}
 // 사용자 모달 열기 메서드
 const openUserModal = () => {
   showUserModal.value = true // 사용자 모달을 열기 위해 상태를 true로 설정
@@ -194,12 +206,13 @@ const closeUserModal = () => {
 }
 
 // 스케줄 모달 상태 관리
-const showScheduleModal = ref(false) // 스케줄 모달이 열려 있는지 여부
-const currentSchedule = ref({}) // 현재 수정 중인 스케줄 정보
+// const showScheduleModal = ref(false) // 스케줄 모달이 열려 있는지 여부
+// const currentSchedule = ref({}) // 현재 수정 중인 스케줄 정보
 
 // 스케줄 추가 함수
 const addSchedule = () => {
   currentSchedule.value = {
+    id: null, // 새로운 스케줄이므로 ID는 null//////
     day: '', // 요일
     officialStart: '', // 공식 시작 시간
     officialEnd: '', // 공식 종료 시간
@@ -215,64 +228,51 @@ const editSchedule = (schedule) => {
   console.log("editSchedule schedule:", JSON.stringify(schedule, null, 2)) // 수정할 스케줄 정보 콘솔 출력
 }
 
-// 스케줄 저장 함수: 추가 또는 수정된 스케줄을 저장합니다.
-const saveSchedule = async (schedule) => {
-  console.log("saveSchedule schedule:", JSON.stringify(schedule, null, 2)) // 저장할 스케줄 정보 콘솔 출력
-  if (props.contract) { // 계약 정보가 있는지 확인
-    if (schedule.scheduleId) { // 기존 스케줄을 수정하는 경우
-      try {
-        // Pinia 스토어의 editSchedule 액션 호출: 계약 ID와 스케줄 ID, 수정된 스케줄 데이터 전달
-        await contractsStore.editSchedule(props.contract.contractId, schedule.scheduleId, schedule)
-        message.value = '스케줄이 성공적으로 수정되었습니다.' // 성공 메시지 설정
-        messageType.value = 'success' // 메시지 타입을 성공으로 설정
-        emit('save', schedule) // 부모 컴포넌트로 수정된 스케줄 전달
-      } catch (error) {
-        message.value = '스케줄 수정에 실패했습니다. 다시 시도해주세요.' // 오류 메시지 설정
-        messageType.value = 'error' // 메시지 타입을 오류로 설정
-
-        console.log("schedule:", JSON.stringify(schedule, null, 2)) // 오류 발생 시 스케줄 정보 콘솔 출력
-        // 오류 발생 시 이벤트를 보내지 않음
-      }
-    } else { // 새로운 스케줄을 추가하는 경우
-      try {
-        // Pinia 스토어의 addSchedule 액션 호출: 계약 ID와 새로운 스케줄 데이터 전달
-        await contractsStore.addSchedule(props.contract.contractId, schedule)
-        message.value = '스케줄이 성공적으로 추가되었습니다.' // 성공 메시지 설정
-        messageType.value = 'success' // 메시지 타입을 성공으로 설정
-        props.contract.schedules.push(schedule) // 새 스케줄을 계약의 스케줄 배열에 추가
-        emit('save', schedule) // 부모 컴포넌트로 새 스케줄 전달
-      } catch (error) {
-        message.value = '스케줄 추가에 실패했습니다. 다시 시도해주세요.' // 오류 메시지 설정
-        messageType.value = 'error' // 메시지 타입을 오류로 설정
-        // 오류 발생 시 이벤트를 보내지 않음
-      }
-    }
-    closeScheduleModal() // 스케줄 모달을 닫음
+// 🟢 수정: 스케줄 삭제 함수 수정
+const handleDeleteSchedule = (schedule) => {
+  // 먼저, 스케줄이 추가된 스케줄인지 확인
+  const addedIndex = addedSchedules.value.findIndex(s => s.scheduleId === schedule.scheduleId)
+  if (addedIndex !== -1) {
+    // 🟢 스케줄이 추가된 스케줄이면, 추가된 스케줄 목록에서 제거
+    addedSchedules.value.splice(addedIndex, 1)
+    message.value = '새로 추가된 스케줄이 삭제되었습니다.'
+    messageType.value = 'success'
+  } else {
+    // 🟢 기존 스케줄이면, 삭제된 스케줄 목록에 추가하고 화면에서 제거
+    deletedSchedules.value.push(schedule)
+    props.contract.schedules = props.contract.schedules.filter(s => s.scheduleId !== schedule.scheduleId)
+    message.value = '스케줄이 삭제되었습니다.'
+    messageType.value = 'success'
   }
 }
 
-// 스케줄 삭제 함수
-const deleteSchedule = async (schedule) => {
-  if (props.contract && schedule.scheduleId) { // 계약 정보와 스케줄 ID가 있는지 확인
-    try {
-      // Pinia 스토어의 deleteSchedule 액션 호출: 계약 ID와 스케줄 ID 전달
-      await contractsStore.deleteSchedule(props.contract.contractId, schedule.scheduleId)
-      message.value = '스케줄이 성공적으로 삭제되었습니다.' // 성공 메시지 설정
-      messageType.value = 'success' // 메시지 타입을 성공으로 설정
-
-      // 계약의 스케줄 배열에서 삭제된 스케줄 제거
-      props.contract.schedules = props.contract.schedules.filter(s => s.id !== schedule.id)
-    } catch (error) {
-      message.value = '스케줄 삭제에 실패했습니다. 다시 시도해주세요.' // 오류 메시지 설정
-      messageType.value = 'error' // 메시지 타입을 오류로 설정
+// 🟢 수정: 스케줄 확인 처리 함수 추가
+const handleScheduleConfirm = (schedule) => {
+  if (schedule.scheduleId) { // 기존 스케줄 수정
+    const index = props.contract.schedules.findIndex(s => s.scheduleId === schedule.scheduleId)
+    if (index !== -1) {
+      // 스케줄 업데이트
+      props.contract.schedules[index] = schedule
+      // 수정된 스케줄 목록에 추가
+      editedSchedules.value.push(schedule)
+      message.value = '스케줄이 수정되었습니다.'
+      messageType.value = 'success'
     }
+  } else { // 새로운 스케줄 추가
+    const newSchedule = { ...schedule, id: Date.now() } // 🟢 임시 ID 할당
+    props.contract.schedules.push(newSchedule)
+    // 추가된 스케줄 목록에 추가
+    addedSchedules.value.push(newSchedule)
+    message.value = '스케줄이 추가되었습니다.'
+    messageType.value = 'success'
   }
 }
+
 
 // 스케줄 모달 닫기 함수
-const closeScheduleModal = () => {
-  showScheduleModal.value = false // 스케줄 모달을 닫기 위해 상태를 false로 설정
-}
+// const closeScheduleModal = () => {
+//   showScheduleModal.value = false // 스케줄 모달을 닫기 위해 상태를 false로 설정
+// }
 
 // 계약 데이터 감시 및 편집 데이터 초기화
 watch(() => props.contract, (newContract) => {
@@ -322,63 +322,105 @@ const formatDuration = (minutes) => {
   return `${hours}시간 ${mins}분` // "1시간 30분"과 같은 형식으로 반환
 }
 
-// 계약 저장 함수: 계약 정보를 서버에 저장하고, 부모 컴포넌트에 전달
+// 🟢 수정: 계약 저장 함수 수정
 const saveContract = async () => {
-  const baseUrl = import.meta.env.VITE_API_URL // 환경 변수에서 API URL 가져오기
-  console.log('baseUrl:', baseUrl) // baseUrl이 올바르게 설정되었는지 확인하기 위해 콘솔에 출력
+  const baseUrl = import.meta.env.VITE_API_URL
+  console.log('baseUrl:', baseUrl)
 
-  console.log('props.contract:', props.contract) // 현재 계약 정보를 콘솔에 출력
-  if (props.contract && props.contract.contractId) { // 계약 정보와 계약 ID가 있는지 확인
-    // 업데이트할 계약 데이터 생성: 시작일과 종료일에 'T00:00:00'을 추가하여 ISO 형식으로 만듭니다.
+  console.log('props.contract:', props.contract)
+  if (props.contract && props.contract.contractId) {
     const updatedContract = {
-      ...props.contract, // 기존 계약 정보 복사
-      ...editedContract.value, // 편집된 계약 정보 덮어쓰기
+      ...props.contract,
+      ...editedContract.value,
       contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
       contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
     }
 
     try {
-      // Pinia 스토어의 updateContract 액션 호출: 계약 ID와 업데이트된 계약 데이터 전달
+      // 🟢 계약 정보 업데이트
       await contractsStore.updateContract(props.contract.contractId, updatedContract)
-      emit('save', updatedContract) // 부모 컴포넌트에 'save' 이벤트와 업데이트된 계약 데이터 전달
-      console.log('계약 업데이트 성공') // 성공 메시지 콘솔 출력
-      message.value = '계약 정보가 성공적으로 업데이트되었습니다.' // 성공 메시지 설정
-      messageType.value = 'success' // 메시지 타입을 성공으로 설정
+
+      // 🟢 추가된 스케줄 저장
+      for (const schedule of addedSchedules.value) {
+        console.log('Adding schedule:', schedule)
+        await contractsStore.addSchedule(props.contract.contractId, schedule)
+      }
+
+      // 🟢 수정된 스케줄 저장
+      for (const schedule of editedSchedules.value) {
+        console.log('Editing schedule:', schedule)
+        await contractsStore.editSchedule(props.contract.contractId, schedule.scheduleId, schedule)
+      }
+
+      // 🟢 삭제된 스케줄 삭제
+      for (const schedule of deletedSchedules.value) {
+        console.log('Deleting schedule:', schedule)
+        await contractsStore.deleteSchedule(props.contract.contractId, schedule.scheduleId)
+      }
+      // 🟢 모든 스케줄 변경 사항 초기화
+      addedSchedules.value = []
+      editedSchedules.value = []
+      deletedSchedules.value = []
+
+      // 부모 컴포넌트에 저장 이벤트 전달
+      emit('save', updatedContract)
+      console.log('계약 업데이트 성공')
+      message.value = '계약 정보가 성공적으로 업데이트되었습니다.'
+      messageType.value = 'success'
     } catch (error) {
-      console.error('계약 업데이트 실패:', error) // 오류 메시지 콘솔 출력
-      message.value = '계약 업데이트에 실패했습니다. 다시 시도해주세요.' // 오류 메시지 설정
-      messageType.value = 'error' // 메시지 타입을 오류로 설정
+      console.error('계약 업데이트 실패:', error)
+      message.value = '계약 업데이트에 실패했습니다. 다시 시도해주세요.'
+      messageType.value = 'error'
     }
 
     // 2초 후에 모달을 닫고 메시지를 초기화합니다.
     setTimeout(() => {
-      closeModal() // 모달 닫기
-      message.value = '' // 메시지 초기화
-      messageType.value = '' // 메시지 타입 초기화
-    }, 2000) // 2000밀리초 = 2초
-  } else { // 유효한 계약 ID가 없는 경우
-    message.value = '유효한 계약 ID가 없습니다.' // 오류 메시지 설정
-    messageType.value = 'error' // 메시지 타입을 오류로 설정
+      closeModal()
+      message.value = ''
+      messageType.value = ''
+    }, 2000)
+  } else {
+    message.value = '유효한 계약 ID가 없습니다.'
+    messageType.value = 'error'
   }
 }
 </script>
 
 <style scoped>
+.message {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.message.success {
+  color: green;
+}
+
+.message.error {
+  color: red;
+}
+
 /* 
   모달의 배경 오버레이 스타일
   화면 전체를 덮고 반투명한 검은색 배경을 가집니다.
 */
 .modal-overlay {
-  position: fixed; /* 화면에 고정 */
+  position: fixed;
+  /* 화면에 고정 */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 가운데 정렬 */
-  justify-content: center; /* 수평 가운데 정렬 */
-  z-index: 1000; /* 다른 요소들보다 위에 표시 */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* 반투명 검은색 배경 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 가운데 정렬 */
+  justify-content: center;
+  /* 수평 가운데 정렬 */
+  z-index: 1000;
+  /* 다른 요소들보다 위에 표시 */
 }
 
 /* 
@@ -386,102 +428,151 @@ const saveContract = async () => {
   흰색 배경, 둥근 모서리, 그림자 효과 등을 가집니다.
 */
 .modal-content {
-  background: white; /* 흰색 배경 */
-  border-radius: 16px; /* 둥근 모서리 */
-  width: 90%; /* 너비를 화면의 90%로 설정 */
-  max-width: 500px; /* 최대 너비는 500px */
-  max-height: 80%; /* 최대 높이는 화면의 80% */
-  overflow-y: auto; /* 세로 스크롤 가능 */
-  padding: 24px; /* 내부 여백 */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  background: white;
+  /* 흰색 배경 */
+  border-radius: 16px;
+  /* 둥근 모서리 */
+  width: 90%;
+  /* 너비를 화면의 90%로 설정 */
+  max-width: 500px;
+  /* 최대 너비는 500px */
+  max-height: 80%;
+  /* 최대 높이는 화면의 80% */
+  overflow-y: auto;
+  /* 세로 스크롤 가능 */
+  padding: 24px;
+  /* 내부 여백 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* 그림자 효과 */
 }
 
 /* 모달 헤더 스타일 */
 .modal-header {
-  margin-bottom: 24px; /* 아래 여백 */
+  margin-bottom: 24px;
+  /* 아래 여백 */
 }
 
 /* 모달 제목 스타일 */
 .title {
-  font-size: 20px; /* 글자 크기 */
-  font-weight: 600; /* 글자 두께 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
+  font-size: 20px;
+  /* 글자 크기 */
+  font-weight: 600;
+  /* 글자 두께 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
 }
 
 /* 도움말 버튼 스타일 */
 .help-button {
-  width: 24px; /* 너비 */
-  height: 24px; /* 높이 */
-  border-radius: 50%; /* 원형 */
-  border: 1px solid #e2e8f0; /* 테두리 */
-  background: none; /* 배경 없음 */
-  color: #718096; /* 글자 색상 회색 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  width: 24px;
+  /* 너비 */
+  height: 24px;
+  /* 높이 */
+  border-radius: 50%;
+  /* 원형 */
+  border: 1px solid #e2e8f0;
+  /* 테두리 */
+  background: none;
+  /* 배경 없음 */
+  color: #718096;
+  /* 글자 색상 회색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 구성원 섹션 스타일 */
 .members-section {
-  margin-bottom: 20px; /* 아래 여백 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
 }
 
 /* 구성원 섹션 제목 스타일 */
 .members-section h3 {
-  font-size: 16px; /* 글자 크기 */
-  color: #4a5568; /* 글자 색상 회색 */
-  margin-bottom: 12px; /* 아래 여백 */
+  font-size: 16px;
+  /* 글자 크기 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
+  margin-bottom: 12px;
+  /* 아래 여백 */
 }
 
 /* 구성원 아이템 스타일 */
 .member-item {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 12px; /* 요소 간 간격 */
-  padding: 12px; /* 내부 여백 */
-  background: #f7fafc; /* 배경색 연한 회색 */
-  border-radius: 8px; /* 둥근 모서리 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  transition: background 0.2s; /* 배경색 전환 효과 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 12px;
+  /* 요소 간 간격 */
+  padding: 12px;
+  /* 내부 여백 */
+  background: #f7fafc;
+  /* 배경색 연한 회색 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  transition: background 0.2s;
+  /* 배경색 전환 효과 */
 }
 
 .member-item:hover {
-  background: #edf2f7; /* 호버 시 배경색 약간 진한 회색 */
+  background: #edf2f7;
+  /* 호버 시 배경색 약간 진한 회색 */
 }
 
 /* 프로필 이미지 스타일 */
 .profile-image {
-  width: 40px; /* 너비 */
-  height: 40px; /* 높이 */
-  border-radius: 50%; /* 원형 */
-  overflow: hidden; /* 넘치는 내용 숨김 */
-  background: #e2e8f0; /* 배경색 회색 */
+  width: 40px;
+  /* 너비 */
+  height: 40px;
+  /* 높이 */
+  border-radius: 50%;
+  /* 원형 */
+  overflow: hidden;
+  /* 넘치는 내용 숨김 */
+  background: #e2e8f0;
+  /* 배경색 회색 */
 }
 
 /* 프로필 이미지 안의 이미지 스타일 */
 .profile-image img {
-  width: 100%; /* 이미지 너비를 부모에 맞춤 */
-  height: 100%; /* 이미지 높이를 부모에 맞춤 */
-  object-fit: cover; /* 이미지 비율 유지하며 채움 */
+  width: 100%;
+  /* 이미지 너비를 부모에 맞춤 */
+  height: 100%;
+  /* 이미지 높이를 부모에 맞춤 */
+  object-fit: cover;
+  /* 이미지 비율 유지하며 채움 */
 }
 
 /* 구성원 이름 스타일 */
 .member-name {
-  font-size: 16px; /* 글자 크기 */
-  color: #2d3748; /* 글자 색상 어두운 회색 */
+  font-size: 16px;
+  /* 글자 크기 */
+  color: #2d3748;
+  /* 글자 색상 어두운 회색 */
 }
 
 /* 계약 세부 정보 섹션 스타일 */
 .contract-details {
-  background: #f7fafc; /* 배경색 연한 회색 */
-  border-radius: 8px; /* 둥근 모서리 */
-  padding: 16px; /* 내부 여백 */
-  margin-bottom: 20px; /* 아래 여백 */
+  background: #f7fafc;
+  /* 배경색 연한 회색 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  padding: 16px;
+  /* 내부 여백 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
 }
 
 /* 폼 그룹 스타일 */
 .form-group {
-  margin-bottom: 16px; /* 아래 여백 */
+  margin-bottom: 16px;
+  /* 아래 여백 */
 }
 
 /* 마지막 폼 그룹의 아래 여백을 없앰 */
@@ -491,183 +582,264 @@ const saveContract = async () => {
 
 /* 폼 그룹 내 레이블 스타일 */
 .form-group label {
-  display: block; /* 블록 요소로 표시 */
-  margin-bottom: 8px; /* 아래 여백 */
-  font-weight: 500; /* 글자 두께 */
-  color: #4a5568; /* 글자 색상 회색 */
+  display: block;
+  /* 블록 요소로 표시 */
+  margin-bottom: 8px;
+  /* 아래 여백 */
+  font-weight: 500;
+  /* 글자 두께 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
 }
 
 /* 폼 그룹 내 입력 필드 스타일 */
 .form-group input {
-  width: 100%; /* 너비를 부모에 맞춤 */
-  padding: 8px 12px; /* 내부 여백 */
-  border: 1px solid #e2e8f0; /* 테두리 */
-  border-radius: 4px; /* 둥근 모서리 */
-  font-size: 14px; /* 글자 크기 */
-  background-color: white; /* 배경색 흰색 */
+  width: 100%;
+  /* 너비를 부모에 맞춤 */
+  padding: 8px 12px;
+  /* 내부 여백 */
+  border: 1px solid #e2e8f0;
+  /* 테두리 */
+  border-radius: 4px;
+  /* 둥근 모서리 */
+  font-size: 14px;
+  /* 글자 크기 */
+  background-color: white;
+  /* 배경색 흰색 */
 }
 
 /* 입력 필드 포커스 시 스타일 */
 .form-group input:focus {
-  outline: none; /* 외곽선 없음 */
-  border-color: #3182ce; /* 테두리 색상 파란색 */
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); /* 그림자 효과 */
+  outline: none;
+  /* 외곽선 없음 */
+  border-color: #3182ce;
+  /* 테두리 색상 파란색 */
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+  /* 그림자 효과 */
 }
 
 /* 스케줄 추가 버튼 스타일 */
 .add-button {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
-  padding: 8px 16px; /* 내부 여백 */
-  border: 2px solid #e2e8f0; /* 테두리 */
-  border-radius: 8px; /* 둥근 모서리 */
-  background: none; /* 배경 없음 */
-  color: #4a5568; /* 글자 색상 회색 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  margin-bottom: 20px; /* 아래 여백 */
-  width: 100%; /* 너비 100% */
-  justify-content: center; /* 요소를 가운데로 정렬 */
-  transition: all 0.2s; /* 모든 속성에 대해 0.2초 동안 전환 효과 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
+  padding: 8px 16px;
+  /* 내부 여백 */
+  border: 2px solid #e2e8f0;
+  /* 테두리 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  background: none;
+  /* 배경 없음 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
+  width: 100%;
+  /* 너비 100% */
+  justify-content: center;
+  /* 요소를 가운데로 정렬 */
+  transition: all 0.2s;
+  /* 모든 속성에 대해 0.2초 동안 전환 효과 */
 }
 
 /* 스케줄 추가 버튼 호버 시 스타일 */
 .add-button:hover {
-  background: #f7fafc; /* 호버 시 배경색 연한 회색 */
+  background: #f7fafc;
+  /* 호버 시 배경색 연한 회색 */
 }
 
 /* 플러스 아이콘 스타일 */
 .plus-icon {
-  color: #3182ce; /* 아이콘 색상 파란색 */
-  font-size: 18px; /* 아이콘 크기 */
+  color: #3182ce;
+  /* 아이콘 색상 파란색 */
+  font-size: 18px;
+  /* 아이콘 크기 */
 }
 
 /* 스케줄 섹션 스타일 */
 .schedule-section {
-  border: 1px solid #e2e8f0; /* 테두리 */
-  border-radius: 8px; /* 둥근 모서리 */
-  padding: 16px; /* 내부 여백 */
-  margin-bottom: 20px; /* 아래 여백 */
-  position: relative; /* 상대 위치 지정 */
+  border: 1px solid #e2e8f0;
+  /* 테두리 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  padding: 16px;
+  /* 내부 여백 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
+  position: relative;
+  /* 상대 위치 지정 */
 }
 
 /* 스케줄 헤더 스타일 */
 .schedule-header {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
-  margin-bottom: 16px; /* 아래 여백 */
-  color: #4a5568; /* 글자 색상 회색 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
+  margin-bottom: 16px;
+  /* 아래 여백 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
 }
 
 /* 스케줄 액션 버튼 컨테이너 스타일 */
 .schedule-actions {
-  position: absolute; /* 절대 위치 지정 */
-  top: 8px; /* 위에서 8px 위치 */
-  right: 8px; /* 오른쪽에서 8px 위치 */
-  display: none; /* 기본적으로 숨김 */
+  position: absolute;
+  /* 절대 위치 지정 */
+  top: 8px;
+  /* 위에서 8px 위치 */
+  right: 8px;
+  /* 오른쪽에서 8px 위치 */
+  display: none;
+  /* 기본적으로 숨김 */
 }
 
 /* 스케줄 섹션 호버 시 액션 버튼 표시 */
 .schedule-section:hover .schedule-actions {
-  display: flex; /* 호버 시 액션 버튼을 보이게 함 */
+  display: flex;
+  /* 호버 시 액션 버튼을 보이게 함 */
 }
 
 /* 액션 버튼 스타일 */
 .action-button {
-  background: none; /* 배경 없음 */
-  border: none; /* 테두리 없음 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  padding: 4px; /* 내부 여백 */
-  margin-left: 4px; /* 왼쪽 여백 */
+  background: none;
+  /* 배경 없음 */
+  border: none;
+  /* 테두리 없음 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  padding: 4px;
+  /* 내부 여백 */
+  margin-left: 4px;
+  /* 왼쪽 여백 */
 }
 
 /* 액션 버튼 호버 시 스타일 */
 .action-button:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* 배경색 반투명 검은색 */
-  border-radius: 50%; /* 원형 */
+  background-color: rgba(0, 0, 0, 0.1);
+  /* 배경색 반투명 검은색 */
+  border-radius: 50%;
+  /* 원형 */
 }
 
 /* 아이콘 스타일 */
 .icon {
-  font-size: 16px; /* 아이콘 크기 */
+  font-size: 16px;
+  /* 아이콘 크기 */
 }
 
 /* 스케줄 세부 정보 스타일 */
 .schedule-details {
-  display: grid; /* 그리드 레이아웃 사용 */
-  gap: 12px; /* 요소 간 간격 */
-  color: #718096; /* 글자 색상 회색 */
+  display: grid;
+  /* 그리드 레이아웃 사용 */
+  gap: 12px;
+  /* 요소 간 간격 */
+  color: #718096;
+  /* 글자 색상 회색 */
 }
 
 /* 요일이 없는 스케줄 섹션 스타일 */
 .weekdays-section {
-  border: 1px solid #e2e8f0; /* 테두리 */
-  border-radius: 8px; /* 둥근 모서리 */
-  padding: 16px; /* 내부 여백 */
-  margin-bottom: 24px; /* 아래 여백 */
+  border: 1px solid #e2e8f0;
+  /* 테두리 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  padding: 16px;
+  /* 내부 여백 */
+  margin-bottom: 24px;
+  /* 아래 여백 */
 }
 
 /* 요일 헤더 스타일 */
 .weekdays-header {
-  color: #4a5568; /* 글자 색상 회색 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: space-between; /* 양 끝으로 요소 배치 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: space-between;
+  /* 양 끝으로 요소 배치 */
 }
 
 /* 상태 메시지 스타일 */
 .status {
-  color: #718096; /* 글자 색상 회색 */
+  color: #718096;
+  /* 글자 색상 회색 */
 }
 
 /* 모달 푸터 스타일 */
 .modal-footer {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: flex-end; /* 오른쪽으로 요소 정렬 */
-  gap: 12px; /* 요소 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: flex-end;
+  /* 오른쪽으로 요소 정렬 */
+  gap: 12px;
+  /* 요소 간 간격 */
 }
 
 /* 취소 및 저장 버튼 스타일 */
 .cancel-button,
 .save-button {
-  padding: 8px 24px; /* 내부 여백 */
-  border-radius: 8px; /* 둥근 모서리 */
-  font-size: 14px; /* 글자 크기 */
-  cursor: pointer; /* 커서 포인터 변경 */
-  transition: all 0.2s; /* 모든 속성에 대해 0.2초 동안 전환 효과 */
+  padding: 8px 24px;
+  /* 내부 여백 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  font-size: 14px;
+  /* 글자 크기 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
+  transition: all 0.2s;
+  /* 모든 속성에 대해 0.2초 동안 전환 효과 */
 }
 
 /* 취소 버튼 스타일 */
 .cancel-button {
-  border: 1px solid #e2e8f0; /* 테두리 */
-  background: #f7fafc; /* 배경색 연한 회색 */
-  color: #4a5568; /* 글자 색상 회색 */
+  border: 1px solid #e2e8f0;
+  /* 테두리 */
+  background: #f7fafc;
+  /* 배경색 연한 회색 */
+  color: #4a5568;
+  /* 글자 색상 회색 */
 }
 
 /* 저장 버튼 스타일 */
 .save-button {
-  border: none; /* 테두리 없음 */
-  background: #3182ce; /* 배경색 파란색 */
-  color: white; /* 글자 색상 흰색 */
+  border: none;
+  /* 테두리 없음 */
+  background: #3182ce;
+  /* 배경색 파란색 */
+  color: white;
+  /* 글자 색상 흰색 */
 }
 
 /* 취소 버튼 호버 시 스타일 */
 .cancel-button:hover {
-  background: #edf2f7; /* 호버 시 배경색 약간 진한 회색 */
+  background: #edf2f7;
+  /* 호버 시 배경색 약간 진한 회색 */
 }
 
 /* 저장 버튼 호버 시 스타일 */
 .save-button:hover {
-  background: #2c5282; /* 호버 시 배경색 더 어두운 파란색 */
+  background: #2c5282;
+  /* 호버 시 배경색 더 어두운 파란색 */
 }
 
 /* 성공 메시지 스타일 */
 .success {
-  color: green; /* 글자 색상 초록색 */
+  color: green;
+  /* 글자 색상 초록색 */
 }
 
 /* 오류 메시지 스타일 */
 .error {
-  color: red; /* 글자 색상 빨간색 */
+  color: red;
+  /* 글자 색상 빨간색 */
 }
 </style>
