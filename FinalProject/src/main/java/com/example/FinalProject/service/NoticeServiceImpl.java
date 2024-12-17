@@ -153,6 +153,8 @@ public class NoticeServiceImpl implements NoticeService {
         if (work != null) {
             WorkDTO workDTO = new WorkDTO();
             workDTO.setWorkId(work.getWorkId());
+            workDTO.setUserId(work.getUser() != null ? work.getUser().getUserId() : null); // User ID 설정
+            workDTO.setUserName(work.getUser() != null ? work.getUser().getName() : null); // User 이름 설정
             workDTO.setHireDate(work.getHireDate());
             workDTO.setResignDate(work.getResignDate());
             noticeDTO.setWork(workDTO);
