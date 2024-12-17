@@ -400,11 +400,11 @@ const getStatusLabel = (status) => {
 
 .content-wrapper {
   flex-grow: 1;
-  padding: 20px;
+  padding: 0 100px;
 }
 
 .notice-main {
-  max-width: 1400px; /* 최대 너비 설정 */
+  max-width: 1200px; /* 최대 너비 설정 */
   width: 100%; /* 전체 너비로 확장 */
   margin: 0 auto; /* 중앙 정렬 */
   padding: 20px;
@@ -438,6 +438,7 @@ const getStatusLabel = (status) => {
 
 /* 카테고리 및 공지 작성 버튼 스타일 */
 .categories-container {
+  max-width: 1200px; /* 원하는 최대 너비 설정 */
   display: flex;
   justify-content: space-between; /* 왼쪽: 카테고리, 오른쪽: 공지 작성 버튼 */
   align-items: center; /* 수직 중앙 정렬 */
@@ -521,12 +522,6 @@ const getStatusLabel = (status) => {
 
 .board-table th {
   background-color: #f9f9f9;
-}
-
-.board-table th:first-child,
-.board-table td:first-child {
-  padding: 10px; /* 체크박스 셀 간격 축소 */
-  width: 60px; /* 체크박스 셀 너비 설정 */
 }
 
 /* 체크박스 및 삭제 버튼 정렬 */
