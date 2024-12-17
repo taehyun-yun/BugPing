@@ -2,6 +2,7 @@ package com.example.FinalProject.controller.employment;
 
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;
+import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.user.UserRepository;
@@ -13,8 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/employee")
@@ -31,5 +31,17 @@ public class EmployerController {
         this.workRepository = workRepository;
         this.companyRepository = companyRepository;
         this.contractRepository = contractRepository;
+    }
+    public ResponseEntity<Map<String,Object>> findMyLicenseCode(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<List<Work>> works = workRepository.findByUser_userIdAndUser_Role(authentication.getName(),"employer");
+
+        List<Company>companies = new LinkedList<>();
+        if (works.isPresent()){
+            works.get().stream().forEach(work -> companies.add(work.getCompany()));
+        }
+        Map<String,Object> response = new HashMap<>();
+        response.put("Works", companies );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

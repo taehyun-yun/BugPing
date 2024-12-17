@@ -8,10 +8,14 @@
           </div>
         </div>
         <div class="header-right">
-          <!-- <div class="search-fieldset">
-            <img src="../assets/MainheaderImg/header-search.png" alt="Search Icon" class="search-icon" />
-            <input type="text" placeholder="검색" class="header-search-input" />
-          </div> -->
+          <div class="search-fieldset">
+            <input type="hidden" placeholder="검색" class="header-search-input" v-model="selectedCompany" />
+            <select v-model="selectedCompany" @change="updateCompany">
+              <option v-for="company in userStore.companies" :key="company.id" :value="company.cname">
+                {{ company.cname }}
+              </option>
+            </select>
+          </div>
           <div class="header-icons">
             <!-- <img src="../assets/MainheaderImg/book.png" alt="Book Icon" class="icon" />
             <img src="../assets/MainheaderImg/cloud.png" alt="Cloud Icon" class="icon" />
@@ -39,8 +43,9 @@
 
 <script setup>
 import { axiosAddress } from '@/stores/axiosAddress';
+import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const router = useRouter();
 
@@ -52,6 +57,7 @@ const goToLoginPage = async() => {
   })
   router.push("/login");
 };
+//누르면 app.vue에 있는 sidebar와 연결됨
 const showOrNot = ref(useRoute().meta.sidebar);
 const emit = defineEmits(['showSidebar']);
 const sidebar = () =>{
@@ -59,6 +65,26 @@ const sidebar = () =>{
   emit('showSidebar',showOrNot.value);
 }
 
+const userStore = useUserStore();
+const selectedCompany = ref('');
+
+// 초기값 설정
+onMounted(() => {
+  if (userStore.companies.length > 0) {
+    selectedCompany.value = userStore.companies[0].cname;
+    userStore.setCompany(selectedCompany.value);
+  }
+});
+
+// 선택된 값 업데이트
+const updateCompany = () => {
+  userStore.setCompany(selectedCompany.value);
+};
+
+// watch로 상태 동기화
+watch(selectedCompany, (newValue) => {
+  userStore.setCompany(newValue);
+});
 </script> 
 <style scoped>
   .header-wrapper {
@@ -105,13 +131,39 @@ const sidebar = () =>{
       margin-right: 20px;
       position: relative;
   }
-  
-  .search-icon {
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
+  .search-fieldset select{
+    appearance: none; /* 브라우저 기본 스타일 제거 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    outline: none;
   }
-  
+  .search-fieldset::after{
+    content: "▼"; /* 화살표 */
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #aaa;
+    pointer-events: none; /* 클릭 방지 */
+  }
+  .search-fieldset:focus{
+    outline: none;
+    border: none;
+    box-shadow: 0 0 5px mediumaquamarine;
+  }
+  .search-fieldset option{
+    background: #fff;
+    outline: none;
+    color: #333;
+    font-size: 14px;
+  }
   .header-search-input {
       background: transparent;
       border: none;

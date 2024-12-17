@@ -20,5 +20,8 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
 //--------------------------Joonho----------------------------
     //재직중인지 아닌지
     boolean existsByUser_UserIdAndCompany_CompanyIdAndResignDateIsNull (String userId,Integer companyId);
-    Optional<List<Work>> findByUser_userId(String userId);
+    //재직했던 근무처 목록. 최신순
+    Optional<List<Work>> findByUser_userIdOrderByHireDateDesc(String userId);
+    //역할에 따른 회사 목록.
+    Optional<List<Work>> findByUser_userIdAndUser_Role(String userId, String role);
 }

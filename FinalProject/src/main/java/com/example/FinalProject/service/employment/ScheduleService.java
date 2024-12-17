@@ -13,10 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Service
@@ -54,7 +51,6 @@ public class ScheduleService {
 
         return generateScheduleList(allSchedules, start, end);
     }
-
 
     // 스케줄 데이터를 FullCalendar에 맞게 변환 (기간 필터링 추가)
     private List<Map<String, Object>> generateScheduleList(List<Schedule> schedules, LocalDate start, LocalDate end) {

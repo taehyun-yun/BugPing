@@ -3,6 +3,8 @@ export const useUserStore = defineStore('user',{
     state : () => ({
         userId : '',
         roles : '',
+        company : '',
+        companies : [],
     }),
     actions : {
         setUserId(userId) {
@@ -11,5 +13,12 @@ export const useUserStore = defineStore('user',{
         setRoles(roles){
             this.roles = roles;
         },
+        setCompany(company){
+            this.company = company;
+        },
+        setCompanies(companies){
+            this.companies = companies;
+        },
     },
+    persist : true,
 })

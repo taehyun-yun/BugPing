@@ -101,5 +101,4 @@ public class JoinService {
     public boolean notWorkingHere (User user, Company company){
         return !workRepository.existsByUser_UserIdAndCompany_CompanyIdAndResignDateIsNull(user.getUserId(),company.getCompanyId());
     }
-
 }

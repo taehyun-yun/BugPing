@@ -51,12 +51,17 @@ public class ScheduleController {
             if (isEmployer) {
                 // ROLE_EMPLOYER 사용자는 항상 회사 전체 일정 반환
                 schedules = scheduleService.getCompanySchedule(companyId, start, end);
+                //System.out.println("사장입니다.");
+                //System.out.println(schedules.size());
+                schedules.forEach(s->System.out.println("제목"+s.get("title")));
             } else {
                 // ROLE_EMPLOYEE 사용자는 viewCompanySchedule에 따라 분기
                 if (viewCompanySchedule) {
                     schedules = scheduleService.getCompanySchedule(companyId, start, end);
+                    //System.out.println("개인입니다.");
                 } else {
                     schedules = scheduleService.getUserSchedule(userId, start, end);
+                    //System.out.println("개인이지만 전체보기할래요.");
                 }
             }
 

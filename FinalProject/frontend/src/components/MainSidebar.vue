@@ -24,9 +24,13 @@
       <img src="../assets/SidebarImg/alert-circle.png" alt="Help Icon" class="icon" />
       <div class="menu-title">Help</div>
     </div>
-    <div class="menu-item" @click="goPage('enroll')">
-      <img src="../assets/SidebarImg/building-user-solid.svg" alt="Help Icon" class="icon" />
+    <div class="menu-item" @click="goPage('enrollEmployee')">
+      <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollEmployee Icon" class="icon" />
       <div class="menu-title">근무지 등록</div>
+    </div>
+    <div class="menu-item" @click="goPage('enrollWorkplace')">
+      <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollWorkplace Icon" class="icon" />
+      <div class="menu-title">사업장 등록</div>
     </div>
   </div>
 </template>

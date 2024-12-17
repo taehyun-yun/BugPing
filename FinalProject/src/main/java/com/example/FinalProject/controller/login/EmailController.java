@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class UserController {
+public class EmailController {
 
     @Autowired
     private final EmailService emailService;
-    public UserController(EmailService emailService){
+    public EmailController(EmailService emailService){
         this.emailService = emailService;
     }
 

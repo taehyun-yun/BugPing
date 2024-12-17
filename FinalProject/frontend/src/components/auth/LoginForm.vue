@@ -22,6 +22,7 @@ import axios from 'axios';
 import { ref } from 'vue';
 import { axiosAddress } from '@/stores/axiosAddress';
 import router from '@/router';
+import { useUserStore } from '@/stores/userStore';
     const userId = ref('');
     const password = ref('');
     const showInputPw = ref(false);
@@ -29,25 +30,30 @@ import router from '@/router';
         showInputPw.value = !showInputPw.value;
     }
 
-    const login = () =>{
-        axios
-        .post(axiosAddress+"/login",{
+    const login = async() =>{
+        try{
+            //로그인 유효성 체크
+            const res = await axios.post(`${axiosAddress}/login`,{
             "userId" : userId.value,
             "password" : password.value
-        },{
-            withCredentials: true
-        })
-        .then((res)=>{
+            },{ withCredentials: true })
+
             alert(res.data+"입니다.");
+            //피니아 저장
+            const userStore = useUserStore();
+            userStore.setUserId(userId.value);
+            userStore.setRoles(res.data);
+            const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
+            userStore.setCompany(companyRes.data[0]);
+            userStore.setCompanies(companyRes.data);
             router.push("/");
-        })
-        .catch((err)=>{
+        } catch (err){
             alert(err.response.data);
-        })
+        }
     }
     const golink = (e) =>{
         router.push({name: e});
-    }    
+    }
 </script>
 <style scoped>
     .login-title {

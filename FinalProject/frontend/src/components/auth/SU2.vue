@@ -67,7 +67,7 @@ const submitData = async() => {
             push({name : ''})
         })
         .catch((err)=>{
-            alert(err.response.data);
+            alert(err.response);
         })
     }else{
         alert("필수 항목을 전부 입력해주세요.");

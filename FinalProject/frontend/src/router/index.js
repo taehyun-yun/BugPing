@@ -16,7 +16,8 @@ import SU2 from '@/components/auth/SU2.vue';
 import FindIdPwView from '@/views/auth/FindIdPwView.vue';
 import Find from '@/components/auth/Find.vue';
 import Main from "@/views/Main.vue";
-import Enroll from "@/views/enroll/enroll.vue";
+import EnrollEmployee from "@/views/enroll/enrollEmployee.vue";
+import EnrollWorkplace from "@/views/enroll/enrollWorkplace.vue";
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,7 +41,7 @@ routes: [
     {
         path : '/', component: Main , meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
         children : [
-            {path: 'enroll', name: 'enroll', component : Enroll, meta : {title : '근무지 등록'}, },
+            { path: 'enrollEmployee', name: 'enrollEmployee', component : EnrollEmployee, meta : {title : '근무지 등록'}, },
         ]
     },
     //고용자 전용
@@ -48,6 +49,7 @@ routes: [
         path : '/', component: Main, meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employer"]} ,
         children : [
             { path: 'calculator', name: 'CalculatorPage', component: CalculatorPage, meta : { title : "지급내역", }, },
+            { path: 'enrollWorkplace', name: 'enrollWorkplace', component : EnrollWorkplace, meta : {title : '사업장 등록'}, },
                         //이 안에 넣으시면 됩니다.
         ]
     },
