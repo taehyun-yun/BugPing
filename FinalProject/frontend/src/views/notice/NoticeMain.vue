@@ -445,15 +445,16 @@ const getStatusLabel = (status) => {
 
 .category {
   display: flex;
+  justify-content: center; /* 수평 가운데 정렬 */
   align-items: center; /* 이미지와 텍스트 수직 정렬 */
-  gap: 8px; /* 이미지와 텍스트 간 간격 */
+  gap: 10px; /* 이미지와 텍스트 간 간격 */
   padding: 10px 20px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #f9f9f9;
   cursor: pointer;
-  width: 260px; /* 고정 너비 */
+  width: 200px; /* 고정 너비 */
   height: 50px; /* 고정 높이 */
   transition: background-color 0.2s;
 }
@@ -492,6 +493,7 @@ const getStatusLabel = (status) => {
 /* 테이블 스타일 */
 .board-table {
   width: 100%;
+  table-layout: fixed; /* 열 너비를 고정 */
   border-collapse: collapse;
   margin-top: 20px;
   border: none;
@@ -499,11 +501,16 @@ const getStatusLabel = (status) => {
 
 .board-table th,
 .board-table td {
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
   vertical-align: middle;
   height: 50px;
+}
+
+.board-table th:first-child,
+.board-table td:first-child {
+  width: 80px; /* 체크박스 열의 너비를 좁게 설정 */
 }
 
 .board-table th {
@@ -519,15 +526,20 @@ const getStatusLabel = (status) => {
 
 .checkbox-cell {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* 오른쪽 정렬 */
   align-items: center;
 }
 
-input[type="checkbox"] {
+.input[type="checkbox"] {
+  justify-content: flex-end; /* 오른쪽 정렬 */
   width: 16px;
   height: 16px;
   margin: 0;
   vertical-align: middle;
+}
+
+.checkbox-action input[type="checkbox"] {
+  margin-left: auto; /* 체크박스를 오른쪽 끝으로 밀어줌 */
 }
 
 .delete-button {
