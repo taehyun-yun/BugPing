@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/employee")
+@RequestMapping("/employer")
 public class EmployerController {
     final private JoinService joinService;
     final private UserRepository userRepository;
@@ -32,16 +32,17 @@ public class EmployerController {
         this.companyRepository = companyRepository;
         this.contractRepository = contractRepository;
     }
-    public ResponseEntity<Map<String,Object>> findMyLicenseCode(){
+    @GetMapping("/findOwnCompany")
+    public ResponseEntity<Map<String,Object>> findOwnCompany(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Optional<List<Work>> works = workRepository.findByUser_userIdAndUser_Role(authentication.getName(),"employer");
-
-        List<Company>companies = new LinkedList<>();
-        if (works.isPresent()){
-            works.get().stream().forEach(work -> companies.add(work.getCompany()));
+        if(works.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        List<Company>companies = new LinkedList<>();
+        works.get().forEach(work -> companies.add(work.getCompany()));
         Map<String,Object> response = new HashMap<>();
-        response.put("Works", companies );
+        response.put("companies", companies );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
