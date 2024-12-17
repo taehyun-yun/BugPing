@@ -70,7 +70,7 @@
           >
             {{ employee.name }} ({{ employee.employeeId }})
           </div>  
-          <div class="payroll-item">{{ selectedEmployee.startDate }}</div>
+          <div class="payroll-item">{{ employee.startDate }}</div>
           <div class="payroll-item">{{ employee.hourlyWage }}</div>
           <div class="payroll-item">{{ isNaN(employee.monthlyHours) ? 0 : employee.monthlyHours }}</div>
           <div class="payroll-item">{{ employee.workDays || 0 }}</div>
@@ -139,30 +139,17 @@
 
   <!-- 페이지 네이션 관련 코드 -->
   <div class="pagination-container">
-    <button
-      class="pagination-button"
-      :disabled="currentPage === 1"
-      @click="handlePageChange(currentPage - 1)"
-    >
-      &lt;
-    </button>
-    <button
-      v-for="page in totalPages"
-      :key="page"
-      class="pagination-button"
-      :class="{ active: currentPage === page }"
-      @click="handlePageChange(page)"
-    >
-      {{ page }}
-    </button>
-    <button
-      class="pagination-button"
-      :disabled="currentPage === totalPages"
-      @click="handlePageChange(currentPage + 1)"
-    >
-      &gt;
-    </button>
-  </div>
+  <button @click="handlePageChange(currentPage - 1)" :disabled="currentPage === 1">&lt;</button>
+  <button 
+    v-for="page in totalPages" 
+    :key="page" 
+    @click="handlePageChange(page)" 
+    :class="{ active: currentPage === page }"
+  >
+    {{ page }}
+  </button>
+  <button @click="handlePageChange(currentPage + 1)" :disabled="currentPage === totalPages">&gt;</button>
+</div>
 </template>
 
 <script setup>
@@ -172,6 +159,7 @@ import axios from 'axios';
 const employees = ref([]);
 const employeeIds = ref([]); // 페이징에 사용될 ID 리스트
 const isModalVisible = ref(false);
+
 
 // 검색어와 정렬 옵션
 const searchQuery = ref(""); // 검색 키워드
@@ -232,21 +220,21 @@ const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
 
 const currentPage = ref(1);
 const totalPages = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(5);
 
 // 근무자 리스트 출력.
-const fetchEmployeeList = async () => {
-  try {
-    const response = await axios.get("http://localhost:8707/api/employees", {
-      withCredentials: true // 쿠키를 서버로 넘길 것 인가?
-    });
-    console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
-    employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
-    console.log("====================", employees.value);
-  } catch (error) {
-    console.error("Error fetchEmployeeList : ", error);
-  }
-};
+// const fetchEmployeeList = async () => {
+//   try {
+//     const response = await axios.get("http://localhost:8707/api/employees", {
+//       withCredentials: true // 쿠키를 서버로 넘길 것 인가?
+//     });
+//     console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
+//     employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
+//     console.log("====================", employees.value);
+//   } catch (error) {
+//     console.error("Error fetchEmployeeList : ", error);
+//   }
+// };
 
 // 지급/미지급 계산
 const totalEmployees = computed(() => employees.value.length); // 총 인원
@@ -254,20 +242,35 @@ const paidEmployees = computed(() => employees.value.filter(emp => emp.isPaid).l
 const unpaidEmployees = computed(() => employees.value.filter(emp => !emp.isPaid).length); // 미지급 인원
 
 
+
+
 // 페이징 처리 메서드
-const fetchEmployeePaging = async (page, size) => {
+const fetchEmployeesWithPagination = async () => {
   try {
-    const response = await axios.get("http://localhost:8707/api//employees/paging", {
-      withCredentials: true,
-      params: {page: page - 1, size }, // 0 베이스 페이지로 요청
+    const response = await axios.get("http://localhost:8707/api/employees/paging", {
+      params: {
+        page: currentPage.value - 1, // Spring은 0-base 페이지 인덱스 사용
+        size: pageSize.value
+      },
+      withCredentials: true
     });
-    employeeIds.value = response.data.content; // 현재 페이지의 employeeId 리스트 저장
+    
+    console.log("중복 제거된 직원 리스트: ", response.data);
+
+    employees.value = response.data.content; // 현재 페이지 직원 데이터 저장
     totalPages.value = response.data.totalPages; // 전체 페이지 수
-    console.log("페이징 데이터:", response.data);
   } catch (error) {
-    console.error("Error 페이징 오류 : ", error);
+    console.error("페이징된 데이터 가져오기 실패: ", error);
   }
 };
+
+const handlePageChange = (page) => {
+  if (page > 0 && page <= totalPages.value) {
+    currentPage.value = page; // 현재 페이지 업데이트
+    fetchEmployeesWithPagination(); // 새 페이지 데이터 요청
+  }
+};
+
 
 // 지급 상태 여부
 const togglePaid = async (employee) => {
@@ -294,23 +297,23 @@ const togglePaid = async (employee) => {
 };
 
 
-// 페이지 변경시 호출
-const handlePageChange = (page) => {
-  if (page > 0 && page <= totalPages.value) {
-    currentPage.value = page;
-    fetchEmployeePaging(page, pageSize.value); // page와 size를 명시적으로 전달
-  } else {
-    console.error("Invalid page number");
-  }
-};
+// // 페이지 변경시 호출
+// const handlePageChange = (page) => {
+//   if (page > 0 && page <= totalPages.value) {
+//     currentPage.value = page;
+//     fetchEmployeePaging(page, pageSize.value); // page와 size를 명시적으로 전달
+//   } else {
+//     console.error("Invalid page number");
+//   }
+// };
 
 
 // 초기 데이터 로드
 onMounted(() => {
-  fetchEmployeeList(); // fetchEmployeeList 함수 호출
-  console.log("employees 데이터 확인: ", employees.value); // employees의 상태 확인
-  console.log("onMounted selectedEmployee:", selectedEmployee.value);
-  //fetchEmployeePaging(currentPage.value, pageSize.value); // 페이징 데이터 요청
+  // fetchEmployeeList(); // fetchEmployeeList 함수 호출
+  // console.log("employees 데이터 확인: ", employees.value); // employees의 상태 확인
+  // console.log("onMounted selectedEmployee:", selectedEmployee.value);
+  fetchEmployeesWithPagination(); // 페이지네이션 데이터 불러오기
 });
 
 const showModal = async (employee) => {

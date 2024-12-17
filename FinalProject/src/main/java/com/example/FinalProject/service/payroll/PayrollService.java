@@ -4,6 +4,7 @@ import com.example.FinalProject.dto.EmployeeDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.payroll.PayRoll;
 import com.example.FinalProject.entity.user.User;
@@ -16,6 +17,10 @@ import com.example.FinalProject.repository.user.UserRepository;
 import com.example.FinalProject.repository.work.WorkRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -53,7 +58,7 @@ public class PayrollService {
         log.info("급여 계산 요청 - User ID: {}, Start Date: {}, End Date: {}",
                 requestDTO.getUserId(), requestDTO.getStartDate(), requestDTO.getEndDate());
 
-        // 계약 정보 조회 // 근데 workId는 왜 null 로 주는거지?
+        // 계약 정보 조회
         Contract contract = findContractByWorkOrUser(requestDTO.getUserId(), null, requestDTO.getStartDate(), requestDTO.getEndDate());
         if (contract == null) {
             throw new IllegalArgumentException("유효한 계약 정보를 찾을 수 없습니다.");
@@ -122,36 +127,47 @@ public class PayrollService {
     }
 
     // 근무자 리스트와 급여 정보를 포함한 데이터 생성
-    public List<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId) {
-        log.info("getEmployeeListWithPayroll 호출");
+    public Page<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId, int page, int size) {
+        log.info("페이징 처리된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
 
-        List<Object[]> results = payrollRepository.findPayRollWithWorkAndUser();
+        // 로그인된 사용자 ID로 회사 조회
+        Company company = companyRepository.findByUserId(loggedInUserId);
+        if (company == null) {
+            log.error("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다. User ID: {}", loggedInUserId);
+            throw new IllegalArgumentException("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다.");
+        }
+        log.info("조회된 회사 정보: {}", company);
+
+        // 페이징된 Work 리스트 조회
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Work> workPage = workRepository.findAllByCompany_CompanyId(company.getCompanyId(), pageable);
+
         List<EmployeeDTO> employeeList = new ArrayList<>();
-        //List<Work> workList = workRepository.findAllByCompanyId(company.getCompanyId());
 
-        for (Object[] result : results) {
-            PayRoll payRoll = (PayRoll) result[0];
-            Work work = (Work) result[1];
-            User user = (User) result[2];
-
-            // 근무 기록 조회
-            List<Attendance> attendanceList = findAttendanceData(
-                    user.getUserId(),
-                    work.getWorkId(),
-                    LocalDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0),
-                    LocalDateTime.now().withHour(23).withMinute(59).withSecond(59)
-            );
+        // for 문으로 EmployeeDTO 생성
+        for (Work work : workPage.getContent()) {
+            User user = work.getUser();
 
             // 계약 정보 조회
             Contract contract = findContractByWorkOrUser(
                     user.getUserId(),
                     work.getWorkId(),
-                    LocalDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0),
-                    LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
+                    LocalDateTime.now().minusMonths(1),
+                    LocalDateTime.now()
+            );
+
             if (contract == null) {
                 log.warn("유효한 계약 정보를 찾을 수 없습니다. Work ID: {}", work.getWorkId());
-                continue;
+                continue; // 계약 정보가 없으면 현재 루프를 건너뛰기
             }
+
+            // 근무 기록 조회
+            List<Attendance> attendanceList = findAttendanceData(
+                    user.getUserId(),
+                    work.getWorkId(),
+                    LocalDateTime.now().minusMonths(1),
+                    LocalDateTime.now()
+            );
 
             // 급여 계산
             double basicSalary = calculateBasicSalary(attendanceList, contract);
@@ -175,19 +191,22 @@ public class PayrollService {
                     workDays,
                     basicSalary,
                     totalSalary,
-                    payRoll.isPaid(),
-                    payRoll.getPayRollId(),
+                    false, // 기본 지급 상태
+                    null, // Payroll ID
                     weeklyAllowance,
                     nightPay,
                     overtimePay,
                     deduction
             );
-            log.info("EmployeeDTO 생성: {}", employeeDTO);
 
+            log.info("EmployeeDTO 생성: {}", employeeDTO);
             employeeList.add(employeeDTO);
         }
-        log.info("최종 근무자 리스트: {}", employeeList);
-        return employeeList;
+
+        log.info("페이징된 최종 근무자 리스트 생성 완료: {}", employeeList.size());
+
+        // PageImpl로 페이징된 결과 반환
+        return new PageImpl<>(employeeList, pageable, workPage.getTotalElements());
     }
 
     // 기본급 계산
@@ -309,25 +328,28 @@ public class PayrollService {
 // 계약 정보 조회
 private Contract findContractByWorkOrUser(
         String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
-    log.info("계약 정보 조회 - User ID: {}, Start Date: {}, End Date: {}", userId, startDate, endDate);
+    log.info("계약 정보 조회 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
 
+    // Work ID가 있을 때 먼저 조회
     if (workId != null) {
         List<Contract> contracts = contractRepository.findAllByWorkId(workId);
-        if (contracts.isEmpty()) {
-            throw new IllegalArgumentException("해당 Work ID에 대한 계약이 존재하지 않습니다.");
+        if (!contracts.isEmpty()) {
+            log.info("Work ID로 조회된 계약: {}", contracts.get(0));
+            return contracts.get(0); // 첫 번째 계약 반환
         }
-        // 적절한 계약 선택 (예: 가장 오래된 계약, 가장 최근 계약 등)
-        return contracts.get(0); // 첫 번째 계약 반환
+        log.warn("해당 Work ID에 대한 계약이 존재하지 않습니다. Work ID: {}", workId);
     }
 
-    // 사용자 ID와 날짜 범위로 계약 검색
-    List<Contract> contracts = contractRepository.findAllValidContractsByUserIdAndDateRange(userId, startDate, endDate);
-    if (contracts.isEmpty()) {
-        throw new IllegalArgumentException("해당 조건에 맞는 계약 정보가 없습니다.");
+    // Work ID가 없거나 계약이 없으면 User ID와 날짜 범위로 조회
+    List<Contract> contractsByUser = contractRepository.findAllValidContractsByUserIdAndDateRange(userId, startDate, endDate);
+    if (!contractsByUser.isEmpty()) {
+        log.info("User ID와 날짜 범위로 조회된 계약: {}", contractsByUser.get(0));
+        return contractsByUser.get(0); // 첫 번째 계약 반환
     }
 
-    log.info("조회된 계약 정보: {}", contracts.get(0));
-    return contracts.get(0); // 첫 번째 계약 반환
+    // 계약 정보가 없을 때
+    log.warn("해당 조건에 맞는 계약 정보가 없습니다. User ID: {}, Work ID: {}", userId, workId);
+    return null; // 예외 대신 null 반환
 }
 
     // 출근 데이터 조회

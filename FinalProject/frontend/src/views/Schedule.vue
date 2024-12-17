@@ -223,10 +223,9 @@ watch(buttonText, () => {
 });
 </script>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+<style scoped>
 
-/* 전체 캘린더 스타일 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
 /* 전체 캘린더 스타일 */
 .calendar-and-schedule {

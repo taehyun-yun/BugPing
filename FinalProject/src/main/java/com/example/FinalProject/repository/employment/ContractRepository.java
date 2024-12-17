@@ -32,11 +32,8 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
-
-//    @Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
-//    Contract findByWorkId(@Param("workId") Integer workId);
-@Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
-List<Contract> findAllByWorkId(@Param("workId") Integer workId);
+    @Query("SELECT c FROM Contract c WHERE c.work.workId = :workId")
+    List<Contract> findAllByWorkId(@Param("workId") Integer workId);
 
 
 

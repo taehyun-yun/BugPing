@@ -19,8 +19,8 @@
 
 <script setup>
 import { computed } from 'vue';
-import MainHeader from './components/MainHeader.vue';
-import MainSidebar from './components/MainSidebar.vue';
+import MainHeader from './components/MainHeader.vue'; // 해당 코드 지우면 화면에 안나옴 ㅇㅇㅇ
+import MainSidebar from './components/MainSidebar.vue'; // 해당 코드 지우면 화면에 안나옴 ㅇㅇㅇ
 import { useRoute } from 'vue-router';
 const route = useRoute();
 

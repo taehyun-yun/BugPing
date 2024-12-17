@@ -10,6 +10,7 @@ import com.example.FinalProject.service.jwt.JwtServiceImpl;
 import com.example.FinalProject.service.payroll.PayrollService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,54 +48,21 @@ public class PayRollController {
     }
 
     // 근무자 리스트 정보 반환
-    @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeDTO>> getEmployeeList() {
-
+    @GetMapping("/employees/paging")
+    public ResponseEntity<Page<EmployeeDTO>> getEmployeeListWithPagination(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
         // 로그인된 사용자 ID 가져오기
         String loggedInUserId = jwtService.getLoggedInUserId();
         if (loggedInUserId == null) {
             log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        log.info("로그인된 사용자 ID: {}", loggedInUserId);
-
-        log.info("근무자 리스트 요청을 받았습니다.");
+        log.info("로그인된 사용자 ID!!: {}", loggedInUserId);
+        log.info("페이징된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
 
         // 근무자 리스트 조회
-        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId);
-
-        // 급여 계산을 각 직원에 대해 수행
-        for (EmployeeDTO employee : employeeList) {
-            try {
-                // LocalDateTime으로 시작일과 종료일 생성
-                LocalDateTime startDateTime = LocalDate.parse(employee.getStartDate())
-                        .atStartOfDay(); // 시작일의 자정을 기준으로 LocalDateTime 생성
-                LocalDateTime endDateTime = LocalDateTime.now()
-                        .withHour(23).withMinute(59).withSecond(59); // 종료일은 현재 날짜의 끝 시간
-
-                PayrollRequestDTO requestDTO = new PayrollRequestDTO(
-                        employee.getEmployeeId(),
-                        startDateTime, // LocalDateTime 시작일
-                        endDateTime // LocalDateTime 종료일
-                );
-                PayrollResponseDTO responseDTO = payrollService.calculatePayroll(requestDTO);
-
-                // EmployeeDTO 업데이트
-                employee.setTotalSalary(responseDTO.getTotalSalary());
-                employee.setBasicSalary(responseDTO.getBasicSalary());
-                employee.setWeeklyAllowance(responseDTO.getWeeklyAllowance());
-                employee.setNightPay(responseDTO.getNightPay());
-                employee.setMonthlyHours(responseDTO.getBasicSalary() / responseDTO.getHourlyWage());
-                employee.setOvertimePay(responseDTO.getOvertimePay());
-                employee.setDeduction(responseDTO.getDeduction());
-
-                log.info("최종 응답 데이터: {}", employeeList);
-
-                log.info("급여 계산 완료 - Employee ID: {}, Total Salary: {}", employee.getEmployeeId(), responseDTO.getTotalSalary());
-            } catch (Exception e) {
-                log.error("급여 계산 실패 - Employee ID: {}", employee.getEmployeeId(), e);
-            }
-        }
+        Page<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId, page, size);
 
         log.info("계산된 근무자 리스트 데이터: {}", employeeList);
         return ResponseEntity.ok(employeeList);
