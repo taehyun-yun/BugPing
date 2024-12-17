@@ -186,13 +186,20 @@ const selectCategory = (categoryName) => {
 
 // 작성 취소 버튼 클릭 시 동작
 const cancelNotice = () => {
-  // 모든 입력 필드를 초기화
-  title.value = "";
-  content.value = "";
-  selectedCategory.value = "공지"; // 기본 카테고리로 초기화
-  uploadedFiles.value = []; // 업로드된 파일 목록 초기화
-  previewImage.value = ""; // 이미지 미리보기 초기화
-  console.log("작성 취소되었습니다.");
+  // 알럿창을 띄워서 사용자 확인 요청
+  if (confirm("정말 작성 중인 내용을 취소하시겠습니까?")) {
+    // 모든 입력 필드를 초기화
+    title.value = "";
+    content.value = "";
+    selectedCategory.value = "공지"; // 기본 카테고리로 초기화
+    uploadedFiles.value = []; // 업로드된 파일 목록 초기화
+    previewImage.value = ""; // 이미지 미리보기 초기화
+
+    console.log("작성 취소되었습니다.");
+
+    // noticeMain 페이지로 이동
+    router.push("/noticemain");
+  }
 };
 
 // 작성 완료 버튼 클릭 시 동작
