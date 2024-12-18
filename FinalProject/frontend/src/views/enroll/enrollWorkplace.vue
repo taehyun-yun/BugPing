@@ -56,6 +56,7 @@
 import SU4 from '@/components/auth/SU4.vue';
 import SU5 from '@/components/auth/SU5.vue';
 import { axiosAddress } from '@/stores/axiosAddress';
+import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
 import { onMounted, reactive, ref } from 'vue';
 const companies = reactive([]);
@@ -63,6 +64,10 @@ const getData = async()=>{
     try{
         const res = await axios.get(`${axiosAddress}/employer/findOwnCompany`, {withCredentials : true});
         companies.splice( 0, companies.length, ...res.data.companies);
+        const userStore = useUserStore();
+        const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
+        userStore.setCompany(companyRes.data[0]);
+        userStore.setCompanies(companyRes.data);
     } catch(err) {
         alert(err);
     }
@@ -99,6 +104,7 @@ const submitData = async() => {
         await axios.post(axiosAddress+"/employer/companyRegister",formdata,{withCredentials: true})
         .then((res)=>{
             alert(res.data);
+            getData();
         })
         .catch((err)=>{
             alert(err);
