@@ -43,6 +43,9 @@ dependencies {
 	runtimeOnly 'ch.qos.logback:logback-classic:1.4.11'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
+	//QR
+	implementation 'com.google.zxing:core:3.5.0'
+	implementation 'com.google.zxing:javase:3.5.0'
 }
 
 tasks.named('test') {
