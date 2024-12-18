@@ -60,7 +60,8 @@
           <div class="payroll-header-item">지급</div>
         </div>
 
-        <div v-for="employee in sortedEmployees" :key="employee.id" class="payroll-row">
+        <div v-for="employee in sortedEmployees" :key="employee.employeeId" class="payroll-row">
+        <!-- <div v-for="employee in sortedEmployees" :key="employee.id" class="payroll-row"></div> -->
           <div 
             class="payroll-item" 
             @click="showModal(employee)" 
@@ -157,7 +158,6 @@ import { onMounted, ref, computed } from 'vue';
 import axios from 'axios';
 
 const employees = ref([]);
-const employeeIds = ref([]); // 페이징에 사용될 ID 리스트
 const isModalVisible = ref(false);
 
 
@@ -276,6 +276,7 @@ const handlePageChange = (page) => {
 const togglePaid = async (employee) => {
   console.log("Employee Data:", employee);
   console.log("PayRoll ID:", employee.payRollId);
+
   try {
     // 서버에 PATCH 요청 전송
     await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
@@ -284,35 +285,30 @@ const togglePaid = async (employee) => {
         isPaid: !employee.isPaid,
       },
     });
+    
 
     // 서버에서 최신 데이터 가져오기
-    const response = await axios.get("http://localhost:8707/api/employees", {
+    const response = await axios.get("http://localhost:8707/api/employees/paging", {
+      params: { page: currentPage.value - 1, size: pageSize.value },
       withCredentials: true,
     });
-    employees.value = response.data; // Vue 데이터 갱신
-    console.log("Updated Employee List:", employees.value);
+    employees.value = response.data.content; // Vue 데이터 갱신
+
+    // 데이터 재할당 (강제 갱신)
+    employees.value = [...response.data.content]; 
+    console.log("API 응답 데이터:", employees.value);
+  
+    // 서버 응답에 따른 상태 갱신
+    employee.isPaid = !employee.isPaid;
+    
+    console.log(`지급 상태 업데이트 성공 - PayRoll ID: ${employee.payRollId}, 지급 상태: ${!employee.isPaid}`);
   } catch (error) {
     console.error("Error updating payroll status: ", error);
   }
 };
 
-
-// // 페이지 변경시 호출
-// const handlePageChange = (page) => {
-//   if (page > 0 && page <= totalPages.value) {
-//     currentPage.value = page;
-//     fetchEmployeePaging(page, pageSize.value); // page와 size를 명시적으로 전달
-//   } else {
-//     console.error("Invalid page number");
-//   }
-// };
-
-
 // 초기 데이터 로드
 onMounted(() => {
-  // fetchEmployeeList(); // fetchEmployeeList 함수 호출
-  // console.log("employees 데이터 확인: ", employees.value); // employees의 상태 확인
-  // console.log("onMounted selectedEmployee:", selectedEmployee.value);
   fetchEmployeesWithPagination(); // 페이지네이션 데이터 불러오기
 });
 

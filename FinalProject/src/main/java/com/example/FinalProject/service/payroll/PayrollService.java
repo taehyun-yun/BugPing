@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -130,7 +127,7 @@ public class PayrollService {
     public Page<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId, int page, int size) {
         log.info("페이징 처리된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
 
-        // 로그인된 사용자 ID로 회사 조회
+        // 로그인된 사용자의 회사 정보 조회
         Company company = companyRepository.findByUserId(loggedInUserId);
         if (company == null) {
             log.error("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다. User ID: {}", loggedInUserId);
@@ -138,15 +135,24 @@ public class PayrollService {
         }
         log.info("조회된 회사 정보: {}", company);
 
-        // 페이징된 Work 리스트 조회
+        // PayRoll 페이징 데이터 조회
         Pageable pageable = PageRequest.of(page, size);
-        Page<Work> workPage = workRepository.findAllByCompany_CompanyId(company.getCompanyId(), pageable);
+        Page<PayRoll> payrollPage = payrollRepository.findPayRollsByCompanyId(company.getCompanyId(), pageable);
 
+        // 중복 검사용 Set
+        Set<String> processedUserIds = new HashSet<>();
         List<EmployeeDTO> employeeList = new ArrayList<>();
 
         // for 문으로 EmployeeDTO 생성
-        for (Work work : workPage.getContent()) {
+        for (PayRoll payRoll : payrollPage.getContent()) {
+            Work work = payRoll.getWork();
             User user = work.getUser();
+            String userId = user.getUserId();
+
+            // 중복 검사
+            if (!processedUserIds.add(userId)) {
+                continue; // 이미 처리된 사용자 ID는 건너뜀
+            }
 
             // 계약 정보 조회
             Contract contract = findContractByWorkOrUser(
@@ -158,7 +164,7 @@ public class PayrollService {
 
             if (contract == null) {
                 log.warn("유효한 계약 정보를 찾을 수 없습니다. Work ID: {}", work.getWorkId());
-                continue; // 계약 정보가 없으면 현재 루프를 건너뛰기
+                continue;
             }
 
             // 근무 기록 조회
@@ -177,6 +183,11 @@ public class PayrollService {
             double deduction = (basicSalary + weeklyAllowance + nightPay + overtimePay) * 0.1;
             double totalSalary = basicSalary + weeklyAllowance + nightPay + overtimePay - deduction;
 
+//            boolean isPaid = payrollRepository
+//                    .findByWorkId(work.getWorkId())
+//                    .map(PayRoll::isPaid) // PayRoll의 isPaid 상태를 가져옴
+//                    .orElse(false);
+
             // 월 근무시간 및 월 근무일수 계산
             double monthlyHours = calculateMonthlyHours(attendanceList);
             int workDays = calculateWorkDays(attendanceList);
@@ -191,8 +202,8 @@ public class PayrollService {
                     workDays,
                     basicSalary,
                     totalSalary,
-                    false, // 기본 지급 상태
-                    null, // Payroll ID
+                    payRoll.isPaid(),
+                    payRoll.getPayRollId(),
                     weeklyAllowance,
                     nightPay,
                     overtimePay,
@@ -206,7 +217,7 @@ public class PayrollService {
         log.info("페이징된 최종 근무자 리스트 생성 완료: {}", employeeList.size());
 
         // PageImpl로 페이징된 결과 반환
-        return new PageImpl<>(employeeList, pageable, workPage.getTotalElements());
+        return new PageImpl<>(employeeList, pageable, payrollPage.getTotalElements());
     }
 
     // 기본급 계산
@@ -325,32 +336,32 @@ public class PayrollService {
         return workDays;
     }
 
-// 계약 정보 조회
-private Contract findContractByWorkOrUser(
-        String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
-    log.info("계약 정보 조회 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
+    // 계약 정보 조회
+    private Contract findContractByWorkOrUser(
+            String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("계약 정보 조회 - User ID: {}, Work ID: {}, Start Date: {}, End Date: {}", userId, workId, startDate, endDate);
 
-    // Work ID가 있을 때 먼저 조회
-    if (workId != null) {
-        List<Contract> contracts = contractRepository.findAllByWorkId(workId);
-        if (!contracts.isEmpty()) {
-            log.info("Work ID로 조회된 계약: {}", contracts.get(0));
-            return contracts.get(0); // 첫 번째 계약 반환
+        // Work ID가 있을 때 먼저 조회
+        if (workId != null) {
+            List<Contract> contracts = contractRepository.findAllByWorkId(workId);
+            if (!contracts.isEmpty()) {
+                log.info("Work ID로 조회된 계약: {}", contracts.get(0));
+                return contracts.get(0); // 첫 번째 계약 반환
+            }
+            log.warn("해당 Work ID에 대한 계약이 존재하지 않습니다. Work ID: {}", workId);
         }
-        log.warn("해당 Work ID에 대한 계약이 존재하지 않습니다. Work ID: {}", workId);
-    }
 
-    // Work ID가 없거나 계약이 없으면 User ID와 날짜 범위로 조회
-    List<Contract> contractsByUser = contractRepository.findAllValidContractsByUserIdAndDateRange(userId, startDate, endDate);
-    if (!contractsByUser.isEmpty()) {
-        log.info("User ID와 날짜 범위로 조회된 계약: {}", contractsByUser.get(0));
-        return contractsByUser.get(0); // 첫 번째 계약 반환
-    }
+        // Work ID가 없거나 계약이 없으면 User ID와 날짜 범위로 조회
+        List<Contract> contractsByUser = contractRepository.findAllValidContractsByUserIdAndDateRange(userId, startDate, endDate);
+        if (!contractsByUser.isEmpty()) {
+            log.info("User ID와 날짜 범위로 조회된 계약: {}", contractsByUser.get(0));
+            return contractsByUser.get(0); // 첫 번째 계약 반환
+        }
 
-    // 계약 정보가 없을 때
-    log.warn("해당 조건에 맞는 계약 정보가 없습니다. User ID: {}, Work ID: {}", userId, workId);
-    return null; // 예외 대신 null 반환
-}
+        // 계약 정보가 없을 때
+        log.warn("해당 조건에 맞는 계약 정보가 없습니다. User ID: {}, Work ID: {}", userId, workId);
+        return null; // 예외 대신 null 반환
+    }
 
     // 출근 데이터 조회
     public List<Attendance> findAttendanceData(String userId, Integer workId, LocalDateTime startDate, LocalDateTime endDate) {
