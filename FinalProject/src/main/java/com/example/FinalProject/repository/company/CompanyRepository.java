@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface CompanyRepository extends JpaRepository<Company,Integer> { // String
+public interface CompanyRepository extends JpaRepository<Company,Integer> {
     Boolean existsByCnum(String cnum);
 
     @Query("SELECT DISTINCT w.company FROM Work w WHERE w.user.userId = :userId")
