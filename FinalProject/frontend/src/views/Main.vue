@@ -36,6 +36,6 @@ const showSidebar = (menucontroll) =>{
     .exist-sidebar{
         min-width: 1000px;
         max-width: 1400px;
-        padding-left : 200px;
+        padding-left : 300px;
     }
 </style>

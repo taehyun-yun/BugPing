@@ -73,7 +73,6 @@ const submitData = async() => {
         alert("필수 항목을 전부 입력해주세요.");
     }
 };
-
 </script>
 <style scoped>
     form{
