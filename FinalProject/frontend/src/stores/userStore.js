@@ -18,8 +18,8 @@ export const useUserStore = defineStore('user',{
         setRoles(roles){
             this.roles = roles;
         },
-        setCompany(company){
-            this.company = company;
+        setCompany(company) {
+            this.company = { cname: company.cname, companyId: company.companyid }; // { cname : '' , companyId : ''}
         },
         setCompanies(companies){
             this.companies = companies;

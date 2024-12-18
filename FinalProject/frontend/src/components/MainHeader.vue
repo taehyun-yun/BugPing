@@ -10,9 +10,12 @@
         <div class="header-right">
           <div class="search-fieldset">
             <input type="hidden" placeholder="검색" class="header-search-input" v-model="selectedCompany" />
-            <select v-model="selectedCompany" @change="updateCompany">
-              <option v-for="company in userStore.companies" :key="company.id" :value="company.cname">
-                {{ company.cname }}
+            <select v-model="selectedCompany">
+            <!-- <select v-model="selectedCompany" @change="updateCompany"> -->
+              <option v-for="company in userStore.companies" 
+                      :key="company.id" 
+                      :value="company">
+                {{ company.cname }} {{ company.companyId }}
               </option>
             </select>
           </div>
@@ -42,17 +45,21 @@
     <Teleport to="body">
       <div class="modal-overlay" @click.self="showModalChange" v-show="showModal">
         <div class="modal">
-          <div>
-            <form ref="pwForm">
-              <p>비밀번호 변경</p>
-              <input type="text" placeholder="비밀번호 입력" required v-model="newPassword" minlength="4">
-              <button type="button" @click="setNewEmail">변경</button>
+          <div class="item">
+            <p>비밀번호 변경</p>
+            <form ref="pwCheck" v-show="!valid">
+              <input type="text" placeholder="현재 비밀번호를 입력해주세요" required v-model="inputPassword" minlength="4">
+              <button type="button" @click="checkPassword">확인</button>
+            </form>
+            <form ref="pwForm" v-show="valid">
+              <input type="text" placeholder="새로운 비밀번호를 입력해주세요" required v-model="newPassword" minlength="4">
+              <button type="button" @click="setNewPassword">변경</button>
             </form>
           </div>
-          <div v-if="!registered">
+          <div class="item" v-if="!registered">
             <form ref="emailForm">
               <p>이메일 등록</p>
-              <input type="email" placeholder="이메일 입력" required>
+              <input type="email" placeholder="이메일 입력" required v-model="inputEmail">
               <button type="button" @click="registEmail">변경</button>
             </form>
           </div>
@@ -80,7 +87,7 @@ const goToLoginPage = async() => {
   })
   router.push("/login");
 };
-//누르면 app.vue에 있는 sidebar와 연결됨
+//누르면 app.vue에 있는 sidebar와 연결됨-----------------------------------------------
 const showOrNot = ref(useRoute().meta.sidebar);
 const emit = defineEmits(['showSidebar']);
 const sidebar = () =>{
@@ -88,43 +95,45 @@ const sidebar = () =>{
   emit('showSidebar',showOrNot.value);
 }
 
+// 회사 설정 --------------------------------------
 const userStore = useUserStore();
-const selectedCompany = ref('');
+const selectedCompany = ref({ cname: '', companyId: '' });
 
 // 초기값 설정
 onMounted(() => {
   if (userStore.companies.length > 0) {
-    selectedCompany.value = userStore.companies[0].cname;
-    userStore.setCompany(selectedCompany.value);
+    selectedCompany.value = userStore.companies[0];
+    // userStore.setCompany(selectedCompany.value);
   }
 });
-
-// 선택된 값 업데이트
-const updateCompany = () => {
-  userStore.setCompany(selectedCompany.value);
-};
-
 // watch로 상태 동기화
 watch(selectedCompany, (newValue) => {
   userStore.setCompany(newValue);
 });
-// 마이페이지
+// 마이페이지-----------------------------------------------
 const showModal = ref(false);
 const showModalChange = () =>{
   showModal.value = !showModal.value;
 }
-const registered = computed(() => userStore.email !== '');
-const emailForm = ref(null);
+
+const pwForm = ref(null);
 const newPassword = ref('');
-const setNewEmail = () =>{
+const inputPassword = ref('');
+const valid = ref(false);
+const checkPassword = () =>{
+  valid.value = userStore.password === inputPassword.value
+}
+const setNewPassword = () =>{
   if(pwForm.value.reportValidity()){
-    axios.post(`${axiosAddress}/setNewPassword`,{ userId : userStore.userId, newPassword : newPassword},{withCredentials : true})
+    axios.post(`${axiosAddress}/setNewPassword`,{ userId : userStore.userId, newPassword : newPassword.value },{withCredentials : true})
   }
 }
-const pwForm = ref(null);
+
+const registered = computed(() => userStore.email !== '');
+const emailForm = ref(null);
 const registEmail = () =>{
   if(emailForm.value.reportValidity()){
-
+    email
   }
 }
 </script> 
