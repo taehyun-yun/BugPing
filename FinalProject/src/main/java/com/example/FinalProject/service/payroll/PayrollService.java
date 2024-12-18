@@ -124,8 +124,8 @@ public class PayrollService {
     }
 
     // 근무자 리스트와 급여 정보를 포함한 데이터 생성
-    public Page<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId, int page, int size) {
-        log.info("페이징 처리된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
+    public List<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId, String searchQuery, String sortField, String sortDirection) {
+        log.info("근무자 리스트 요청 - Search Query: {}, Sort Field: {}, Sort Direction: {}", searchQuery, sortField, sortDirection);
 
         // 로그인된 사용자의 회사 정보 조회
         Company company = companyRepository.findByUserId(loggedInUserId);
@@ -135,23 +135,28 @@ public class PayrollService {
         }
         log.info("조회된 회사 정보: {}", company);
 
-        // PayRoll 페이징 데이터 조회
-        Pageable pageable = PageRequest.of(page, size);
-        Page<PayRoll> payrollPage = payrollRepository.findPayRollsByCompanyId(company.getCompanyId(), pageable);
+        // PayRoll 데이터 조회
+        List<PayRoll> payrollList = payrollRepository.findPayRollsByCompanyId(company.getCompanyId());
 
         // 중복 검사용 Set
         Set<String> processedUserIds = new HashSet<>();
         List<EmployeeDTO> employeeList = new ArrayList<>();
 
         // for 문으로 EmployeeDTO 생성
-        for (PayRoll payRoll : payrollPage.getContent()) {
+        for (PayRoll payRoll : payrollList) {
             Work work = payRoll.getWork();
             User user = work.getUser();
-            String userId = user.getUserId();
 
             // 중복 검사
-            if (!processedUserIds.add(userId)) {
+            if (!processedUserIds.add(user.getUserId())) {
                 continue; // 이미 처리된 사용자 ID는 건너뜀
+            }
+
+            // 검색 조건 적용
+            if (!searchQuery.isEmpty() &&
+                    !user.getName().toLowerCase().contains(searchQuery.toLowerCase()) &&
+                    !user.getUserId().toLowerCase().contains(searchQuery.toLowerCase())) {
+                continue; // 검색어에 맞지 않으면 제외
             }
 
             // 계약 정보 조회
@@ -183,11 +188,6 @@ public class PayrollService {
             double deduction = (basicSalary + weeklyAllowance + nightPay + overtimePay) * 0.1;
             double totalSalary = basicSalary + weeklyAllowance + nightPay + overtimePay - deduction;
 
-//            boolean isPaid = payrollRepository
-//                    .findByWorkId(work.getWorkId())
-//                    .map(PayRoll::isPaid) // PayRoll의 isPaid 상태를 가져옴
-//                    .orElse(false);
-
             // 월 근무시간 및 월 근무일수 계산
             double monthlyHours = calculateMonthlyHours(attendanceList);
             int workDays = calculateWorkDays(attendanceList);
@@ -196,7 +196,8 @@ public class PayrollService {
             EmployeeDTO employeeDTO = new EmployeeDTO(
                     user.getUserId(),
                     user.getName(),
-                    work.getHireDate().toString(),
+                    work.getHireDate().toString(),   // startDate (추가된 부분)
+                    work.getHireDate().toString(),   // hireDate
                     String.valueOf(contract.getHourlyWage()),
                     monthlyHours,
                     workDays,
@@ -209,15 +210,34 @@ public class PayrollService {
                     overtimePay,
                     deduction
             );
-
-            log.info("EmployeeDTO 생성: {}", employeeDTO);
             employeeList.add(employeeDTO);
         }
 
-        log.info("페이징된 최종 근무자 리스트 생성 완료: {}", employeeList.size());
+        // 정렬 처리
+        Comparator<EmployeeDTO> comparator;
 
-        // PageImpl로 페이징된 결과 반환
-        return new PageImpl<>(employeeList, pageable, payrollPage.getTotalElements());
+        switch (sortField) {
+            case "totalSalary":
+                comparator = Comparator.comparing(EmployeeDTO::getTotalSalary);
+                break;
+            case "hireDate":
+                comparator = Comparator.comparing(EmployeeDTO::getHireDate);
+                break;
+            case "name":
+                comparator = Comparator.comparing(EmployeeDTO::getName);
+                break;
+            default:
+                comparator = Comparator.comparing(EmployeeDTO::getName); // 기본 정렬: 이름
+        }
+
+        if ("DESC".equalsIgnoreCase(sortDirection)) {
+            comparator = comparator.reversed();
+        }
+
+        employeeList.sort(comparator);
+
+        log.info("정렬 및 검색 완료 - 반환할 근무자 리스트 수: {}", employeeList.size());
+        return employeeList;
     }
 
     // 기본급 계산
