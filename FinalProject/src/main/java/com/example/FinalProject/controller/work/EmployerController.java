@@ -1,4 +1,4 @@
-package com.example.FinalProject.controller.employment;
+package com.example.FinalProject.controller.work;
 
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;

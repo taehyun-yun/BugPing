@@ -38,23 +38,30 @@ public class JwtController {
     //로그인 성공했을 때 토큰 값 저장하기 - 매번 axios에 헤더 넣기 귀찮으므로 httpOnly방식을 사용함.
     //1 아이디 비밀번호 체크
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String,String> loginDetails, HttpServletResponse response){
+    public ResponseEntity<Map<String,Object>> login(@RequestBody Map<String,String> loginDetails, HttpServletResponse response){
         String userId = loginDetails.get("userId");
         String password = loginDetails.get("password");
+        Map<String,Object> map = new HashMap<>();
             Optional<User>existuser = userRepository.findById(userId);
             if(existuser.isEmpty()){
-                return new ResponseEntity<>("해당 아이디는 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+                map.put("msg","해당 아이디는 존재하지 않습니다.");
+                return new ResponseEntity<>(map, HttpStatus.NOT_FOUND);
             }
             User user = existuser.get();
             if(!passwordEncoder.matches(password,user.getPassword())){
-                return new ResponseEntity<>("비밀번호가 틀렸습니다.",HttpStatus.BAD_REQUEST);
+                map.put("msg","비밀번호가 틀렸습니다.");
+                return new ResponseEntity<>(map,HttpStatus.BAD_REQUEST);
             }
             //2 토큰 문자열 생성
             String token = jwtService.getToken(user.getUserId(),user.getRole());
             //httpOnly 토큰 생성
             setTokenAsHttpOnlyCookies(token,response);
             //return 역할. axios에서 이 값을 가지고 어떤 페이지로 이동할지 정하면 됨.
-            return new ResponseEntity<>(user.getRole(),HttpStatus.OK);
+            map.put("userId", userId);
+            map.put("password", password);
+            map.put("email",user.getEmail());
+            map.put("roles",user.getRole());
+            return new ResponseEntity<>(map,HttpStatus.OK);
     }
     //httpOnly 토큰 생성하기
     private void setTokenAsHttpOnlyCookies(String token, HttpServletResponse response){

@@ -6,7 +6,7 @@
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/lock.svg">
-            <input :type="showInputPw?'text':'password'" class="input-field" placeholder="비밀번호" v-model="localdata.password" required>
+            <input :type="showInputPw?'text':'password'" class="input-field" placeholder="비밀번호" v-model="localdata.password" required minlength="4">
             <img :src="showInputPw?'/src/assets/Loginimg/eye-solid.svg':'/src/assets/Loginimg/eye-slash.svg'" @click="changeType">
         </div>
         <div class="input-group">
