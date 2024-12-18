@@ -1,20 +1,24 @@
 <template>
-    <div>
+    <div class="workplace-wrap">
+        <div class="add-button">
+            <button @click="showModalChange">추가하기</button>
+        </div>
+        <div class="myOwnCompany">
         <table>
             <thead>
                 <tr>
-                    <td>
+                    <th>
                         사업체명
-                    </td>
-                    <td>
+                    </th>
+                    <th>
                         주소
-                    </td>
-                    <td>
+                    </th>
+                    <th>
                         사업자번호
-                    </td>
-                    <td>
+                    </th>
+                    <th>
                         근무자 등록번호
-                    </td>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -34,14 +38,15 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
     <Teleport to="body">
-        <div class="modal-overlay" @click.self="showModalChange" v-show="showModal">
+        <div class="modal-overlay" @click.self="showModalChange" v-show.self="showModal">
             <div class="modal">
                 <form ref="regform">
                     <SU4 @update="updateParent('SU4',$event)"></SU4>
                     <SU5 @update="updateParent('SU5',$event)"></SU5>
-                    <button style="width: 100%;" @click="submitData">변경</button>
+                    <button type="button" style="width: 100%;" @click="submitData">추가하기</button>
                 </form>
             </div>
         </div>
@@ -54,18 +59,21 @@ import { axiosAddress } from '@/stores/axiosAddress';
 import axios from 'axios';
 import { onMounted, reactive, ref } from 'vue';
 const companies = reactive([]);
-// const getData = async()=>{
-//     try{
-//         const res = await axios.get(`${axiosAddress}/employer/findOwnCompany`, {withCredentials : true});
-//         companies.splice( 0, companies.length, ...res.data);
-//     } catch(err) {
-//         alert(err);
-//     }
-// }
-// onMounted(()=>{
-//     getData();
-// })
+const getData = async()=>{
+    try{
+        const res = await axios.get(`${axiosAddress}/employer/findOwnCompany`, {withCredentials : true});
+        companies.splice( 0, companies.length, ...res.data.companies);
+    } catch(err) {
+        alert(err);
+    }
+}
+onMounted(()=>{
+    getData();
+})
 
+//새로운 사업장 저장
+// regform 선언
+const regform = ref(null);
 // 자식 데이터 가져온다면 담을 곳
 const childData = reactive({
     SU4 : {},
@@ -88,19 +96,18 @@ const submitData = async() => {
         //확인용
         alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
         // 보내기
-        await axios.post(axiosAddress+"/companyRegister",formdata,{withCredentials: true})
+        await axios.post(axiosAddress+"/employer/companyRegister",formdata,{withCredentials: true})
         .then((res)=>{
             alert(res.data);
-            push({name : ''})
         })
         .catch((err)=>{
-            alert(err.response);
+            alert(err);
         })
     }else{
         alert("필수 항목을 전부 입력해주세요.");
     }
 };
-const showModal = ref(true);
+const showModal = ref(false);
 const showModalChange = () =>{
     showModal.value = !showModal.value;
 }
@@ -110,31 +117,98 @@ const closeModal = () => {
 
 </script>
 <style scoped>
-    .modal{
+    .workplace-wrap {
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    table th{
+        text-align: center;
+    }
+
+    thead tr {
+        background-color: #4FD1C5;
+        color: white;
+        font-weight: bold;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #f5f5f5;
+    }
+
+    tbody tr:hover {
+        background-color: #e8f8f5;
+        cursor: pointer;
+    }
+    /* 추가하기 버튼 (테이블 위) */
+    .add-button{
+        position: relative;
+        height: 100px;
+    }
+    .add-button button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 10px 20px;
+        background-color: #4FD1C5;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .add-button button:hover {
+        background-color: #38b2ac;
+        /* transform: scale(1.05); */
+    }
+    /* 모달 내부 */
+    .modal {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 15px;
-        border: 1px, solid, #4FD1C5;
+        padding: 20px;
         background-color: #ffffff;
-        border-radius: 20px;
+        border-radius: 16px;
         width: 600px;
-        height: 500px;
-
-        /* Flexbox로 세로와 가로 중앙 정렬 */
+        max-width: 90%;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         display: flex;
-        flex-direction: column; /* 세로 방향으로 정렬 */
-        justify-content: center; /* 세로 축 중앙 정렬 */
-        align-items: center; /* 가로 축 중앙 정렬 */
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
     }
+
+    .modal h2 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
     .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -145,5 +219,26 @@ const closeModal = () => {
         height: 90%;
         padding: 30px;
         position: relative;
+    }
+    /* 모달 버튼 */
+    form button[type="button"] {
+        display: block;
+        margin: 20px auto 0;
+        padding: 12px 20px;
+        background-color: #4FD1C5;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        width: 80%;
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.2s ease;
+    }
+
+    form button[type="button"]:hover {
+        background-color: #38b2ac;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 </style>

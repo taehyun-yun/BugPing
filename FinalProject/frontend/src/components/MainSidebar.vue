@@ -8,7 +8,7 @@
       <img src="../assets/SidebarImg/calendar.png" alt="Calendar Icon" class="icon" />
       <div class="menu-title">스케줄 관리</div>
     </div>
-    <div class="menu-item" @click="goPage('CalculatorPage')">
+    <div class="menu-item" @click="goPage('CalculatorPage')" v-if="forEmployer">
       <img src="../assets/SidebarImg/dollar-sign.png" alt="Dollar Icon" class="icon" />
       <div class="menu-title">급여 관리</div>
     </div>

@@ -45,4 +45,23 @@ public class EmployerController {
         response.put("companies", companies );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @PostMapping("/companyRegister")
+    public ResponseEntity<String> companyRegister(@ModelAttribute Company company){
+        if(!joinService.checkCompany(company)){
+            return new ResponseEntity<>("이미 등록된 사업자 등록번호입니다.",HttpStatus.NOT_ACCEPTABLE);
+        };
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        if(userId == null){
+            return new ResponseEntity<>("로그인이 되지 않았습니다. 어떻게 오셨습니까...",HttpStatus.NOT_ACCEPTABLE);
+        }
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isEmpty()){
+            return new ResponseEntity<>("등록되지 않은 아이디입니다. 누구십니까...", HttpStatus.NOT_ACCEPTABLE);
+        }
+        Company newCompany = joinService.registCompany(company);
+        joinService.registWork(user.get(),newCompany);
+        System.out.println("추가되었다고요");
+        return new ResponseEntity<>("등록되었습니다.",HttpStatus.CREATED);
+    }
 }
