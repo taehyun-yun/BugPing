@@ -886,7 +886,7 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <CollationName>utf8_general_ci</CollationName>
     </schema>
     <schema id="275" parent="1" name="masterofmanagement">
-      <LastIntrospectionLocalTimestamp>2024-12-09.06:48:28</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2024-12-16.17:43:07</LastIntrospectionLocalTimestamp>
       <CollationName>utf8_general_ci</CollationName>
     </schema>
     <user id="276" parent="1" name="catch"/>
@@ -902,552 +902,603 @@ masterofmanagement|schema||catch||UPDATE|G</Grants>
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="280" parent="275" name="file">
+    <table id="280" parent="275" name="email_check">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="281" parent="275" name="notice">
+    <table id="281" parent="275" name="file">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="282" parent="275" name="pay_roll">
+    <table id="282" parent="275" name="notice">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="283" parent="275" name="schedule">
+    <table id="283" parent="275" name="pay_roll">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="284" parent="275" name="user">
+    <table id="284" parent="275" name="schedule">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="285" parent="275" name="work">
+    <table id="285" parent="275" name="user">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <table id="286" parent="275" name="work_change">
+    <table id="286" parent="275" name="work">
       <Engine>InnoDB</Engine>
       <CollationName>utf8_general_ci</CollationName>
     </table>
-    <column id="287" parent="277" name="attendance_id">
-      <AutoIncrement>41</AutoIncrement>
+    <table id="287" parent="275" name="work_change">
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8_general_ci</CollationName>
+    </table>
+    <column id="288" parent="277" name="attendance_id">
+      <AutoIncrement>107</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="288" parent="277" name="actual_end">
+    <column id="289" parent="277" name="actual_end">
       <Position>2</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="289" parent="277" name="actual_start">
+    <column id="290" parent="277" name="actual_start">
       <Position>3</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="290" parent="277" name="commute_status">
+    <column id="291" parent="277" name="commute_status">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="291" parent="277" name="is_normal_attendance">
+    <column id="292" parent="277" name="is_normal_attendance">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="292" parent="277" name="overtime_minute">
+    <column id="293" parent="277" name="overtime_minute">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="293" parent="277" name="overtime_status">
+    <column id="294" parent="277" name="overtime_status">
       <Position>7</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="294" parent="277" name="recognized_work_minute">
+    <column id="295" parent="277" name="recognized_work_minute">
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="295" parent="277" name="remark">
+    <column id="296" parent="277" name="remark">
       <Position>9</Position>
       <StoredType>varchar(5000)|0s</StoredType>
     </column>
-    <column id="296" parent="277" name="total_minute">
+    <column id="297" parent="277" name="total_minute">
       <NotNull>1</NotNull>
       <Position>10</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="297" parent="277" name="schedule_id">
+    <column id="298" parent="277" name="schedule_id">
       <Position>11</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="298" parent="277" name="change_id">
+    <column id="299" parent="277" name="change_id">
       <Position>12</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="299" parent="277" name="overtime_break_minute">
+    <column id="300" parent="277" name="overtime_break_minute">
       <NotNull>1</NotNull>
       <Position>13</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="300" parent="277" name="overtime_end">
+    <column id="301" parent="277" name="overtime_end">
       <Position>14</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="301" parent="277" name="overtime_start">
+    <column id="302" parent="277" name="overtime_start">
       <Position>15</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="302" parent="277" name="recognized_work_break_minute">
+    <column id="303" parent="277" name="recognized_work_break_minute">
       <NotNull>1</NotNull>
       <Position>16</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="303" parent="277" name="recognized_work_end">
+    <column id="304" parent="277" name="recognized_work_end">
       <Position>17</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="304" parent="277" name="recognized_work_start">
+    <column id="305" parent="277" name="recognized_work_start">
       <Position>18</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="305" parent="277" name="status">
+    <column id="306" parent="277" name="status">
       <Position>19</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <foreign-key id="306" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
+    <foreign-key id="307" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
       <ColNames>schedule_id</ColNames>
       <RefColNames>schedule_id</RefColNames>
       <RefTableName>schedule</RefTableName>
     </foreign-key>
-    <foreign-key id="307" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
+    <foreign-key id="308" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
       <ColNames>change_id</ColNames>
       <RefColNames>work_change_id</RefColNames>
       <RefTableName>work_change</RefTableName>
     </foreign-key>
-    <index id="308" parent="277" name="PRIMARY">
+    <index id="309" parent="277" name="PRIMARY">
       <ColNames>attendance_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="309" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
+    <index id="310" parent="277" name="FK3ubfa45l2ve7k80jlxkwh5ht5">
       <ColNames>schedule_id</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="310" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
+    <index id="311" parent="277" name="FKsuii49ik4lw4hddwfqnnxkcck">
       <ColNames>change_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="311" parent="277" name="PRIMARY">
+    <key id="312" parent="277" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="312" parent="278" name="company_id">
+    <column id="313" parent="278" name="company_id">
+      <AutoIncrement>103</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <StoredType>varchar(255)|0s</StoredType>
+      <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="313" parent="278" name="address">
+    <column id="314" parent="278" name="address">
       <Position>2</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="314" parent="278" name="cname">
+    <column id="315" parent="278" name="cname">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="315" parent="278" name="cnum">
+    <column id="316" parent="278" name="cnum">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="316" parent="278" name="ctel">
+    <column id="317" parent="278" name="ctel">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="317" parent="278" name="user_id">
+    <column id="318" parent="278" name="detail_address">
       <Position>6</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <foreign-key id="318" parent="278" name="FKdy4v2yb46hefqicjpyj7b7e4s">
-      <ColNames>user_id</ColNames>
-      <RefColNames>user_id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <index id="319" parent="278" name="PRIMARY">
+    <column id="319" parent="278" name="company_code">
+      <Position>7</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <index id="320" parent="278" name="PRIMARY">
       <ColNames>company_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="320" parent="278" name="FKdy4v2yb46hefqicjpyj7b7e4s">
-      <ColNames>user_id</ColNames>
+    <index id="321" parent="278" name="UKconq6hpiek0xe0tnlt4of1kd6">
+      <ColNames>cnum</ColNames>
       <Type>btree</Type>
+      <Unique>1</Unique>
     </index>
-    <key id="321" parent="278" name="PRIMARY">
+    <index id="322" parent="278" name="UKi2jcjcejgnwuafxofwmgosd13">
+      <ColNames>company_code</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <key id="323" parent="278" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="322" parent="279" name="contract_id">
-      <AutoIncrement>41</AutoIncrement>
+    <key id="324" parent="278" name="UKconq6hpiek0xe0tnlt4of1kd6">
+      <UnderlyingIndexName>UKconq6hpiek0xe0tnlt4of1kd6</UnderlyingIndexName>
+    </key>
+    <key id="325" parent="278" name="UKi2jcjcejgnwuafxofwmgosd13">
+      <UnderlyingIndexName>UKi2jcjcejgnwuafxofwmgosd13</UnderlyingIndexName>
+    </key>
+    <column id="326" parent="279" name="contract_id">
+      <AutoIncrement>114</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="323" parent="279" name="contract_end">
+    <column id="327" parent="279" name="contract_end">
       <Position>2</Position>
-      <StoredType>date|0s</StoredType>
+      <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="324" parent="279" name="contract_start">
+    <column id="328" parent="279" name="contract_start">
       <Position>3</Position>
-      <StoredType>date|0s</StoredType>
+      <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="325" parent="279" name="hourly_wage">
+    <column id="329" parent="279" name="hourly_wage">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="326" parent="279" name="work_id">
+    <column id="330" parent="279" name="work_id">
       <Position>5</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="327" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
+    <column id="331" parent="279" name="status">
+      <Position>6</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <foreign-key id="332" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
       <ColNames>work_id</ColNames>
       <RefColNames>work_id</RefColNames>
       <RefTableName>work</RefTableName>
     </foreign-key>
-    <index id="328" parent="279" name="PRIMARY">
+    <index id="333" parent="279" name="PRIMARY">
       <ColNames>contract_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="329" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
+    <index id="334" parent="279" name="FKhremwqoyrmnhlsxls9y9k1d7b">
       <ColNames>work_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="330" parent="279" name="PRIMARY">
+    <key id="335" parent="279" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="331" parent="280" name="file_id">
-      <AutoIncrement>1</AutoIncrement>
+    <column id="336" parent="280" name="email">
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <column id="337" parent="280" name="code">
+      <Position>2</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <column id="338" parent="280" name="due">
+      <Position>3</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <index id="339" parent="280" name="PRIMARY">
+      <ColNames>email</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <key id="340" parent="280" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="341" parent="281" name="file_id">
+      <AutoIncrement>26</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="332" parent="280" name="file_path">
+    <column id="342" parent="281" name="file_path">
       <Position>2</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="333" parent="280" name="file_type">
+    <column id="343" parent="281" name="file_type">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="334" parent="280" name="notice_id">
+    <column id="344" parent="281" name="notice_id">
       <Position>4</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="335" parent="280" name="FK9sue39n4ky49ha47ujunh07b4">
+    <foreign-key id="345" parent="281" name="FK9sue39n4ky49ha47ujunh07b4">
       <ColNames>notice_id</ColNames>
       <RefColNames>notice_id</RefColNames>
       <RefTableName>notice</RefTableName>
     </foreign-key>
-    <index id="336" parent="280" name="PRIMARY">
+    <index id="346" parent="281" name="PRIMARY">
       <ColNames>file_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="337" parent="280" name="FK9sue39n4ky49ha47ujunh07b4">
+    <index id="347" parent="281" name="FK9sue39n4ky49ha47ujunh07b4">
       <ColNames>notice_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="338" parent="280" name="PRIMARY">
+    <key id="348" parent="281" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="339" parent="281" name="notice_id">
-      <AutoIncrement>1</AutoIncrement>
+    <column id="349" parent="282" name="notice_id">
+      <AutoIncrement>18</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="340" parent="281" name="content">
+    <column id="350" parent="282" name="content">
       <Position>2</Position>
       <StoredType>varchar(10000)|0s</StoredType>
     </column>
-    <column id="341" parent="281" name="created_at">
+    <column id="351" parent="282" name="created_at">
       <Position>3</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="342" parent="281" name="status">
+    <column id="352" parent="282" name="status">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="343" parent="281" name="title">
+    <column id="353" parent="282" name="title">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="344" parent="281" name="type">
+    <column id="354" parent="282" name="type">
       <Position>6</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="345" parent="281" name="updated_at">
+    <column id="355" parent="282" name="updated_at">
       <Position>7</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="346" parent="281" name="work_id">
+    <column id="356" parent="282" name="work_id">
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="347" parent="281" name="FKjvd93rxkwrnv61v82v7ch0fbl">
+    <foreign-key id="357" parent="282" name="FKjvd93rxkwrnv61v82v7ch0fbl">
       <ColNames>work_id</ColNames>
       <RefColNames>work_id</RefColNames>
       <RefTableName>work</RefTableName>
     </foreign-key>
-    <index id="348" parent="281" name="PRIMARY">
+    <index id="358" parent="282" name="PRIMARY">
       <ColNames>notice_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="349" parent="281" name="FKjvd93rxkwrnv61v82v7ch0fbl">
+    <index id="359" parent="282" name="FKjvd93rxkwrnv61v82v7ch0fbl">
       <ColNames>work_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="350" parent="281" name="PRIMARY">
+    <key id="360" parent="282" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="351" parent="282" name="pay_roll_id">
-      <AutoIncrement>1</AutoIncrement>
+    <column id="361" parent="283" name="pay_roll_id">
+      <AutoIncrement>24</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="352" parent="282" name="incentive">
+    <column id="362" parent="283" name="is_paid">
       <NotNull>1</NotNull>
       <Position>2</Position>
-      <StoredType>int(11)|0s</StoredType>
+      <StoredType>bit(1)|0s</StoredType>
     </column>
-    <column id="353" parent="282" name="month_payment">
-      <NotNull>1</NotNull>
+    <column id="363" parent="283" name="payment_date">
       <Position>3</Position>
-      <StoredType>int(11)|0s</StoredType>
-    </column>
-    <column id="354" parent="282" name="payment_date">
-      <Position>4</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="355" parent="282" name="work_id">
-      <Position>5</Position>
+    <column id="364" parent="283" name="work_id">
+      <Position>4</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="356" parent="282" name="FKqc4gxrgxhw96nsg7hkpspaon5">
+    <foreign-key id="365" parent="283" name="FKqc4gxrgxhw96nsg7hkpspaon5">
       <ColNames>work_id</ColNames>
       <RefColNames>work_id</RefColNames>
       <RefTableName>work</RefTableName>
     </foreign-key>
-    <index id="357" parent="282" name="PRIMARY">
+    <index id="366" parent="283" name="PRIMARY">
       <ColNames>pay_roll_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="358" parent="282" name="FKqc4gxrgxhw96nsg7hkpspaon5">
+    <index id="367" parent="283" name="FKqc4gxrgxhw96nsg7hkpspaon5">
       <ColNames>work_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="359" parent="282" name="PRIMARY">
+    <key id="368" parent="283" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="360" parent="283" name="schedule_id">
-      <AutoIncrement>43</AutoIncrement>
+    <column id="369" parent="284" name="schedule_id">
+      <AutoIncrement>45</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="361" parent="283" name="break_minute">
+    <column id="370" parent="284" name="break_minute">
       <Position>2</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="362" parent="283" name="day">
+    <column id="371" parent="284" name="day">
       <Position>3</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="363" parent="283" name="official_end">
+    <column id="372" parent="284" name="official_end">
       <Position>4</Position>
       <StoredType>time(6)|0s</StoredType>
     </column>
-    <column id="364" parent="283" name="official_start">
+    <column id="373" parent="284" name="official_start">
       <Position>5</Position>
       <StoredType>time(6)|0s</StoredType>
     </column>
-    <column id="365" parent="283" name="contract_id">
+    <column id="374" parent="284" name="contract_id">
       <Position>6</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="366" parent="283" name="FKng1nems486b748eu4mdr807n6">
+    <column id="375" parent="284" name="status">
+      <Position>7</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <foreign-key id="376" parent="284" name="FKng1nems486b748eu4mdr807n6">
       <ColNames>contract_id</ColNames>
       <RefColNames>contract_id</RefColNames>
       <RefTableName>contract</RefTableName>
     </foreign-key>
-    <index id="367" parent="283" name="PRIMARY">
+    <index id="377" parent="284" name="PRIMARY">
       <ColNames>schedule_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="368" parent="283" name="FKng1nems486b748eu4mdr807n6">
+    <index id="378" parent="284" name="FKng1nems486b748eu4mdr807n6">
       <ColNames>contract_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="369" parent="283" name="PRIMARY">
+    <key id="379" parent="284" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="370" parent="284" name="user_id">
+    <column id="380" parent="285" name="user_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="371" parent="284" name="birth">
+    <column id="381" parent="285" name="birth">
       <Position>2</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="372" parent="284" name="email">
+    <column id="382" parent="285" name="email">
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="373" parent="284" name="gender">
+    <column id="383" parent="285" name="gender">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="374" parent="284" name="name">
+    <column id="384" parent="285" name="name">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="375" parent="284" name="password">
+    <column id="385" parent="285" name="password">
       <Position>6</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="376" parent="284" name="reg_date">
+    <column id="386" parent="285" name="reg_date">
       <Position>7</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="377" parent="284" name="role">
+    <column id="387" parent="285" name="role">
       <Position>8</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="378" parent="284" name="tel">
+    <column id="388" parent="285" name="tel">
       <Position>9</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <index id="379" parent="284" name="PRIMARY">
+    <index id="389" parent="285" name="PRIMARY">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="380" parent="284" name="PRIMARY">
+    <key id="390" parent="285" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="381" parent="285" name="work_id">
-      <AutoIncrement>42</AutoIncrement>
+    <column id="391" parent="286" name="work_id">
+      <AutoIncrement>107</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="382" parent="285" name="hire_date">
+    <column id="392" parent="286" name="hire_date">
       <Position>2</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="383" parent="285" name="resign_date">
+    <column id="393" parent="286" name="resign_date">
       <Position>3</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="384" parent="285" name="company_id">
+    <column id="394" parent="286" name="company_id">
       <Position>4</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="385" parent="285" name="user_id">
+    <column id="395" parent="286" name="user_id">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="386" parent="285" name="role">
+    <column id="396" parent="286" name="role">
       <Position>6</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <foreign-key id="387" parent="285" name="FK4wk9vb6533f8wtp03biftqqmp">
+    <foreign-key id="397" parent="286" name="FK4wk9vb6533f8wtp03biftqqmp">
       <ColNames>company_id</ColNames>
       <RefColNames>company_id</RefColNames>
       <RefTableName>company</RefTableName>
     </foreign-key>
-    <foreign-key id="388" parent="285" name="FKcjdv2ub5hdscnv52kyg4hnwb9">
+    <foreign-key id="398" parent="286" name="FKcjdv2ub5hdscnv52kyg4hnwb9">
       <ColNames>user_id</ColNames>
       <RefColNames>user_id</RefColNames>
       <RefTableName>user</RefTableName>
     </foreign-key>
-    <index id="389" parent="285" name="PRIMARY">
+    <index id="399" parent="286" name="PRIMARY">
       <ColNames>work_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="390" parent="285" name="FK4wk9vb6533f8wtp03biftqqmp">
+    <index id="400" parent="286" name="FK4wk9vb6533f8wtp03biftqqmp">
       <ColNames>company_id</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="391" parent="285" name="FKcjdv2ub5hdscnv52kyg4hnwb9">
+    <index id="401" parent="286" name="FKcjdv2ub5hdscnv52kyg4hnwb9">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="392" parent="285" name="PRIMARY">
+    <key id="402" parent="286" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="393" parent="286" name="work_change_id">
-      <AutoIncrement>1</AutoIncrement>
+    <column id="403" parent="287" name="work_change_id">
+      <AutoIncrement>93</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <column id="394" parent="286" name="change_date">
+    <column id="404" parent="287" name="change_date">
       <Position>2</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="395" parent="286" name="change_end_time">
+    <column id="405" parent="287" name="change_end_time">
       <Position>3</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="396" parent="286" name="change_start_time">
+    <column id="406" parent="287" name="change_start_time">
       <Position>4</Position>
       <StoredType>datetime(6)|0s</StoredType>
     </column>
-    <column id="397" parent="286" name="in_out">
+    <column id="407" parent="287" name="in_out">
       <Position>5</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="398" parent="286" name="schedule_id">
+    <column id="408" parent="287" name="permit">
+      <NotNull>1</NotNull>
       <Position>6</Position>
+      <StoredType>bit(1)|0s</StoredType>
+    </column>
+    <column id="409" parent="287" name="schedule_id">
+      <Position>7</Position>
       <StoredType>int(11)|0s</StoredType>
     </column>
-    <foreign-key id="399" parent="286" name="FKnqgojctnghjk108e56e8qv36o">
+    <column id="410" parent="287" name="status">
+      <Position>8</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <foreign-key id="411" parent="287" name="FKnqgojctnghjk108e56e8qv36o">
       <ColNames>schedule_id</ColNames>
       <RefColNames>schedule_id</RefColNames>
       <RefTableName>schedule</RefTableName>
     </foreign-key>
-    <index id="400" parent="286" name="PRIMARY">
+    <index id="412" parent="287" name="PRIMARY">
       <ColNames>work_change_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="401" parent="286" name="FKnqgojctnghjk108e56e8qv36o">
+    <index id="413" parent="287" name="FKnqgojctnghjk108e56e8qv36o">
       <ColNames>schedule_id</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="402" parent="286" name="PRIMARY">
+    <key id="414" parent="287" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>

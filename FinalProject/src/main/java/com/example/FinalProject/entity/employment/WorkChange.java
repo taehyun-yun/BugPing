@@ -24,7 +24,13 @@ public class WorkChange {
     private LocalDate changeDate;
     private LocalDateTime changeStartTime;
     private LocalDateTime changeEndTime;
+
+    @Column(name = "in_out", nullable = true)
     private String inOut;
+
+    @Column(name = "permit", nullable = true)
     private boolean permit;
+
+    @Column(name = "status", nullable = true)
     private String status; // 비-활성화
 }

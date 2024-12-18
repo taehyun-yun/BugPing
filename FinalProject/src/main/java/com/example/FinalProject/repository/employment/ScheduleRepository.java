@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -24,6 +25,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
     List<Schedule> findSchedulesByCompanyId(@Param("companyId") Integer companyId);
 
+    List<Schedule> findByContract_Work_Company_CompanyId(Integer companyId);
 
     //----------------------------------- ES ---------------------------------
     // 특정 Contract ID로 스케줄을 조회하는 메서드
