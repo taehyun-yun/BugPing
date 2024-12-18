@@ -11,6 +11,8 @@ import com.example.FinalProject.service.payroll.PayrollService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,14 +54,17 @@ public class PayRollController {
     public ResponseEntity<Page<EmployeeDTO>> getEmployeeListWithPagination(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+
         // 로그인된 사용자 ID 가져오기
         String loggedInUserId = jwtService.getLoggedInUserId();
         if (loggedInUserId == null) {
             log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
         log.info("로그인된 사용자 ID!!: {}", loggedInUserId);
         log.info("페이징된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
+
 
         // 근무자 리스트 조회
         Page<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId, page, size);

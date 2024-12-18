@@ -179,14 +179,23 @@ const filteredEmployees = computed(() => {
   });
 });
 
+// 정렬을 위한 totalSalary 계산 함수
+const calculateTotalSalary = (employee) => {
+  const basicSalary = employee.basicSalary || 0;
+  const weeklyAllowance = employee.weeklyAllowance || 0;
+  const nightPay = employee.nightPay || 0;
+  const overtimePay = employee.overtimePay || 0;
+  const deduction = employee.deduction || 0;
+
+  return basicSalary + weeklyAllowance + nightPay + overtimePay - deduction;
+};
+
 // 정렬된 직원 목록
 const sortedEmployees = computed(() => {
   const sortKey = sortOption.value;
 
   return filteredEmployees.value.slice().sort((a, b) => {
     switch (sortKey) {
-      // case "shortest":
-      //   return a.workDays - b.workDays; // 가장 적게 일한 순
       case "highestSalary":
         return b.totalSalary - a.totalSalary; // 월급 많은 순
       case "lowestSalary":
