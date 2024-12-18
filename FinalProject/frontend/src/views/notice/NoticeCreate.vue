@@ -82,8 +82,14 @@
                 @change="handleImageUpload"
               />
               <!-- 이미지 미리보기 -->
-              <div v-if="previewImage" class="image-preview">
-                <img :src="previewImage" alt="미리보기" />
+              <div v-if="previewImage" class="image-preview-container">
+                <img :src="previewImage" alt="미리보기" class="image-preview" />
+                <img
+                  src="@/assets/noticeimg/remove.png"
+                  alt="삭제 아이콘"
+                  class="remove-icon"
+                  @click="removePreviewImage"
+                />
               </div>
             </div>
 
@@ -118,11 +124,19 @@
               <!-- 업로드된 파일 목록 -->
               <ul v-if="uploadedFiles.length > 0" class="uploaded-files">
                 <li v-for="(file, index) in uploadedFiles" :key="index">
-                  {{ file.name }}
+                  <!-- 파일 확장자에 따라 아이콘 표시 -->
+                  <img
+                    :src="getFileIcon(file.name)"
+                    alt="파일 아이콘"
+                    class="file-type-icon"
+                  />
+                  <!-- 파일 이름을 10자까지만 표시하고 뒤에 ... 붙이기 -->
+                  {{ shortenFileName(file.name, 10) }}
                   <img
                     src="@/assets/noticeimg/remove.png"
                     alt="삭제 아이콘"
                     class="remove-icon"
+                    @click="removePreviewFile(index)"
                   />
                 </li>
               </ul>
@@ -147,7 +161,12 @@ import axios from "axios";
 import megaphoneIcon from "@/assets/noticeimg/megaphone.png";
 import checklistIcon from "@/assets/noticeimg/checklist.png";
 import questionMarkIcon from "@/assets/noticeimg/question-mark.png";
+import docxIcon from "@/assets/noticeimg/docx.png";
+import xlsxIcon from "@/assets/noticeimg/xlsx.png";
+import pdfIcon from "@/assets/noticeimg/pdf.png";
+import elseIcon from "@/assets/noticeimg/else.png";
 const previewImage = ref(""); // 이미지 미리보기 URL
+const previewFile = ref("");
 const uploadedFiles = ref([]); // 업로드된 파일 목록
 
 const router = useRouter();
@@ -186,20 +205,13 @@ const selectCategory = (categoryName) => {
 
 // 작성 취소 버튼 클릭 시 동작
 const cancelNotice = () => {
-  // 알럿창을 띄워서 사용자 확인 요청
-  if (confirm("정말 작성 중인 내용을 취소하시겠습니까?")) {
-    // 모든 입력 필드를 초기화
-    title.value = "";
-    content.value = "";
-    selectedCategory.value = "공지"; // 기본 카테고리로 초기화
-    uploadedFiles.value = []; // 업로드된 파일 목록 초기화
-    previewImage.value = ""; // 이미지 미리보기 초기화
-
-    console.log("작성 취소되었습니다.");
-
-    // noticeMain 페이지로 이동
-    router.push("/noticemain");
-  }
+  // 모든 입력 필드를 초기화
+  title.value = "";
+  content.value = "";
+  selectedCategory.value = "공지"; // 기본 카테고리로 초기화
+  uploadedFiles.value = []; // 업로드된 파일 목록 초기화
+  previewImage.value = ""; // 이미지 미리보기 초기화
+  console.log("작성 취소되었습니다.");
 };
 
 // 작성 완료 버튼 클릭 시 동작
@@ -278,6 +290,13 @@ const handleImageUpload = (event) => {
   }
 };
 
+// 이미지 미리보기 삭제 함수
+const removePreviewImage = () => {
+  previewImage.value = ""; // 이미지 초기화
+  imageInput.value.value = ""; // 파일 입력창도 초기화
+  alert("이미지가 삭제되었습니다.");
+};
+
 // 파일 업로드 처리
 const handleFileUpload = (event) => {
   const files = event.target.files;
@@ -287,6 +306,38 @@ const handleFileUpload = (event) => {
   } else {
     alert("유효한 파일을 선택해주세요.");
   }
+};
+
+// 파일 미리보기 삭제 함수
+const removePreviewFile = (index) => {
+  uploadedFiles.value.splice(index, 1); // 선택한 파일을 배열에서 제거
+  fileInput.value.value = ""; // 파일 입력창 초기화
+  alert("파일이 삭제되었습니다.");
+};
+
+// 확장자별 아이콘 매핑
+const fileIcons = {
+  docx: docxIcon,
+  xlsx: xlsxIcon,
+  pdf: pdfIcon,
+  else: elseIcon, // 기본 아이콘
+};
+
+// 파일 확장자에 맞는 아이콘 반환 함수
+const getFileIcon = (fileName) => {
+  const extension = fileName.split(".").pop().toLowerCase(); // 확장자 추출
+  if (fileIcons[extension]) {
+    return fileIcons[extension];
+  }
+  return fileIcons.else; // 매핑된 확장자가 없으면 기본 아이콘 반환
+};
+
+// 파일 이름을 길이 제한에 맞게 자르는 함수
+const shortenFileName = (name, maxLength) => {
+  if (name.length > maxLength) {
+    return name.slice(0, maxLength) + "...";
+  }
+  return name;
 };
 
 // 파일 input refs
@@ -501,11 +552,13 @@ const fileInput = ref(null);
   background: #e7e7e7;
 }
 
-.image-preview {
+.image-preview-container {
   margin-top: 10px;
+  position: relative;
+  height: 60px;
 }
 
-.image-preview img {
+.image-preview {
   background: #f5f5f5;
   padding: 10px;
   border-radius: 10px;
@@ -517,8 +570,16 @@ const fileInput = ref(null);
   position: relative;
 }
 
+.remove-icon {
+  width: 28px;
+  position: absolute;
+  right: -3%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .uploaded-files {
-  text-align: left;
+  text-align: center;
   list-style: none;
   padding: 0;
   margin-top: 10px;
@@ -531,8 +592,22 @@ const fileInput = ref(null);
   width: 200px;
   height: 38px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center; /* 아이콘과 텍스트 정렬 */
   align-items: center;
   position: relative;
+}
+
+.file-type-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.file-name {
+  flex: 1; /* 파일 이름이 남은 공간 차지 */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 긴 파일 이름은 ... 표시 */
 }
 </style>
