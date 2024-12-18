@@ -133,7 +133,6 @@ const changePw = () =>{
     .then((res)=>{
         alert("변경되었습니다.");
         closeModal();
-        console.log("대박")
     })
 }
 
