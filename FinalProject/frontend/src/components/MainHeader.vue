@@ -15,7 +15,7 @@
               <option v-for="company in userStore.companies" 
                       :key="company.id" 
                       :value="company">
-                {{ company.cname }} {{ company.companyId }}
+                {{ company.cname }}
               </option>
             </select>
           </div>

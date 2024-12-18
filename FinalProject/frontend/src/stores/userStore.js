@@ -19,7 +19,8 @@ export const useUserStore = defineStore('user',{
             this.roles = roles;
         },
         setCompany(company) {
-            this.company = { cname: company.cname, companyId: company.companyid }; // { cname : '' , companyId : ''}
+            this.company = { cname: company.cname, companyId: company.companyId }; // { cname : '' , companyId : ''}
+            //alert(this.company.companyId);
         },
         setCompanies(companies){
             this.companies = companies;
