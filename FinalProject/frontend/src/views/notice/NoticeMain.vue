@@ -76,8 +76,12 @@
               특이사항
             </button>
           </div>
-          <!-- 공지 작성하기 버튼 -->
-          <button class="create-notice-button" @click="createNotice">
+          <!-- 공지 작성하기 버튼 (Employer만 보이도록 설정) -->
+          <button
+            v-if="forEmployer"
+            class="create-notice-button"
+            @click="createNotice"
+          >
             공지 작성하기
           </button>
         </div>
@@ -168,6 +172,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Axios를 사용하여 API 호출
+import { useUserStore } from "@/stores/userStore";
 
 const goToDetail = (noticeId) => {
   console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
@@ -346,6 +351,12 @@ const deleteSelected = async () => {
 const createNotice = () => {
   router.push({ path: "/noticecreate" });
 };
+
+const userStore = useUserStore(); // Pinia 스토어 호출
+const forEmployer = userStore.roles.includes("employer");
+const isRolesLoaded = ref(false); // 로드 여부 상태 추가
+// Pinia 상태 디버깅 로그 추가
+console.log("현재 roles 상태:", userStore.roles);
 
 /**
  * 컴포넌트가 마운트될 때 공지사항을 가져옵니다.
