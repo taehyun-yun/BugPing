@@ -1,6 +1,7 @@
 package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.entity.company.Company;
+import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.service.employment.AttendanceService;
 import com.google.zxing.WriterException;
@@ -22,10 +23,12 @@ public class QRController {
 
     private final AttendanceService attendanceService;
     private final CompanyRepository companyRepository;
+    private final AttendanceRepository attendanceRepository;
 
-    public QRController(AttendanceService attendanceService, CompanyRepository companyRepository){
+    public QRController(AttendanceService attendanceService, CompanyRepository companyRepository, AttendanceRepository attendanceRepository){
         this.attendanceService = attendanceService;
         this.companyRepository = companyRepository;
+        this.attendanceRepository = attendanceRepository;
     }
     //출석 체크 QR 생성
     @GetMapping("/makeQR")
@@ -35,7 +38,7 @@ public class QRController {
         try{
             //String url = String.format("http://localhost:8707/api/checkAttendance?companyId=%d",company.get().getCompanyId());
             String url = String.format("http://192.168.5.23:5173/qrCheck?companyId=%d",company.get().getCompanyId());
-            byte[] qrCode = attendanceService.makeQRCode(300,300,url);
+            byte[] qrCode = attendanceService.makeQRCode(600,600,url);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode);
         } catch ( Exception e ) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -48,6 +51,7 @@ public class QRController {
         if(userId.equals("anonymousUser")){
             return new ResponseEntity<>("로그인을 한 상태에서 다시 시도해주세요.",HttpStatus.UNAUTHORIZED);
         }
+
         return new ResponseEntity<>("처리 되었습니다." + LocalDateTime.now() ,HttpStatus.OK);
     }
 }
