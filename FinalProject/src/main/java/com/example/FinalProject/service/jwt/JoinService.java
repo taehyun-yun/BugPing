@@ -1,5 +1,6 @@
 package com.example.FinalProject.service.jwt;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.entity.work.Work;
@@ -26,6 +27,9 @@ public class JoinService {
         this.companyRepository = companyRepository;
         this.workRepository = workRepository;
     }
+    //회사코드 생성시 사용할 알파벳
+    private final char[] customAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    
     //아이디 중복 확인
     public Boolean check (User user){
         Boolean result = true;
@@ -60,6 +64,14 @@ public class JoinService {
         }
         return result;
     }
+    //회사 코드 생성
+    public String createCode (){
+        String code;
+        do {
+           code = NanoIdUtils.randomNanoId(NanoIdUtils.DEFAULT_NUMBER_GENERATOR,customAlphabet,21);
+        } while (companyRepository.existsByCompanyCode(code));
+        return code;
+    }
     //회사 등록
     public Company registCompany(Company company){
         Company newCompany = Company.builder()
@@ -70,11 +82,12 @@ public class JoinService {
                 .detailAddress(company.getDetailAddress())
                 .ctel(company.getCtel())
                 .cnum(company.getCnum())
+                .companyCode(createCode())
                 .build();
         companyRepository.save(newCompany);
         return newCompany;
     }
-    //신규회사에 사장 등록
+    //신규회사에 사장, 직원 등록
     public Work registWork(User user, Company company){
         Work newWork = Work.builder()
                 .user(user)
@@ -83,5 +96,9 @@ public class JoinService {
                 .build();
         workRepository.save(newWork);
         return newWork;
+    }
+    //퇴사하지 않고 회사 재등록 방지 기능
+    public boolean notWorkingHere (User user, Company company){
+        return !workRepository.existsByUser_UserIdAndCompany_CompanyIdAndResignDateIsNull(user.getUserId(),company.getCompanyId());
     }
 }

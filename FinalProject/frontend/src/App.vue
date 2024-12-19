@@ -1,53 +1,31 @@
-<script setup>
-</script>
-
 <template>
    <div class="app">
-      <div v-if="header" class="header">
-      <MainHeader></MainHeader>
-      </div>
-      <div class="appbody">
-         <div v-if="sidebar" class="sidebar-container">
-            <MainSidebar></MainSidebar>
-         </div>
-         <div class="routerview-container">
-            <RouterView :key="$route.fullPath"/>
-         </div>
-      </div>
+      <RouterView :key="$route.fullPath"/>
    </div>
 </template>
-
 <script setup>
-import { computed } from 'vue';
-import MainHeader from './components/MainHeader.vue';
-import MainSidebar from './components/MainSidebar.vue';
-import { useRoute } from 'vue-router';
-const route = useRoute();
+import axios from 'axios';
 
-const header = computed(()=>route?.meta?.header === true)
-
-const sidebar = computed(()=>route?.meta?.sidebar === true)
+axios.defaults.withCredentials = true;
 </script>
-
-<style scoped>
+<style>
    .app{
-      white-space: nowrap;
+      min-width: 100vw; /* 플렉스 컨테이너로 설정 */
+      min-height: 100vh; /* 화면 전체 높이 설정 */
    }
-   .appbody{
-      display: flex;
+   @font-face {
+    font-family: 'NPSfontBold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2310@1.0/NPSfontBold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
    }
-   .header{
-      padding : 25px;
-      display: inline-block;
+   body{
+      font-family: 'NPSfontBold';
    }
-   .sidebar-container{
-      width :20%;
-      height: 100%;
-      display: inline-block;
+   input{
+      font-family: 'NPSfontBold';
    }
-   .routerview-container{
-      width : 100%;
-      display: inline-block;
+   button{
+      font-family: 'NPSfontBold';
    }
-   
 </style>

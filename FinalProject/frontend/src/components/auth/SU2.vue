@@ -64,15 +64,15 @@ const submitData = async() => {
         await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
         .then((res)=>{
             alert(res.data);
+            push({name : ''})
         })
         .catch((err)=>{
-            alert(err.response.data);
+            alert(err.response);
         })
     }else{
         alert("필수 항목을 전부 입력해주세요.");
     }
 };
-
 </script>
 <style scoped>
     form{

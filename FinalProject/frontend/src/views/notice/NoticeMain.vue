@@ -76,8 +76,12 @@
               특이사항
             </button>
           </div>
-          <!-- 공지 작성하기 버튼 -->
-          <button class="create-notice-button" @click="createNotice">
+          <!-- 공지 작성하기 버튼 (Employer만 보이도록 설정) -->
+          <button
+            v-if="forEmployer"
+            class="create-notice-button"
+            @click="createNotice"
+          >
             공지 작성하기
           </button>
         </div>
@@ -125,7 +129,7 @@
               <!-- 공지사항 제목 -->
               <td>{{ item.title }}</td>
               <!-- 작성자 이름 (work.user.name) -->
-              <td>{{ item.work?.user?.name || "작성자 없음" }}</td>
+              <td>{{ item.work?.userName || "작성자 없음" }}</td>
               <!-- 보기 권한 -->
               <td>{{ item.viewers }}</td>
               <!-- 작성 날짜 형식 변경 후 표시 -->
@@ -168,6 +172,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Axios를 사용하여 API 호출
+import { useUserStore } from "@/stores/userStore";
 
 const goToDetail = (noticeId) => {
   console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
@@ -205,7 +210,9 @@ const fetchNotices = async () => {
       // '전체 게시물' 탭인 경우
       if (activeCategory.value === "전체") {
         // '전체' 카테고리 선택 시 모든 공지사항 조회
-        response = await axios.get("http://localhost:8707/notice/list");
+        response = await axios.get("http://localhost:8707/notice/list", {
+          withCredentials: true,
+        });
       } else {
         // 특정 카테고리 선택 시 해당 타입의 공지사항 조회
         // 카테고리 이름을 타입 값으로 매핑
@@ -216,6 +223,7 @@ const fetchNotices = async () => {
         };
         response = await axios.get("http://localhost:8707/notice/list/type", {
           params: { type: typeMap[activeCategory.value] },
+          withCredentials: true,
         });
       }
     } else if (activeTab.value === "my") {
@@ -223,7 +231,8 @@ const fetchNotices = async () => {
       // 현재 예제에서는 모든 공지사항을 가져오지만,
       // 실제로는 로그인된 사용자의 work_id를 사용하여 필터링해야 합니다.
       const currentUserWorkId = 1; // 예시: 현재 사용자의 work_id (실제 로그인 로직에 따라 변경)
-      response = await axios.get("http://localhost:8707/notice/list");
+      (response = await axios.get("http://localhost:8707/notice/list")),
+        { withCredentials: true };
       // 모든 공지사항 중에서 작성자가 현재 사용자와 일치하는 것만 필터링
       items.value = response.data.filter(
         (notice) => notice.work.workId === currentUserWorkId
@@ -343,6 +352,12 @@ const createNotice = () => {
   router.push({ path: "/noticecreate" });
 };
 
+const userStore = useUserStore(); // Pinia 스토어 호출
+const forEmployer = userStore.roles.includes("employer");
+const isRolesLoaded = ref(false); // 로드 여부 상태 추가
+// Pinia 상태 디버깅 로그 추가
+console.log("현재 roles 상태:", userStore.roles);
+
 /**
  * 컴포넌트가 마운트될 때 공지사항을 가져옵니다.
  */
@@ -396,13 +411,15 @@ const getStatusLabel = (status) => {
 
 .content-wrapper {
   flex-grow: 1;
-  padding: 20px;
+  padding: 0 100px;
 }
 
 .notice-main {
-  max-width: 1400px; /* 최대 너비 설정 */
+  max-width: 1200px; /* 최대 너비 설정 */
+  width: 100%; /* 전체 너비로 확장 */
   margin: 0 auto; /* 중앙 정렬 */
   padding: 20px;
+  box-sizing: border-box; /* padding 포함한 전체 너비 */
 }
 
 /* 탭 스타일 */
@@ -432,6 +449,7 @@ const getStatusLabel = (status) => {
 
 /* 카테고리 및 공지 작성 버튼 스타일 */
 .categories-container {
+  max-width: 1200px; /* 원하는 최대 너비 설정 */
   display: flex;
   justify-content: space-between; /* 왼쪽: 카테고리, 오른쪽: 공지 작성 버튼 */
   align-items: center; /* 수직 중앙 정렬 */
@@ -445,15 +463,16 @@ const getStatusLabel = (status) => {
 
 .category {
   display: flex;
+  justify-content: center; /* 수평 가운데 정렬 */
   align-items: center; /* 이미지와 텍스트 수직 정렬 */
-  gap: 8px; /* 이미지와 텍스트 간 간격 */
+  gap: 10px; /* 이미지와 텍스트 간 간격 */
   padding: 10px 20px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #f9f9f9;
   cursor: pointer;
-  width: 260px; /* 고정 너비 */
+  width: 200px; /* 고정 너비 */
   height: 50px; /* 고정 높이 */
   transition: background-color 0.2s;
 }
@@ -492,6 +511,7 @@ const getStatusLabel = (status) => {
 /* 테이블 스타일 */
 .board-table {
   width: 100%;
+  table-layout: fixed; /* 열 너비를 고정 */
   border-collapse: collapse;
   margin-top: 20px;
   border: none;
@@ -499,11 +519,16 @@ const getStatusLabel = (status) => {
 
 .board-table th,
 .board-table td {
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
   vertical-align: middle;
   height: 50px;
+}
+
+.board-table th:first-child,
+.board-table td:first-child {
+  width: 80px; /* 체크박스 열의 너비를 좁게 설정 */
 }
 
 .board-table th {
@@ -519,15 +544,20 @@ const getStatusLabel = (status) => {
 
 .checkbox-cell {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* 오른쪽 정렬 */
   align-items: center;
 }
 
-input[type="checkbox"] {
+.input[type="checkbox"] {
+  justify-content: flex-end; /* 오른쪽 정렬 */
   width: 16px;
   height: 16px;
   margin: 0;
   vertical-align: middle;
+}
+
+.checkbox-action input[type="checkbox"] {
+  margin-left: auto; /* 체크박스를 오른쪽 끝으로 밀어줌 */
 }
 
 .delete-button {

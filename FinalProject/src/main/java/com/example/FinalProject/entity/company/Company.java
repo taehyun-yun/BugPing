@@ -19,6 +19,9 @@ public class Company {
     private String ctel;
     private String address;
     private String detailAddress;
+
     @Column(unique = true)
     private String cnum;//사업자 등록번호
+    @Column(unique = true)
+    private String companyCode;
 }

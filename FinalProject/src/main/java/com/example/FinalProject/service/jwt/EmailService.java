@@ -1,5 +1,6 @@
 package com.example.FinalProject.service.jwt;
 
+import com.example.FinalProject.dto.UserFindIdDTO;
 import com.example.FinalProject.entity.user.EmailCheck;
 import com.example.FinalProject.entity.user.User;
 import com.example.FinalProject.repository.user.EmailRepository;
@@ -91,17 +92,16 @@ public class EmailService {
         return false;
     }
     //이메일에 등록된 아이디 목록 조회
-    public List<String>findId(String inputEmail){
-        Optional<List<String>> existlist = userRepository.findByEmail(inputEmail);
+    public List<UserFindIdDTO>findId(String inputEmail){
+        Optional<List<UserFindIdDTO>> existlist = userRepository.findUserIdAndRegDateByEmail(inputEmail);
         if(existlist.isPresent()){
             return  existlist.get();
         }
         else return null;
     }
     //비밀번호 재설정
-    public String newPassword(String userId){
+    public String newPassword(String userId,String newPassword){
         User user = userRepository.findById(userId).get();
-        String newPassword = createCode(8);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return newPassword;

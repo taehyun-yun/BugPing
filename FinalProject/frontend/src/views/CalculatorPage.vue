@@ -3,14 +3,13 @@
 
     <!-- 급여 계산 영역 -->
     <div class="payroll-calculator">
-
       <div class="summary-header">
         <div class="summary-box">
           <div class="ellipse-background">
             <img src="../assets/CalculatorImg/users.png" alt="Group Icon" class="icon-group" />
           </div>
           <div class="summary-title">총 인원</div>
-          <div class="summary-count">18</div>
+          <div class="summary-count">{{ totalEmployees }}</div>
         </div>
 
         <div class="separator-line"></div>
@@ -20,7 +19,7 @@
             <img src="../assets/CalculatorImg/user-check.png" alt="User Check Icon" class="icon-user-check" />
           </div>
           <div class="summary-title">지급</div>
-          <div class="summary-count">13</div>
+          <div class="summary-count">{{ paidEmployees }}</div>
         </div>
 
         <div class="separator-line"></div>
@@ -30,21 +29,21 @@
             <img src="../assets/CalculatorImg/user-x.png" alt="User X Icon" class="icon-user-x" />
           </div>
           <div class="summary-title">미지급</div>
-          <div class="summary-count">5</div>
+          <div class="summary-count">{{ unpaidEmployees }}</div>
         </div>
       </div>
 
       <h2 class="title">급여 계산</h2>
       <div class="search-sort-container">
         <div class="search-bar">
-          <input type="text" placeholder="Search" class="search-input" />
+          <input v-model="searchQuery" type="text" placeholder="이름 또는 ID로 검색" class="search-input" />
         </div>
         <div class="sort-dropdown">
-          <label for="sort-select">Sort by:</label>
-          <select id="sort-select" class="sort-select">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="name">Name</option>
+          <select v-model="sortOption" id="sort-select" class="sort-select">
+            <option value="longest">정산 오래된 순</option>
+            <option value="shortest">정산 최근 순</option>
+            <option value="highestSalary">월급 많은 순</option>
+            <option value="lowestSalary">월급 적은 순</option>
           </select>
         </div>
       </div>
@@ -60,8 +59,7 @@
           <div class="payroll-header-item">지급</div>
         </div>
 
-        <!-- <div v-for="employee in employees" :key="employee.employeeId" class="payroll-row"> -->
-        <div v-for="employee in employees" :key="employee.id" class="payroll-row">
+        <div v-for="employee in sortedEmployees" :key="employee.employeeId" class="payroll-row">
           <div 
             class="payroll-item" 
             @click="showModal(employee)" 
@@ -73,9 +71,9 @@
           </div>  
           <div class="payroll-item">{{ employee.startDate }}</div>
           <div class="payroll-item">{{ employee.hourlyWage }}</div>
-          <div class="payroll-item">{{ employee.monthlyHours }}</div>
-          <div class="payroll-item">{{ employee.workDays }}</div>
-          <div class="payroll-item">{{ employee.totalSalary }}</div>
+          <div class="payroll-item">{{ isNaN(employee.monthlyHours) ? 0 : employee.monthlyHours }}</div>
+          <div class="payroll-item">{{ employee.workDays || 0 }}</div>
+          <div class="payroll-item">{{ employee.totalSalary || 0}}</div>
           <div class="payroll-item">
             <button @click="togglePaid(employee)" :class="employee.isPaid ? 'paid-button' : 'unpaid-button'">
               {{ employee.isPaid ? '지급' : '미지급' }}
@@ -94,7 +92,7 @@
         <button @click="closeModal" class="modal-close">✖</button>
       </div>
       <div class="modal-subtitle">
-        <span>귀속월</span> &nbsp;&nbsp;&nbsp;<span>#월</span>
+        <span>귀속월</span> &nbsp;&nbsp;&nbsp;<span> {{ currentMonth }} 월</span>
       </div>
       <div class="modal-payment-date">
         <span class="modal-label">지급 일자</span>
@@ -137,168 +135,90 @@
       </div>
     </div>
   </div>
-
-  <!-- 페이지 네이션 관련 코드 -->
-  <div class="pagination-container">
-    <button
-      class="pagination-button"
-      :disabled="currentPage === 1"
-      @click="handlePageChange(currentPage - 1)"
-    >
-      &lt;
-    </button>
-    <button
-      v-for="page in totalPages"
-      :key="page"
-      class="pagination-button"
-      :class="{ active: currentPage === page }"
-      @click="handlePageChange(page)"
-    >
-      {{ page }}
-    </button>
-    <button
-      class="pagination-button"
-      :disabled="currentPage === totalPages"
-      @click="handlePageChange(currentPage + 1)"
-    >
-      &gt;
-    </button>
-  </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import axios from 'axios';
+import { onMounted, ref, computed } from "vue";
+import axios from "axios";
 
 const employees = ref([]);
-const employeeIds = ref([]); // 페이징에 사용될 ID 리스트
+const searchQuery = ref("");
+const sortOption = ref("longest");
 const isModalVisible = ref(false);
-const selectedEmployee = ref({
-  userId: null,
-  startDate: '2023-12-01',
-  endDate: '2023-12-31',
-});
-const hoveredEmployeeId = ref(null); // hover 상태의 직원 ID를 저장
+const selectedEmployee = ref(null);
 
-const currentPage = ref(1);
-const totalPages = ref(1);
-const pageSize = ref(10);
+const totalEmployees = computed(() => employees.value.length);
+const paidEmployees = computed(() => employees.value.filter(emp => emp.isPaid).length);
+const unpaidEmployees = computed(() => employees.value.filter(emp => !emp.isPaid).length);
 
-// 근무자 리스트 출력.
-const fetchEmployeeList = async () => {
+// 직원 데이터 가져오기
+const fetchEmployees = async () => {
   try {
-    const response = await axios.get("http://localhost:8707/api/employees");
-    console.log("API 응답 데이터: ", response.data); // 로그로 응답 데이터 확인
-    employees.value = response.data; // API에서 가져온 데이터를 employee에 저장
+    const response = await axios.get("http://localhost:8707/api/employees", { withCredentials: true });
+    employees.value = response.data || [];
   } catch (error) {
-    console.error("Error fetchEmployeeList : ", error);
+    console.error("데이터 로드 실패:", error);
+    employees.value = [];
   }
 };
 
-// 페이징 처리 메서드
-const fetchEmployeePaging = async (page, size) => {
-  try {
-    const response = await axios.get("http://localhost:8707/api//employees/paging", {
-      params: {page: page - 1, size }, // 0 베이스 페이지로 요청
-    });
-    employeeIds.value = response.data.content; // 현재 페이지의 employeeId 리스트 저장
-    totalPages.value = response.data.totalPages; // 전체 페이지 수
-    console.log("페이징 데이터:", response.data);
-  } catch (error) {
-    console.error("Error 페이징 오류 : ", error);
-  }
-};
-
-// 지급 상태 여부
-const togglePaid = async (employee) => {
-  console.log("Employee Data:", employee);
-  console.log("PayRoll ID:", employee.payRollId);
-  try {
-    // 서버에 PATCH 요청 전송
-    await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
-      params: {
-        isPaid: !employee.isPaid,
-      },
-    });
-
-    // 서버에서 최신 데이터 가져오기
-    const response = await axios.get("http://localhost:8707/api/employees");
-    employees.value = response.data; // Vue 데이터 갱신
-    console.log("Updated Employee List:", employees.value);
-  } catch (error) {
-    console.error("Error updating payroll status: ", error);
-  }
-};
-
-
-// 페이지 변경시 호출
-const handlePageChange = (page) => {
-  if (page > 0 && page <= totalPages.value) {
-    currentPage.value = page;
-    fetchEmployeePaging(page, pageSize.value); // page와 size를 명시적으로 전달
-  } else {
-    console.error("Invalid page number");
-  }
-};
-
-
-// 초기 데이터 로드
-onMounted(() => {
-  fetchEmployeeList(); // fetchEmployeeList 함수 호출
-  console.log("employees 데이터 확인: ", employees.value); // employees의 상태 확인
-  //fetchEmployeePaging(currentPage.value, pageSize.value); // 페이징 데이터 요청
+// 검색 및 정렬된 직원 목록
+const filteredEmployees = computed(() => {
+  const keyword = searchQuery.value.toLowerCase();
+  return employees.value.filter(employee =>
+    employee.name.toLowerCase().includes(keyword) ||
+    employee.employeeId.toLowerCase().includes(keyword)
+  );
 });
 
-const showModal = async (employee) => {
-  console.log("선택된 직원 데이터:", employee); // 데이터 확인
-
-  console.log("전송 데이터:", {
-    userId: employee.employeeId,
-    startDate: "2023-12-01",
-    endDate: "2023-12-31"
+const sortedEmployees = computed(() => {
+  const sortKey = sortOption.value;
+  return filteredEmployees.value.slice().sort((a, b) => {
+    switch (sortKey) {
+      case "highestSalary":
+        return b.totalSalary - a.totalSalary;
+      case "lowestSalary":
+        return a.totalSalary - b.totalSalary;
+      case "longest":
+        return new Date(a.startDate) - new Date(b.startDate);
+      case "shortest":
+        return new Date(b.startDate) - new Date(a.startDate);
+      default:
+        return 0;
+    }
   });
+});
 
+// 지급 상태 변경
+const togglePaid = async (employee) => {
   try {
-    // 백엔드 API 호출
-    console.log("선택된 직원 데이터: ", employee);
-    const response = await axios.post("http://localhost:8707/api/payroll", {
-      userId: employee.employeeId, // // employeeId를 userId로 전달
-      startDate: "2023-12-01", // 시작일
-      endDate: "2023-12-31",   // 종료일
+    await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
+      params: { isPaid: !employee.isPaid },
+      withCredentials: true
     });
-    console.log('급여 계산 결과: ', response.data);
-
-    // 선택된 직원의 급여 데이터 모달에 출력
-    selectedEmployee.value = {
-      name: employee.name,
-      paymentDate: "2024-12-31", // 지급일 (하드코딩 추후 변경 예정)
-      basicSalary: response.data.basicSalary || 0,
-      weeklyAllowance: response.data.weeklyAllowance || 0,
-      overtimePay: response.data.overtimePay || 0,
-      nightPay: response.data.nightPay || 0,
-      deduction: response.data.deduction || 0,
-      totalSalary: response.data.totalSalary || 0,
-    };
-
-    isModalVisible.value = true;
-
+    employee.isPaid = !employee.isPaid;
   } catch (error) {
-    console.error("Error payroll : ", error);
-    alert("급여 데이터를 가져오는 중 문제가 발생했습니다.");
+    console.error("지급 상태 변경 실패:", error);
   }
+};
+
+const currentMonth = computed(() => new Date().getMonth() + 1);
+
+// 모달 표시
+const showModal = (employee) => {
+  selectedEmployee.value = { 
+    ...employee,
+    paymentDate: new Date().toISOString().split('T')[0] // 지급일자 추가
+  };
+  isModalVisible.value = true;
 };
 
 const closeModal = () => {
   isModalVisible.value = false;
 };
 
-const handleMouseEnter = (employeeId) => {
-  hoveredEmployeeId.value = employeeId;
-};
-
-const handleMouseLeave = () => {
-  hoveredEmployeeId.value = null;
-};
+// 초기 데이터 로드
+onMounted(fetchEmployees);
 </script>
 
 <style scoped>

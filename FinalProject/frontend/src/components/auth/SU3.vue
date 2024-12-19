@@ -6,7 +6,8 @@
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/lock.svg">
-            <input type="password" class="input-field" placeholder="비밀번호" v-model="localdata.password" required>
+            <input :type="showInputPw?'text':'password'" class="input-field" placeholder="비밀번호" v-model="localdata.password" required minlength="4">
+            <img :src="showInputPw?'/src/assets/Loginimg/eye-solid.svg':'/src/assets/Loginimg/eye-slash.svg'" @click="changeType">
         </div>
         <div class="input-group">
             <img src="/src/assets/Loginimg/address.svg">
@@ -15,10 +16,10 @@
         <div class="input-group">
             <img src="/src/assets/Loginimg/tablet.svg">
             <div class="tel-container">
-                <p>전화번호</p>
-                <input type="num" class="input-field divide-box" v-model="t.num1" minlength="3" @input="nextinput($event,3)" required>
-                <input type="num" class="input-field divide-box" v-model="t.num2" minlength="4" @input="nextinput($event,4)" required>
-                <input type="num" class="input-field divide-box" v-model="t.num3" minlength="4" @input="nextinput($event,4)" required>
+                <p>휴대번호</p>
+                <input type="num" class="input-field divide-box" v-model="t.num1" minlength="3" maxlength="3" @input="nextinput($event,3)" required>
+                <input type="num" class="input-field divide-box" v-model="t.num2" minlength="4" maxlength="4" @input="nextinput($event,4)" required>
+                <input type="num" class="input-field divide-box" v-model="t.num3" minlength="4" maxlength="4" @input="nextinput($event,4)" required>
             </div>
         </div>
         <div class="input-group">
@@ -56,6 +57,12 @@
 import { axiosAddress } from '@/stores/axiosAddress';
 import axios from 'axios';
 import { computed, reactive, watch, ref } from 'vue';
+//비밀번호 보이기 안보이기
+const showInputPw = ref(false);
+    const changeType = () => {
+        showInputPw.value = !showInputPw.value;
+    }
+//이메일
 const useEmail = ref(false);//이메일을 사용할지 말지에 따라 입력폼 등장.
 const inputEmail = ref('');
 const inputEmailSaved = ref('');
@@ -66,7 +73,7 @@ const sendCode = async() =>{
     if(currentCooltime.value == 0 ){
         //쿨타임 초기화
         isCooltime.value =  true;
-        currentCooltime.value = 180;
+        currentCooltime.value = 10;
         //현재 입력한 이메일을 저장
         inputEmailSaved.value = inputEmail.value;
         //로딩이미지 보이기 설정
@@ -84,19 +91,20 @@ const sendCode = async() =>{
         isCooltime.value = false;
         currentCooltime.value = 0;
         clearInterval(cooldown);
-        }, 3 * 60 * 1000);
+        }, 1 * 10 * 1000);
     }
 }
 const inputCode = ref(''); 
 const checkCode = async() =>{
     axios.post(axiosAddress+"/checkCode",{ inputEmail : inputEmailSaved.value ,inputCode : inputCode.value},{withCredentials: true})
     .then((res)=>{
-        localdata.email = inputEmailSaved.value;
-        alert("인증되었습니다.");
-    })
-    .catch((err)=>{
-        alert("인증번호가 일치하지 않습니다. 다시 발급 받아주세요.");
-        localdata.email = "";
+        if(res.data){
+            alert(inputEmailSaved.value + "인증되었습니다.")
+            localdata.email = inputEmailSaved.value;
+        } else {
+            alert("인증번호가 일치하지 않습니다. 다시 발급 받아주세요.");
+            localdata.email = "";
+        }
     })
 }
 const sendButtonMsg = ref('인증번호 발송');

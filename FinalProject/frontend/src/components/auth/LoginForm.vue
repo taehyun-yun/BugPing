@@ -7,13 +7,13 @@
     </div>
     <div class="input-group">
         <img src="/src/assets/Loginimg/lock.svg" alt="Password Icon">
-        <input type="password" class="input-field" placeholder="비밀번호" v-model="password" @keyup.enter="login">
-        <img src="/src/assets/Loginimg/eye-slash.svg">
+        <input :type="showInputPw?'text':'password'" class="input-field" placeholder="비밀번호" v-model="password" @keyup.enter="login">
+        <img :src="showInputPw?'/src/assets/Loginimg/eye-solid.svg':'/src/assets/Loginimg/eye-slash.svg'" @click="changeType">
     </div>
     <button type="button" class="login-button" @click="login">로그인</button>
     </form>
     <div class="login-links">
-    <p @click="golink('find1')">아이디/비밀번호 찾기</p>
+    <p @click="golink('find')">아이디/비밀번호 찾기</p>
     <p @click="golink('su1')">회원가입</p>
     </div>
 </template>
@@ -22,26 +22,40 @@ import axios from 'axios';
 import { ref } from 'vue';
 import { axiosAddress } from '@/stores/axiosAddress';
 import router from '@/router';
+import { useUserStore } from '@/stores/userStore';
     const userId = ref('');
     const password = ref('');
-    const login = () =>{
-        axios
-        .post(axiosAddress+"/login",{
+    const showInputPw = ref(false);
+    const changeType = () => {
+        showInputPw.value = !showInputPw.value;
+    }
+
+    const login = async() =>{
+        try{
+            //로그인 유효성 체크
+            const res = await axios.post(`${axiosAddress}/login`,{
             "userId" : userId.value,
             "password" : password.value
-        },{
-            withCredentials: true
-        })
-        .then((res)=>{
-            alert(res.data+"페이지로 이동하는 로직 짜셈");
-        })
-        .catch((err)=>{
-            alert(err.response.data);
-        })
+            },{ withCredentials: true })
+
+            alert(res.data.roles+"입니다.");
+            //피니아 저장
+            const userStore = useUserStore();
+            userStore.setUserId(res.data.userId);
+            userStore.setPassword(res.data.password);
+            userStore.setEmail(res.data.email);
+            userStore.setRoles(res.data.roles.split(","));
+            const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
+            userStore.setCompany(companyRes.data[0]);
+            userStore.setCompanies(companyRes.data);
+            router.push("/");
+        } catch (err){
+            alert(err.response.data.msg);
+        }
     }
     const golink = (e) =>{
         router.push({name: e});
-    }    
+    }
 </script>
 <style scoped>
     .login-title {
