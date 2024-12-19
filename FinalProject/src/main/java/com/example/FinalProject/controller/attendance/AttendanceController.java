@@ -1,10 +1,11 @@
 package com.example.FinalProject.controller.attendance;
 
+import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
+import com.example.FinalProject.service.AttendanceService;
 import com.example.FinalProject.repository.company.CompanyRepository;
-import com.example.FinalProject.service.employment.AttendanceService;
 import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +23,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 public class AttendanceController {
+
     @Autowired
     private AttendanceRepository attendanceRepository;
 
-    private final AttendanceService attendanceService;
+    @Autowired
+    private AttendanceService attendanceService;
+
     private final CompanyRepository companyRepository;
 
     public AttendanceController(AttendanceService attendanceService, CompanyRepository companyRepository){
@@ -92,18 +97,15 @@ public class AttendanceController {
         }
     }
 
-    //QR 생성
-    @GetMapping("/makeQR")
-    public ResponseEntity<byte[]>makeQR(@RequestParam int companyId) throws WriterException, IOException {
-        Optional<Company> company = companyRepository.findById(companyId);
-        if(company.isEmpty()){ return null; }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        try{
-            String url = String.format("http://localhost:8707/checkAttendance?companyId=%d&userId=%s",company.get().getCompanyId(),authentication.getName());
-            byte[] qrCode = attendanceService.makeQRCode(200,200,url);
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode);
-        } catch ( Exception e ) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    // 금일 근무자들의 리스트 조회
+    @GetMapping("/attendances/attendancesList")
+    public ResponseEntity<List<AdminAttendanceDTO>> getAttendancesList() {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        List<AdminAttendanceDTO> adminAttendances = attendanceService.getTodayAttendances(startOfDay, endOfDay);
+        return ResponseEntity.ok(adminAttendances);
     }
+
+
 }

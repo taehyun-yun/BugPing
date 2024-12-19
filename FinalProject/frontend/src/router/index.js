@@ -18,6 +18,8 @@ import Find from '@/components/auth/Find.vue';
 import Main from "@/views/Main.vue";
 import EnrollEmployee from "@/views/enroll/enrollEmployee.vue";
 import EnrollWorkplace from "@/views/enroll/enrollWorkplace.vue";
+import AdministratorDailyCommuting from "@/views/commute/AdministratorDailyCommuting.vue";
+import AdminDailyWidget from "@/components/commute/AdminDailyWidget.vue";
 import CommuteEmployee from "@/views/commute/CommuteEmployee.vue";
 
 const router = createRouter({
@@ -67,12 +69,16 @@ routes: [
             { path: "commute", name: "commute", component: Commute, meta: { title: "근태" }, },
             { path: "schedule", name: "schedule", component: Schedule, meta: { title: "스케쥴", }, },
             { path: 'contract', name: 'contract', component: Contract, meta : { title: '계약', }, },
+            { path: 'adminMainPage', name: 'AdministratorDailyCommuting', component : AdministratorDailyCommuting, meta : {title : '근무자 메인 페이지'}},
             //이 안에 넣으시면 됩니다.
         ]
     },
     // ↓↓예시↓↓ 인증이 필요한 페이지는 뒤에 meta: {requiresAuth: true } 넣어주면 됩니다. ↓↓예시↓↓
     //{ path: '/protected', name: 'Protected', component: ProtectedPage, meta: { header : true, sidebar : true, requiresAuth: true, roles: ['employer'], } }
     //{ path: '/unprotected', name: 'UnProtected', component: UnProtectedPage, }
+    {
+
+    },
 ],
 });
 
