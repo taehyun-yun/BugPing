@@ -18,6 +18,7 @@ import Find from '@/components/auth/Find.vue';
 import Main from "@/views/Main.vue";
 import EnrollEmployee from "@/views/enroll/enrollEmployee.vue";
 import EnrollWorkplace from "@/views/enroll/enrollWorkplace.vue";
+import CommuteEmployee from "@/views/commute/CommuteEmployee.vue";
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +43,7 @@ routes: [
         path : '/', component: Main , meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
         children : [
             { path: 'enrollEmployee', name: 'enrollEmployee', component : EnrollEmployee, meta : {title : '근무지 등록'}, },
+            { path: 'commuteEmployee', name: 'commuteEmployee', component : CommuteEmployee, meta : {title : '근태 현황'}, },
         ]
     },
     //고용자 전용

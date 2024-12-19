@@ -6,12 +6,16 @@ import com.example.FinalProject.repository.company.CompanyRepository;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -24,14 +28,10 @@ public class AttendanceService {
         this.attendanceRepository = attendanceRepository;
         this.companyRepository = companyRepository;
     }
-    public byte[] makeQRCode(Integer companyId) throws WriterException, IOException {
-        int width = 200;
-        int height = 200;
-        Optional<Company> company = companyRepository.findById(companyId);
-        if(company.isEmpty()){ return null; }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String url = String.format("http://localhost:8707/checkAttendance?companyId=%d&userId=%s",company.get().getCompanyId(),authentication.getName());
-        BitMatrix encode = new MultiFormatWriter().encode(url, BarcodeFormat.QR_CODE,width,height);
-        return new byte[4];
+    public byte[] makeQRCode(int width, int height, String url) throws WriterException, IOException {
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(url, BarcodeFormat.QR_CODE,width,height);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix,"PNG",byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
     }
 }

@@ -1,11 +1,20 @@
 package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.entity.attendance.Attendance;
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
+import com.example.FinalProject.repository.company.CompanyRepository;
+import com.example.FinalProject.service.employment.AttendanceService;
+import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +23,15 @@ import java.util.Optional;
 public class AttendanceController {
     @Autowired
     private AttendanceRepository attendanceRepository;
+
+    private final AttendanceService attendanceService;
+    private final CompanyRepository companyRepository;
+
+    public AttendanceController(AttendanceService attendanceService, CompanyRepository companyRepository){
+        this.attendanceService = attendanceService;
+        this.companyRepository = companyRepository;
+    }
+
 
     // 스케줄 ID로 출석 정보를 가져옵니다
     @GetMapping("/schedules/{scheduleId}/attendances")
@@ -71,6 +89,21 @@ public class AttendanceController {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    //QR 생성
+    @GetMapping("/makeQR")
+    public ResponseEntity<byte[]>makeQR(@RequestParam int companyId) throws WriterException, IOException {
+        Optional<Company> company = companyRepository.findById(companyId);
+        if(company.isEmpty()){ return null; }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        try{
+            String url = String.format("http://localhost:8707/checkAttendance?companyId=%d&userId=%s",company.get().getCompanyId(),authentication.getName());
+            byte[] qrCode = attendanceService.makeQRCode(200,200,url);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode);
+        } catch ( Exception e ) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

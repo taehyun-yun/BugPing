@@ -20,7 +20,6 @@ export const useUserStore = defineStore('user',{
         },
         setCompany(company) {
             this.company = { cname: company.cname, companyId: company.companyId }; // { cname : '' , companyId : ''}
-            //alert(this.company.companyId);
         },
         setCompanies(companies){
             this.companies = companies;
