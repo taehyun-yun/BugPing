@@ -134,6 +134,7 @@ const filteredEmployees = computed(() => {
  const resetSelection = () => {
   searchQuery.value = '';
   showCurrentJobOnly.value = false;
+  selectedEmployee.value = null;
   fetchAllEmployees();
 };
 
