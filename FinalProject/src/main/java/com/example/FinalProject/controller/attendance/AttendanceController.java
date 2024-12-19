@@ -2,21 +2,15 @@ package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
-import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
-import com.example.FinalProject.service.AttendanceService;
 import com.example.FinalProject.repository.company.CompanyRepository;
-import com.google.zxing.WriterException;
+
+import com.example.FinalProject.service.employment.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
