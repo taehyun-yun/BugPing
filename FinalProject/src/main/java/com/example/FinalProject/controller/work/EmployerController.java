@@ -52,7 +52,7 @@ public class EmployerController {
         };
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        if(userId == null){
+        if(userId.equals("anonymousUser")){
             return new ResponseEntity<>("로그인이 되지 않았습니다. 어떻게 오셨습니까...",HttpStatus.NOT_ACCEPTABLE);
         }
         Optional<User> user = userRepository.findById(userId);
@@ -61,7 +61,6 @@ public class EmployerController {
         }
         Company newCompany = joinService.registCompany(company);
         joinService.registWork(user.get(),newCompany);
-        System.out.println("추가되었다고요");
         return new ResponseEntity<>("등록되었습니다.",HttpStatus.CREATED);
     }
 }

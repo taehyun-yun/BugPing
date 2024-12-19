@@ -8,11 +8,15 @@ import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.user.UserRepository;
 import com.example.FinalProject.repository.work.WorkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
+
 @Transactional
 @Service
 public class JoinService {
@@ -100,5 +104,17 @@ public class JoinService {
     //퇴사하지 않고 회사 재등록 방지 기능
     public boolean notWorkingHere (User user, Company company){
         return !workRepository.existsByUser_UserIdAndCompany_CompanyIdAndResignDateIsNull(user.getUserId(),company.getCompanyId());
+    }
+
+    //이메일 등록
+    public boolean setEmail(String email){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User>user = userRepository.findById(authentication.getName());
+        if(user.isEmpty()){
+            return false;
+        }
+        user.get().setEmail(email);
+        userRepository.save(user.get());
+        return true;
     }
 }

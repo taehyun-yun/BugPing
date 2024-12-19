@@ -15,7 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -23,15 +25,6 @@ import java.util.Optional;
 public class AttendanceController {
     @Autowired
     private AttendanceRepository attendanceRepository;
-
-    private final AttendanceService attendanceService;
-    private final CompanyRepository companyRepository;
-
-    public AttendanceController(AttendanceService attendanceService, CompanyRepository companyRepository){
-        this.attendanceService = attendanceService;
-        this.companyRepository = companyRepository;
-    }
-
 
     // 스케줄 ID로 출석 정보를 가져옵니다
     @GetMapping("/schedules/{scheduleId}/attendances")
@@ -89,21 +82,6 @@ public class AttendanceController {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
-        }
-    }
-
-    //QR 생성
-    @GetMapping("/makeQR")
-    public ResponseEntity<byte[]>makeQR(@RequestParam int companyId) throws WriterException, IOException {
-        Optional<Company> company = companyRepository.findById(companyId);
-        if(company.isEmpty()){ return null; }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        try{
-            String url = String.format("http://localhost:8707/checkAttendance?companyId=%d&userId=%s",company.get().getCompanyId(),authentication.getName());
-            byte[] qrCode = attendanceService.makeQRCode(200,200,url);
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode);
-        } catch ( Exception e ) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

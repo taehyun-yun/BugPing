@@ -26,9 +26,9 @@
                         <td>{{ work.company.ctel }}</td>
                         <td>{{ work.company.address + " " + work.company.detailAddress }}</td>
                     </tr>
-                    <tr v-if="work.contracts.length>0">
+                    <tr v-if="work.contracts.length>0" v-show="showContract[index]">
                         <td colspan="5">
-                            <table class="contract-table" v-show="showContract[index]">
+                            <table class="contract-table">
                                 <thead>
                                     <tr>
                                         <th>계약 시작</th>

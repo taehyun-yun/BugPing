@@ -43,9 +43,11 @@ import LoginForm from '@/components/auth/LoginForm.vue';
 .loginform{
     padding-left :50px;
     padding-right :50px;
+    z-index: 2;
 }
 .logo{
     width: 250px;
     height: 250px;
+    z-index: 1;
 }
 </style>

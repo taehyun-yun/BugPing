@@ -43,7 +43,6 @@ routes: [
         path : '/', component: Main , meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
         children : [
             { path: 'enrollEmployee', name: 'enrollEmployee', component : EnrollEmployee, meta : {title : '근무지 등록'}, },
-            { path: 'commuteEmployee', name: 'commuteEmployee', component : CommuteEmployee, meta : {title : '근태 현황'}, },
         ]
     },
     //고용자 전용
@@ -67,6 +66,7 @@ routes: [
             { path: "commute", name: "commute", component: Commute, meta: { title: "근태" }, },
             { path: "schedule", name: "schedule", component: Schedule, meta: { title: "스케쥴", }, },
             { path: 'contract', name: 'contract', component: Contract, meta : { title: '계약', }, },
+            { path: 'commuteEmployee', name: 'commuteEmployee', component : CommuteEmployee, meta : {title : '근태 현황'}, },
             //이 안에 넣으시면 됩니다.
         ]
     },
@@ -130,7 +130,6 @@ router.beforeEach(async(to, from, next) => {
         //alert("역할이 맞지않음")
         return next('/login');
     }
-
 });
 router.afterEach((to) => {
     const defaultTitle = '운영의 달인';

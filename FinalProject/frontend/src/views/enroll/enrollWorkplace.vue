@@ -126,10 +126,19 @@ const closeModal = () => {
     .workplace-wrap {
         display: flex;
         flex-direction: column;
-        width: 80%;
+        align-items: center; /* 자식 요소를 수평 중앙 정렬 */
     }
-    table {
+
+    .myOwnCompany {
         width: 100%;
+        display: flex;
+        justify-content: center; /* 테이블을 수평 중앙 정렬 */
+        margin-top: 20px; /* 추가 여백 */
+    }
+
+    table {
+        width: 800px;
+        max-width: 100%; /* 반응형 크기 조정 */
         border-collapse: collapse;
         background-color: #f9f9f9;
         border-radius: 8px;
@@ -163,11 +172,12 @@ const closeModal = () => {
     /* 추가하기 버튼 (테이블 위) */
     .add-button{
         position: relative;
+        width: 800px;
         height: 100px;
     }
     .add-button button {
         position: absolute;
-        top: 0;
+        bottom: 0;
         right: 0;
         padding: 10px 20px;
         background-color: #4FD1C5;

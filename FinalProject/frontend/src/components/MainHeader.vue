@@ -60,12 +60,22 @@
             <form ref="emailForm">
               <p>이메일 등록</p>
               <input type="email" placeholder="이메일 입력" required v-model="inputEmail">
-              <button type="button" @click="registEmail">변경</button>
+              <button class="send-button" @click="sendCode" type="button">
+                <img v-show="wait" style="margin : 0 ; width: 20px; height: 20px; "src="/src/assets/Loginimg/Dual Ring.svg">
+                <div v-show="!wait">{{sendButtonMsg}}</div>
+              </button>
             </form>
+            <div class="input-group">
+              <input type="text" class="input-field" placeholder="인증번호 입력" maxlength="20" v-model="inputCode">
+              <button class="send-button" @click="checkCode" type="button">확인</button>
+            </div>
           </div>
-          <div>
+          <div class="item" v-if="registered">
+            <p>이메일 : {{ userStore.email }}</p>
+          </div>
+          <!-- <div>
             <p @click="">탈퇴</p>
-          </div>
+          </div> -->
         </div>
       </div>
     </Teleport>
@@ -108,20 +118,23 @@ onMounted(() => {
 // watch로 상태 동기화
 watch(selectedCompany, (newValue) => {
   userStore.setCompany(newValue);
+  window.location.reload;
 });
 // 마이페이지-----------------------------------------------
 const showModal = ref(false);
 const showModalChange = () =>{
   showModal.value = !showModal.value;
 }
-
+ //비밀번호 변경
 const pwForm = ref(null);
 const newPassword = ref('');
 const inputPassword = ref('');
 const valid = ref(false);
+ //현재 비밀번호 입력
 const checkPassword = () =>{
   valid.value = userStore.password === inputPassword.value
 }
+ // 새로운 비밀번호 입력
 const setNewPassword = () =>{
   if(pwForm.value.reportValidity()){
     axios.post(`${axiosAddress}/setNewPassword`,{ userId : userStore.userId, newPassword : newPassword.value },{withCredentials : true})
@@ -129,12 +142,68 @@ const setNewPassword = () =>{
 }
 
 const registered = computed(() => userStore.email !== '');
-const emailForm = ref(null);
-const registEmail = () =>{
-  if(emailForm.value.reportValidity()){
-    email
+const inputEmail = ref('');
+const inputEmailSaved = ref('');
+const isCooltime = ref(false);
+const currentCooltime = ref(0);
+
+const sendCode = async() =>{
+    if(currentCooltime.value == 0 ){
+        //쿨타임 초기화
+        isCooltime.value =  true;
+        currentCooltime.value = 10;
+        //현재 입력한 이메일을 저장
+        inputEmailSaved.value = inputEmail.value;
+        //로딩이미지 보이기 설정
+        wait.value = true;
+        //메세지 전송
+        await axios.post(axiosAddress+"/sendCode",{ inputEmail : inputEmailSaved.value},{ withCredentials : true })
+        .then((res)=>{
+            alert(res.data);
+        })
+        //로딩이미지 안보이기 설정
+        wait.value = false;
+        //쿨타임
+        const cooldown = setInterval(()=>{currentCooltime.value -= 1;},1000);
+        setTimeout(()=>{
+        isCooltime.value = false;
+        currentCooltime.value = 0;
+        clearInterval(cooldown);
+        }, 1 * 10 * 1000);
+    }
+}
+const inputCode = ref(''); 
+const checkCode = async() =>{
+  try {
+  const res = await axios.post(axiosAddress + "/checkCode", {
+    inputEmail: inputEmailSaved.value,
+    inputCode: inputCode.value,
+  }, { withCredentials: true });
+
+  if (res.data) {
+    alert(inputEmailSaved.value + " 인증되었습니다.");
+    const setEmailRes = await axios.post(axiosAddress + "/setEmail", {
+      email: inputEmailSaved.value,
+    }, { withCredentials: true });
+    userStore.email = inputEmailSaved.value;
+    alert(setEmailRes.data);
+    } else {
+      alert("인증번호가 일치하지 않습니다. 다시 발급받아 주세요.");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("요청 중 문제가 발생했습니다. 다시 시도해 주세요.");
   }
 }
+const sendButtonMsg = ref('인증번호 발송');
+const wait = ref(false);
+watch(currentCooltime,(newValue)=>{
+    if(newValue != 0){
+        sendButtonMsg.value = newValue;
+    } else {
+        sendButtonMsg.value = '인증번호 발송';
+    }
+},{ deep : true})
 </script> 
 <style scoped>
   .header-wrapper {
@@ -178,7 +247,8 @@ const registEmail = () =>{
       align-items: center;
       padding: 4px 12px;
       height: 32px;
-      margin-right: 20px;
+      width: 180px;
+      margin-right: 80px;
       position: relative;
   }
   .search-fieldset select{
@@ -299,5 +369,64 @@ const registEmail = () =>{
         justify-content: space-between;
         gap: 20px;
   }
+.item{
+  width: 100%;
+}
+    /* 헤더 텍스트 */
+  .modal .item p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  /* 입력 필드 */
+  .modal input[type="text"],
+  .modal input[type="email"] {
+    width: 70%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  .modal input:focus {
+    outline: none;
+    border-color: #4FD1C5; /* 포커스 색상 */
+    box-shadow: 0 0 4px rgba(79, 209, 197, 0.5); /* 부드러운 강조 */
+  }
+
+  /* 버튼 스타일 */
+  .modal button {
+    width: 30%;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background-color: #4FD1C5; /* 밝은 초록 계열 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .modal button:hover {
+    background-color: #3ba69c; /* 살짝 어두운 초록 */
+  }
+
+  /* 탈퇴 텍스트 */
+  /* .modal > div:last-child p {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #ff6666;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .modal > div:last-child p:hover {
+    color: #e60000;
+  } */
 
 </style>

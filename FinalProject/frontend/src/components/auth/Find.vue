@@ -132,6 +132,7 @@ const changePw = () =>{
     axios.post(axiosAddress+'/setNewPassword',{ userId : selectedId.value, newPassword : newpassword.value},{withCredentials : true})
     .then((res)=>{
         alert("변경되었습니다.");
+        newpassword.value = "";
         closeModal();
     })
 }

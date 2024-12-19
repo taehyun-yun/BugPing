@@ -57,7 +57,7 @@ public class PayRollController {
 
         // 로그인된 사용자 ID 가져오기
         String loggedInUserId = jwtService.getLoggedInUserId();
-        if (loggedInUserId == null) {
+        if (loggedInUserId.equals("anonymousUser")) {
             log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

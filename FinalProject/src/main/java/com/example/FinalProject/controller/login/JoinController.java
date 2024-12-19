@@ -6,7 +6,12 @@ import com.example.FinalProject.service.jwt.JoinService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 public class JoinController {
@@ -40,5 +45,14 @@ public class JoinController {
     }
     joinService.signup(user);
     return new ResponseEntity<>("등록되었습니다.",HttpStatus.OK);
+    }
+
+    @PostMapping("/setEmail")
+    public ResponseEntity<String>setEmail(@RequestBody Map<String, String>map) {
+        String email = map.get("email");
+        if (!joinService.setEmail(email)) {
+            return new ResponseEntity<>("로그인 되지 않아, 이메일 등록에 실패하였습니다. 여긴 어떻게 오셨습니까?", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("이메일 등록에 성공하였습니다.", HttpStatus.OK);
     }
 }
