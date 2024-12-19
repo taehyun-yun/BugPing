@@ -20,13 +20,25 @@
         <section class="members-section">
           <h3>편집 대상 구성원</h3>
           <!-- 구성원 아이템: 클릭 시 사용자 모달을 엽니다. -->
-          <div class="member-item" @click="openUserModal">
+
+          <div class="member-item" @click="handleMemberClick">
             <div class="profile-image">
-              <!-- 프로필 이미지: 기본 이미지를 사용하거나 실제 이미지를 표시할 수 있습니다. -->
-              <img src="@/assets/AdminContractImg/placeholder.png" alt="프로필 이미지" />
+              <template v-if="selectedEmployee?.name">
+                <!-- 선택된 유저의 첫 글자 표시 -->
+                <div class="avatar">{{ selectedEmployee.name.charAt(0) }}</div>
+              </template>
+              <template v-else-if="contract?.work?.user?.name">
+                <!-- 계약된 유저의 첫 글자 표시 -->
+                <div class="avatar">{{ contract.work.user.name.charAt(0) }}</div>
+              </template>
+              <template v-else>
+                <!-- 기본 이미지 표시 -->
+                <img src="@/assets/AdminContractImg/placeholder.png" alt="기본 이미지" />
+              </template>
             </div>
-            <!-- 구성원 이름: 선택된 직원이 있으면 그 이름을, 없으면 계약자의 이름을 표시합니다. -->
-            <span class="member-name">{{ selectedEmployee?.name || contract?.work?.user?.name || '이름 없음' }}</span>
+            <span class="member-name">
+              {{ selectedEmployee?.name || contract?.work?.user?.name || '이름 없음' }}
+            </span>
           </div>
         </section>
 
@@ -121,7 +133,7 @@
   Vue.js 3의 <script setup> 구문을 사용하여 컴포넌트 로직을 정의합니다.
   Pinia 스토어와 다른 컴포넌트를 가져옵니다.
 */
-import { ref, defineProps, defineEmits, watch } from 'vue'
+import { ref, defineProps, defineEmits, watch , computed} from 'vue'
 import { useContractsStore } from '@/stores/contracts' // Pinia 스토어 import
 import ScheduleModal from '@/components/employment/ScheduleModal.vue' // 스케줄 모달 컴포넌트 import
 import UserModal from '@/components/employment/UserModal.vue' // 사용자 모달 컴포넌트 import
@@ -149,6 +161,20 @@ const emit = defineEmits(['close', 'save'])
 
 // Pinia 스토어 사용: 계약 데이터를 관리
 const contractsStore = useContractsStore()
+const a = computed(()=> props.contract?.work?.user?.name==undefined);
+watch(a, (newValue) => { console.log(newValue)})
+
+watch(
+  () => props.isOpen, // 모달이 열리는 상태를 감지
+  (newVal) => {
+    if (newVal) {
+      console.log('모달이 열렸습니다.');
+      console.log('contract?.work?.user?.name:', props.contract?.work?.user?.name);
+      console.log('selectedEmployee?.name:', selectedEmployee?.name);
+    }
+  }
+);
+
 
 // 수정된 계약 데이터를 저장하는 반응형 변수
 const editedContract = ref({
@@ -179,10 +205,28 @@ const deletedSchedules = ref([]) // 삭제된 스케줄 목록
 const closeScheduleModal = () => {
   showScheduleModal.value = false
 }
+
+
+
+const handleMemberClick = () => {
+  console.log("Clicked member item");
+  console.log("contract?.work?.user?.name:", props.contract?.work?.user?.name);
+  console.log("selectedEmployee?.name:", selectedEmployee.value?.name);
+
+  if (!props.contract?.work?.user?.name && !selectedEmployee.value?.name) {
+    console.log("Opening user modal");
+    openUserModal();
+  } else {
+    console.log("Conditions not met for opening modal");
+  }
+};
+
 // 사용자 모달 열기 메서드
 const openUserModal = () => {
+  console.log("openUserModal");
   showUserModal.value = true // 사용자 모달을 열기 위해 상태를 true로 설정
 }
+
 
 // 사용자 모달에서 선택한 직원 처리 메서드
 const handleUserSelection = (employee) => {
@@ -548,6 +592,37 @@ const saveContract = async () => {
   object-fit: cover;
   /* 이미지 비율 유지하며 채움 */
 }
+
+.avatar {
+  width: 40px;
+  /* 원형 아이콘 크기 */
+  height: 40px;
+  background-color: #e2e8f0;
+  /* 연한 회색 배경 */
+  color: #4a5568;
+  /* 글자 색상 */
+  border-radius: 50%;
+  /* 원형 처리 */
+  display: flex;
+  /* 플렉스 박스 활성화 */
+  justify-content: center;
+  /* 수평 가운데 정렬 */
+  align-items: center;
+  /* 수직 가운데 정렬 */
+  font-size: 16px;
+  /* 글자 크기 */
+  font-weight: bold;
+  /* 글자 굵기 */
+  text-transform: uppercase;
+  /* 대문자로 표시 */
+}
+
+/* 
+.disabled {
+  pointer-events: none; 
+  opacity: 0.5; 
+} 
+*/
 
 /* 구성원 이름 스타일 */
 .member-name {
