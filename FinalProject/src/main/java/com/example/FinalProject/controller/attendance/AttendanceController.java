@@ -1,19 +1,26 @@
 package com.example.FinalProject.controller.attendance;
 
+import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
+import com.example.FinalProject.service.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class AttendanceController {
+
     @Autowired
     private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private AttendanceService attendanceService;
 
     // 스케줄 ID로 출석 정보를 가져옵니다
     @GetMapping("/schedules/{scheduleId}/attendances")
@@ -72,5 +79,15 @@ public class AttendanceController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // 금일 근무자들의 리스트 조회
+    @GetMapping("/attendances/attendancesList")
+    public ResponseEntity<List<AdminAttendanceDTO>> getAttendancesList() {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        List<AdminAttendanceDTO> adminAttendances = attendanceService.getTodayAttendances(startOfDay, endOfDay);
+        return ResponseEntity.ok(adminAttendances);
     }
 }
