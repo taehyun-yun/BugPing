@@ -15,7 +15,7 @@
               <option v-for="company in userStore.companies" 
                       :key="company.id" 
                       :value="company">
-                {{ company.cname }} {{ company.companyId }}
+                {{ company.cname }}
               </option>
             </select>
           </div>
@@ -102,8 +102,7 @@ const selectedCompany = ref({ cname: '', companyId: '' });
 // 초기값 설정
 onMounted(() => {
   if (userStore.companies.length > 0) {
-    selectedCompany.value = userStore.companies[0];
-    // userStore.setCompany(selectedCompany.value);
+    selectedCompany.value = userStore.company;
   }
 });
 // watch로 상태 동기화
