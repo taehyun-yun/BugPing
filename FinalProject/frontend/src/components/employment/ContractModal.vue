@@ -161,19 +161,21 @@ const emit = defineEmits(['close', 'save'])
 
 // Pinia 스토어 사용: 계약 데이터를 관리
 const contractsStore = useContractsStore()
-const a = computed(()=> props.contract?.work?.user?.name==undefined);
-watch(a, (newValue) => { console.log(newValue)})
 
-watch(
-  () => props.isOpen, // 모달이 열리는 상태를 감지
-  (newVal) => {
-    if (newVal) {
-      console.log('모달이 열렸습니다.');
-      console.log('contract?.work?.user?.name:', props.contract?.work?.user?.name);
-      console.log('selectedEmployee?.name:', selectedEmployee?.name);
-    }
-  }
-);
+//확인
+// const a = computed(()=> props.contract?.work?.user?.name==undefined);
+// watch(a, (newValue) => { console.log(newValue)})
+
+// watch(
+//   () => props.isOpen, // 모달이 열리는 상태를 감지
+//   (newVal) => {
+//     if (newVal) {
+//       console.log('모달이 열렸습니다.');
+//       console.log('contract?.work?.user?.name:', props.contract?.work?.user?.name);
+//       console.log('selectedEmployee?.name:', selectedEmployee?.name);
+//     }
+//   }
+// );
 
 
 // 수정된 계약 데이터를 저장하는 반응형 변수
@@ -213,7 +215,7 @@ const handleMemberClick = () => {
   console.log("contract?.work?.user?.name:", props.contract?.work?.user?.name);
   console.log("selectedEmployee?.name:", selectedEmployee.value?.name);
 
-  if (!props.contract?.work?.user?.name && !selectedEmployee.value?.name) {
+  if (!props.contract?.work?.user?.name) {//&& !selectedEmployee.value?.name
     console.log("Opening user modal");
     openUserModal();
   } else {
