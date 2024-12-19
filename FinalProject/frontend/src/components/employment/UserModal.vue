@@ -7,17 +7,12 @@
     <div class="modal-content" @click.stop>
       <!-- 모달 제목 -->
       <h2 class="title">직원 선택</h2>
-      
+
       <!-- 검색 컨테이너: 직원 검색을 위한 입력 필드와 아이콘 -->
       <div class="search-container">
         <!-- 검색 입력 필드: 사용자가 이름, 사번, 휴대폰 번호로 직원 검색 -->
-        <input
-          v-model="searchQuery"
-          @input="searchEmployees"
-          type="text"
-          placeholder="이름/사번/휴대폰 번호로 검색"
-          class="search-input"
-        />
+        <input v-model="searchQuery" @input="searchEmployees" type="text" placeholder="이름/사번/휴대폰 번호로 검색"
+          class="search-input" />
         <!-- 검색 아이콘: 검색 입력 필드 옆에 위치 -->
         <i class="search-icon"></i>
       </div>
@@ -36,34 +31,27 @@
 
       <!-- 직원 목록 컨테이너: 필터링된 직원 목록을 보여줍니다. -->
       <div class="employee-container">
-        <!-- 체크박스 그룹: 하위그룹도 한번에 체크할지 여부를 선택 -->
-        <div class="checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="selectAllSubgroups" />
-            <span>하위그룹도 한번에 체크</span>
-          </label>
-        </div>
-        
+
         <!-- 체크박스 그룹: 현재 일하는 직업만 조회할지 여부를 선택 -->
         <div class="checkbox-group">
           <label class="checkbox-label">
             <input type="checkbox" v-model="showCurrentJobOnly" />
-            <span>현재 일하는 직업만 조회</span>
+            <span>현재 일하는 직원만 조회</span>
           </label>
         </div>
 
         <!-- 직원 리스트: 필터링된 직원들을 반복하여 표시 -->
         <div class="employee-list">
-          <div v-for="employee in filteredEmployees" :key="employee.id" class="employee-item">
+          <div v-for="employee in filteredEmployees" :key="employee.userId" class="employee-item">
             <label class="employee-label">
               <!-- 체크박스: 여러 직원 선택 가능 -->
-              <input type="checkbox" v-model="employee.selected" />
+              <input type="radio" :value="employee" v-model="selectedEmployee" />
               <!-- 아바타: 직원의 이름 첫 글자를 표시 -->
               <div class="avatar">{{ employee.name.charAt(0) }}</div>
               <!-- 직원 정보: 이름과 부서를 표시 -->
               <div class="employee-info">
                 <div class="employee-name">{{ employee.name }}</div>
-                <div class="employee-department">{{ employee.department }}</div>
+                <div class="employee-userId">{{ employee.userId }}</div>
               </div>
             </label>
           </div>
@@ -84,8 +72,8 @@
   Vue.js 3의 <script setup> 구문을 사용하여 컴포넌트 로직을 정의합니다.
   반응형 변수와 컴퓨티드 프로퍼티를 사용하여 데이터와 로직을 관리합니다.
 */
-
-import { ref, computed, watch } from 'vue' // Vue의 반응성 API 가져오기
+import axios from 'axios'; // axios 임포트
+import { ref, computed, watch, onMounted } from 'vue' // Vue의 반응성 API 가져오기
 import { defineProps, defineEmits } from 'vue' // Props와 Emits 정의를 위해 가져오기
 
 // 부모 컴포넌트로부터 전달받는 Props 정의
@@ -102,75 +90,78 @@ const emit = defineEmits(['close', 'save']) // 'close'와 'save' 이벤트 선�
 
 // 검색 쿼리를 저장하는 반응형 변수
 const searchQuery = ref('') // 초기값은 빈 문자열
-
-// 체크박스 상태를 저장하는 반응형 변수
-const selectAllSubgroups = ref(false) // 하위그룹 선택 여부
 const showCurrentJobOnly = ref(false) // 현재 일하는 직업만 조회 여부
+const selectedEmployee = ref(null); // 🟦 선택된 직원 저장
+const employees = ref([]);
+const fetchAllEmployees = async (searchQuery = '') => {
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL;
+    const companyId = 45; // 동적으로 처리 가능
+    const url = searchQuery
+      ? `${baseUrl}/api/worker/${companyId}/search?searchQuery=${encodeURIComponent(searchQuery)}`
+      : `${baseUrl}/api/worker/${companyId}`;
 
-// 직원 데이터를 저장하는 반응형 배열
-const employees = ref([
-  { id: 1, name: '이철수', department: '개발팀', selected: false, currentJob: true },
-  { id: 2, name: '박지민', department: '마케팅팀', selected: false, currentJob: true },
-  { id: 3, name: '최수진', department: '디자인팀', selected: false, currentJob: false },
-  { id: 4, name: '이철', department: '개발팀', selected: false, currentJob: true },
-  { id: 5, name: '박민', department: '마케팅팀', selected: false, currentJob: true },
-  { id: 6, name: '최진', department: '디자인팀', selected: false, currentJob: false },
-])
-
-// 필터링된 직원 목록을 계산하는 계산된 프로퍼티
+    const response = await axios.get(url);
+    employees.value = response.data.map(work => ({
+      userId: work.user.userId,
+      name: work.user.name,
+      tel: work.user.tel,
+      resignDate: work.resignDate || null,
+      hireDate: work.hireDate,
+    }));
+  } catch (error) {
+    console.error('직원 데이터 가져오기 실패:', error);
+  }
+};
 const filteredEmployees = computed(() => {
   return employees.value.filter(employee => 
-    // 검색 쿼리가 이름이나 부서에 포함되는지 확인
-    (employee.name.includes(searchQuery.value) ||
-    employee.department.includes(searchQuery.value)) &&
-    // '현재 일하는 직업만 조회' 체크박스가 체크되어 있으면 현재 직업인 직원만 포함
-    (!showCurrentJobOnly.value || employee.currentJob)
-  )
-})
+    (!showCurrentJobOnly.value || !employee.resignDate) // '현재 근무 중' 체크 여부에 따라 필터링
+  );
+});
 
-// 직원 검색 함수: 현재는 실시간 검색을 처리하기 위해 빈 함수로 정의
-const searchEmployees = () => {
-  // 실시간 검색은 이미 computed 프로퍼티로 처리되고 있으므로 추가 로직이 필요 없음
-}
 
-// 선택 초기화 함수: 모든 선택을 해제하고 필터를 초기화
-const resetSelection = () => {
-  employees.value.forEach(employee => employee.selected = false) // 모든 직원의 선택 해제
-  selectAllSubgroups.value = false // 하위그룹 선택 해제
-  showCurrentJobOnly.value = false // 현재 직업만 조회 해제
-}
+
+/**
+ * 초기화 버튼 핸들러
+ */
+ const resetSelection = () => {
+  searchQuery.value = '';
+  showCurrentJobOnly.value = false;
+  fetchAllEmployees();
+};
+
+
+// 선택된 직원을 저장하는 함수: 'save' 이벤트를 통해 부모 컴포넌트로 전달
+// const saveSelection = () => {
+//   // 체크박스를 사용하므로 여러 직원이 선택될 수 있습니다.
+//   const selectedEmployees = employees.value.filter(employee => employee.selected)
+//   console.log('선택된 직원:', selectedEmployees) // 선택된 직원 콘솔 출력
+//   if (selectedEmployees.length > 0) {
+//     emit('save', selectedEmployees) // 모든 선택된 직원을 'save' 이벤트로 전송
+//   }
+//   closeModal() // 모달 닫기
+// }
+// 🟦 선택 저장: 부모 컴포넌트로 직원 데이터 전달
+const saveSelection = () => {
+  if (selectedEmployee.value) {
+    emit("save", selectedEmployee.value); // 선택된 직원 전달
+    closeModal();
+  } else {
+    alert("직원을 선택해주세요.");
+  }
+};
+
 
 // 모달을 닫는 함수: 부모 컴포넌트로 'close' 이벤트를 보내요.
 const closeModal = () => {
   emit('close') // 'close' 이벤트 전송
 }
 
-// 선택된 직원을 저장하는 함수: 'save' 이벤트를 통해 부모 컴포넌트로 전달
-const saveSelection = () => {
-  // 체크박스를 사용하므로 여러 직원이 선택될 수 있습니다.
-  const selectedEmployees = employees.value.filter(employee => employee.selected)
-  console.log('선택된 직원:', selectedEmployees) // 선택된 직원 콘솔 출력
-  if (selectedEmployees.length > 0) {
-    emit('save', selectedEmployees) // 모든 선택된 직원을 'save' 이벤트로 전송
-  }
-  closeModal() // 모달 닫기
-}
+// 컴포넌트 로드 시 직원 데이터 불러오기
+onMounted(() => {
+  fetchAllEmployees(); 
+});
 
-// `selectAllSubgroups` 체크박스 동작 구현
-/*
-  하위그룹도 한번에 체크하기 체크박스가 변경될 때마다 모든 필터링된 직원의 선택 상태를 변경
-*/
-watch(selectAllSubgroups, (newVal) => {
-  if (newVal) {
-    filteredEmployees.value.forEach(employee => {
-      employee.selected = true // 모든 필터링된 직원 선택
-    })
-  } else {
-    filteredEmployees.value.forEach(employee => {
-      employee.selected = false // 모든 필터링된 직원 선택 해제
-    })
-  }
-})
 </script>
 
 <style scoped>
@@ -181,136 +172,203 @@ watch(selectAllSubgroups, (newVal) => {
 
 /* 모달의 배경 오버레이 스타일 */
 .modal-overlay {
-  position: fixed; /* 화면에 고정 */
+  position: fixed;
+  /* 화면에 고정 */
   top: 0;
   left: 0;
-  width: 100%; /* 전체 너비 */
-  height: 100%; /* 전체 높이 */
-  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: center; /* 수평 가운데 정렬 */
-  align-items: center; /* 수직 가운데 정렬 */
+  width: 100%;
+  /* 전체 너비 */
+  height: 100%;
+  /* 전체 높이 */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* 반투명 검은색 배경 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: center;
+  /* 수평 가운데 정렬 */
+  align-items: center;
+  /* 수직 가운데 정렬 */
 }
 
 /* 모달 내용 영역 스타일 */
 .modal-content {
-  background-color: white; /* 흰색 배경 */
-  border-radius: 8px; /* 둥근 모서리 */
-  padding: 24px; /* 내부 여백 */
-  width: 90%; /* 너비 90% */
-  max-width: 500px; /* 최대 너비 500px */
-  max-height: 600px; /* 최대 높이 설정 (필요에 따라 조정) */
-  overflow-y: auto; /* 세로 스크롤 가능 */
+  background-color: white;
+  /* 흰색 배경 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  padding: 24px;
+  /* 내부 여백 */
+  width: 90%;
+  /* 너비 90% */
+  max-width: 500px;
+  /* 최대 너비 500px */
+  max-height: 600px;
+  /* 최대 높이 설정 (필요에 따라 조정) */
+  overflow-y: auto;
+  /* 세로 스크롤 가능 */
 }
 
 /* 모달 제목 스타일 */
 .title {
-  font-size: 24px; /* 글자 크기 */
-  font-weight: bold; /* 글자 두께 */
-  margin-bottom: 20px; /* 아래 여백 */
+  font-size: 24px;
+  /* 글자 크기 */
+  font-weight: bold;
+  /* 글자 두께 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
 }
 
 /* 검색 컨테이너 스타일 */
 .search-container {
-  position: relative; /* 자식 요소의 위치 기준 */
-  margin-bottom: 20px; /* 아래 여백 */
+  position: relative;
+  /* 자식 요소의 위치 기준 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
 }
 
 /* 검색 입력 필드 스타일 */
 .search-input {
-  width: 100%; /* 너비 100% */
-  padding: 10px 10px 10px 35px; /* 내부 여백: 좌측에 공간 확보 */
-  border: 1px solid #ddd; /* 테두리 */
-  border-radius: 4px; /* 둥근 모서리 */
-  font-size: 14px; /* 글자 크기 */
+  width: 100%;
+  /* 너비 100% */
+  padding: 10px 10px 10px 35px;
+  /* 내부 여백: 좌측에 공간 확보 */
+  border: 1px solid #ddd;
+  /* 테두리 */
+  border-radius: 4px;
+  /* 둥근 모서리 */
+  font-size: 14px;
+  /* 글자 크기 */
 }
 
 /* 검색 아이콘 스타일 */
 .search-icon {
-  position: absolute; /* 부모 컨테이너를 기준으로 위치 */
-  left: 10px; /* 왼쪽에서 10px 위치 */
-  top: 50%; /* 수직 가운데 */
-  transform: translateY(-50%); /* 정확히 가운데 정렬 */
-  width: 16px; /* 아이콘 너비 */
-  height: 16px; /* 아이콘 높이 */
+  position: absolute;
+  /* 부모 컨테이너를 기준으로 위치 */
+  left: 10px;
+  /* 왼쪽에서 10px 위치 */
+  top: 50%;
+  /* 수직 가운데 */
+  transform: translateY(-50%);
+  /* 정확히 가운데 정렬 */
+  width: 16px;
+  /* 아이콘 너비 */
+  height: 16px;
+  /* 아이콘 높이 */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23999'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
-  background-size: contain; /* 배경 이미지 크기 조절 */
-  background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
+  background-size: contain;
+  /* 배경 이미지 크기 조절 */
+  background-repeat: no-repeat;
+  /* 배경 이미지 반복 없음 */
 }
 
 /* 필터 섹션 스타일 */
 .filter-section {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: space-between; /* 양 끝으로 요소 배치 */
-  align-items: center; /* 수직 정렬 */
-  margin-bottom: 20px; /* 아래 여백 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: space-between;
+  /* 양 끝으로 요소 배치 */
+  align-items: center;
+  /* 수직 정렬 */
+  margin-bottom: 20px;
+  /* 아래 여백 */
 }
 
 /* 필터 버튼 스타일 */
 .filter-button {
-  color: #666; /* 글자 색상 회색 */
-  font-size: 14px; /* 글자 크기 */
-  background: none; /* 배경 없음 */
-  border: none; /* 테두리 없음 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  color: #666;
+  /* 글자 색상 회색 */
+  font-size: 14px;
+  /* 글자 크기 */
+  background: none;
+  /* 배경 없음 */
+  border: none;
+  /* 테두리 없음 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 필터 오른쪽 컨테이너 스타일 */
 .filter-right {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 10px; /* 요소 간 간격 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 10px;
+  /* 요소 간 간격 */
 }
 
 /* 초기화 버튼 스타일 */
 .reset-button {
-  color: #666; /* 글자 색상 회색 */
-  font-size: 14px; /* 글자 크기 */
-  background: none; /* 배경 없음 */
-  border: none; /* 테두리 없음 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  color: #666;
+  /* 글자 색상 회색 */
+  font-size: 14px;
+  /* 글자 크기 */
+  background: none;
+  /* 배경 없음 */
+  border: none;
+  /* 테두리 없음 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 전체 직원 수 표시 스타일 */
 .total-count {
-  font-size: 14px; /* 글자 크기 */
-  color: #666; /* 글자 색상 회색 */
+  font-size: 14px;
+  /* 글자 크기 */
+  color: #666;
+  /* 글자 색상 회색 */
 }
 
 /* 직원 컨테이너 스타일 */
 .employee-container {
-  border: 1px solid #ddd; /* 테두리 */
-  border-radius: 4px; /* 둥근 모서리 */
-  overflow: hidden; /* 넘치는 내용 숨김 */
+  border: 1px solid #ddd;
+  /* 테두리 */
+  border-radius: 4px;
+  /* 둥근 모서리 */
+  overflow: hidden;
+  /* 넘치는 내용 숨김 */
 }
 
 /* 체크박스 그룹 스타일 */
 .checkbox-group {
-  padding: 15px; /* 내부 여백 */
-  border-bottom: 1px solid #ddd; /* 하단 테두리 */
-  background-color: #f8f8f8; /* 배경색 연한 회색 */
+  padding: 15px;
+  /* 내부 여백 */
+  border-bottom: 1px solid #ddd;
+  /* 하단 테두리 */
+  background-color: #f8f8f8;
+  /* 배경색 연한 회색 */
 }
 
 /* 체크박스 레이블 스타일 */
 .checkbox-label {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 8px; /* 요소 간 간격 */
-  font-size: 14px; /* 글자 크기 */
-  color: #333; /* 글자 색상 어두운 회색 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 8px;
+  /* 요소 간 간격 */
+  font-size: 14px;
+  /* 글자 크기 */
+  color: #333;
+  /* 글자 색상 어두운 회색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 직원 리스트 스타일 */
 .employee-list {
-  max-height: 300px; /* 최대 높이 설정 */
-  overflow-y: auto; /* 세로 스크롤 가능 */
+  max-height: 300px;
+  /* 최대 높이 설정 */
+  overflow-y: auto;
+  /* 세로 스크롤 가능 */
 }
 
 /* 직원 아이템 스타일 */
 .employee-item {
-  padding: 15px; /* 내부 여백 */
-  border-bottom: 1px solid #ddd; /* 하단 테두리 */
+  padding: 15px;
+  /* 내부 여백 */
+  border-bottom: 1px solid #ddd;
+  /* 하단 테두리 */
 }
 
 /* 마지막 직원 아이템의 하단 테두리 제거 */
@@ -320,79 +378,117 @@ watch(selectAllSubgroups, (newVal) => {
 
 /* 직원 라벨 스타일 */
 .employee-label {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  gap: 12px; /* 요소 간 간격 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  gap: 12px;
+  /* 요소 간 간격 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 아바타 스타일 */
 .avatar {
-  width: 40px; /* 너비 */
-  height: 40px; /* 높이 */
-  background-color: #e2e2e2; /* 배경색 회색 */
-  border-radius: 50%; /* 원형 */
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  align-items: center; /* 수직 정렬 */
-  justify-content: center; /* 수평 정렬 */
-  font-weight: bold; /* 글자 두께 */
-  color: #666; /* 글자 색상 회색 */
+  width: 40px;
+  /* 너비 */
+  height: 40px;
+  /* 높이 */
+  background-color: #e2e2e2;
+  /* 배경색 회색 */
+  border-radius: 50%;
+  /* 원형 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  align-items: center;
+  /* 수직 정렬 */
+  justify-content: center;
+  /* 수평 정렬 */
+  font-weight: bold;
+  /* 글자 두께 */
+  color: #666;
+  /* 글자 색상 회색 */
 }
 
 /* 직원 정보 컨테이너 스타일 */
 .employee-info {
-  flex: 1; /* 남은 공간을 모두 차지 */
+  flex: 1;
+  /* 남은 공간을 모두 차지 */
 }
 
 /* 직원 이름 스타일 */
 .employee-name {
-  font-size: 14px; /* 글자 크기 */
-  font-weight: 500; /* 글자 두께 */
-  color: #333; /* 글자 색상 어두운 회색 */
+  font-size: 14px;
+  /* 글자 크기 */
+  font-weight: 500;
+  /* 글자 두께 */
+  color: #333;
+  /* 글자 색상 어두운 회색 */
 }
 
 /* 직원 부서 스타일 */
-.employee-department {
-  font-size: 12px; /* 글자 크기 */
-  color: #666; /* 글자 색상 회색 */
-  margin-top: 4px; /* 위 여백 */
+.employee-userId {
+  font-size: 12px;
+  /* 글자 크기 */
+  color: #666;
+  /* 글자 색상 회색 */
+  margin-top: 4px;
+  /* 위 여백 */
 }
 
 /* 버튼 그룹 스타일 */
 .button-group {
-  display: flex; /* 플렉스 박스 레이아웃 사용 */
-  justify-content: flex-end; /* 오른쪽으로 요소 정렬 */
-  gap: 10px; /* 요소 간 간격 */
-  margin-top: 20px; /* 위 여백 */
+  display: flex;
+  /* 플렉스 박스 레이아웃 사용 */
+  justify-content: flex-end;
+  /* 오른쪽으로 요소 정렬 */
+  gap: 10px;
+  /* 요소 간 간격 */
+  margin-top: 20px;
+  /* 위 여백 */
 }
 
 /* 취소 버튼 스타일 */
 .cancel-button {
-  padding: 8px 20px; /* 내부 여백 */
-  border: none; /* 테두리 없음 */
-  border-radius: 4px; /* 둥근 모서리 */
-  background-color: #f0f0f0; /* 배경색 연한 회색 */
-  color: #333; /* 글자 색상 어두운 회색 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  padding: 8px 20px;
+  /* 내부 여백 */
+  border: none;
+  /* 테두리 없음 */
+  border-radius: 4px;
+  /* 둥근 모서리 */
+  background-color: #f0f0f0;
+  /* 배경색 연한 회색 */
+  color: #333;
+  /* 글자 색상 어두운 회색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 저장 버튼 스타일 */
 .save-button {
-  padding: 8px 20px; /* 내부 여백 */
-  border: none; /* 테두리 없음 */
-  border-radius: 4px; /* 둥근 모서리 */
-  background-color: #4a90e2; /* 배경색 파란색 */
-  color: white; /* 글자 색상 흰색 */
-  cursor: pointer; /* 커서 포인터 변경 */
+  padding: 8px 20px;
+  /* 내부 여백 */
+  border: none;
+  /* 테두리 없음 */
+  border-radius: 4px;
+  /* 둥근 모서리 */
+  background-color: #4a90e2;
+  /* 배경색 파란색 */
+  color: white;
+  /* 글자 색상 흰색 */
+  cursor: pointer;
+  /* 커서 포인터 변경 */
 }
 
 /* 취소 버튼 호버 시 스타일 */
 .cancel-button:hover {
-  background-color: #e5e5e5; /* 호버 시 배경색 약간 진한 회색 */
+  background-color: #e5e5e5;
+  /* 호버 시 배경색 약간 진한 회색 */
 }
 
 /* 저장 버튼 호버 시 스타일 */
 .save-button:hover {
-  background-color: #357abd; /* 호버 시 배경색 더 어두운 파란색 */
+  background-color: #357abd;
+  /* 호버 시 배경색 더 어두운 파란색 */
 }
 </style>
