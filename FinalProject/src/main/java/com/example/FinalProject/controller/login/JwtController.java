@@ -71,9 +71,9 @@ public class JwtController {
         //cookie.setSecure(true);
         cookie.setSecure(false);
         cookie.setPath("/");//애플리케이션 전체에서 쿠키 사용가능
-        cookie.setMaxAge(3 * 60 * 60);//3시간
+        cookie.setMaxAge( 7 * 24 * 60 * 60);// 7일
         response.addCookie(cookie);
-        System.out.println("쿠키 생성됨");
+        //System.out.println("쿠키 생성됨");
     }
 
     //토큰에서 아이디 가지고오기
@@ -133,5 +133,10 @@ public class JwtController {
             response.addCookie(cookie);
         }
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping("/isLoggedIn")
+    public ResponseEntity<Boolean> isLoggIn(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return new ResponseEntity<>(userRepository.findById(authentication.getName()).isPresent(),HttpStatus.OK);
     }
 }

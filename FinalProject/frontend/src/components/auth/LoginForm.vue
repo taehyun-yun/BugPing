@@ -37,18 +37,16 @@ import { useUserStore } from '@/stores/userStore';
             "userId" : userId.value,
             "password" : password.value
             },{ withCredentials: true })
-
-            alert(res.data.roles+"입니다.");
+            // alert("권한 : "+res.data.roles+"입니다.");
             //피니아 저장
             const userStore = useUserStore();
             userStore.setUserId(res.data.userId);
-            userStore.setPassword(res.data.password);
             userStore.setEmail(res.data.email);
             userStore.setRoles(res.data.roles.split(","));
             const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
             userStore.setCompany(companyRes.data[0]);
             userStore.setCompanies(companyRes.data);
-            router.push("/");
+            router.push({ name : "home"});
         } catch (err){
             alert(err.response.data.msg);
         }

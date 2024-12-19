@@ -18,7 +18,8 @@ import Find from '@/components/auth/Find.vue';
 import Main from "@/views/Main.vue";
 import EnrollEmployee from "@/views/enroll/enrollEmployee.vue";
 import EnrollWorkplace from "@/views/enroll/enrollWorkplace.vue";
-import CommuteEmployee from "@/views/commute/CommuteEmployee.vue";
+import Home from "@/views/Home.vue";
+import QRCheck from "@/components/commute/QRCheck.vue";
 
 const router = createRouter({
 history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,9 @@ routes: [
             {path: 'find', name : 'find', component : Find,},
         ]
     },
+    //근태 체크용
+    { path : '/qrCheck', name : 'qrCheck', component : QRCheck, meta : { title : 'check'}},
+
     //근무자 전용
     {
         path : '/', component: Main , meta : { header : true, sidebar : true, requiresAuth : true, roles : ["employee"]} ,
@@ -59,6 +63,7 @@ routes: [
         path : '/', component: Main, meta : { header : true, sidebar : true, requiresAuth : true,} ,
         children : [
             // { path: 'calculator', name: 'CalculatorPage', component: CalculatorPage, meta : { title : "지급내역", }, },
+            { path: 'home', name: 'home', component : Home, meta : {}, },
             { path: "noticemain", name: "notice", component: NoticeMain, meta : { title: '알림', }, },
             { path: "noticedetail/:id", name: "noticedetail", component: NoticeDetail, meta: { title: "공지상세", }, },
             { path: "noticecreate", name: "noticeCreate", component: NoticeCreate, meta: { title: "알림" }, },
@@ -66,7 +71,6 @@ routes: [
             { path: "commute", name: "commute", component: Commute, meta: { title: "근태" }, },
             { path: "schedule", name: "schedule", component: Schedule, meta: { title: "스케쥴", }, },
             { path: 'contract', name: 'contract', component: Contract, meta : { title: '계약', }, },
-            { path: 'commuteEmployee', name: 'commuteEmployee', component : CommuteEmployee, meta : {title : '근태 현황'}, },
             //이 안에 넣으시면 됩니다.
         ]
     },
@@ -91,7 +95,7 @@ const getRole = async() =>{
 // 전역 가드 설정
 router.beforeEach(async(to, from, next) => {
     if (!to.matched.length) {
-        return next('/'); // 기본 경로로 이동
+        return next({name : 'home'}); // 기본 경로로 이동
     }
     //부모 meta 상속하기
     if(to.matched.length>0){

@@ -1,6 +1,6 @@
 <template>
   <div class="side-menu">
-    <div class="menu-item">
+    <div class="menu-item" @click="goPage('home')">
       <img src="../assets/SidebarImg/home.png" alt="Home Icon" class="icon" />
       <div class="menu-title">홈</div>
     </div>

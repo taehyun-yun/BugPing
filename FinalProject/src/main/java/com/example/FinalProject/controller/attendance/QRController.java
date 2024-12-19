@@ -34,19 +34,19 @@ public class QRController {
         if(company.isEmpty()){ return null; }
         try{
             //String url = String.format("http://localhost:8707/api/checkAttendance?companyId=%d",company.get().getCompanyId());
-            String url = String.format("http://192.168.5.23:8707/checkAttendance?companyId=%d",company.get().getCompanyId());
-            byte[] qrCode = attendanceService.makeQRCode(200,200,url);
+            String url = String.format("http://192.168.5.23:5173/qrCheck?companyId=%d",company.get().getCompanyId());
+            byte[] qrCode = attendanceService.makeQRCode(300,300,url);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode);
         } catch ( Exception e ) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    @GetMapping("/checkAttendance")
+    @GetMapping("/commuteCheck")
     public ResponseEntity<String>checkAttendance(@RequestParam Integer companyId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
         if(userId.equals("anonymousUser")){
-            return new ResponseEntity<>("로그인을 해주세요.",HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("로그인을 한 상태에서 다시 시도해주세요.",HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>("처리 되었습니다." + LocalDateTime.now() ,HttpStatus.OK);
     }

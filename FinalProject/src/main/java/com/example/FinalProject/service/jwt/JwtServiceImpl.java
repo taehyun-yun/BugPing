@@ -26,7 +26,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String getToken(String userId, String role){
         //유효시간
-        Date expiredate = new Date(System.currentTimeMillis() + 3 * 60 * 60 * 1000); //3시간
+        Date expiredate = new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000); // 7일
         //키의 설정- 타입은 jwt, 알고리즘은 hs256으로 하겠다 선언
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put("typ","JWT");

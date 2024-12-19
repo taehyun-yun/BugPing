@@ -88,15 +88,6 @@ import axios from 'axios';
 import { ref, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const router = useRouter();
-
-const goToLoginPage = async() => {
-  await axios
-  .get(axiosAddress+"/logout",{withCredentials : true})
-  .then(()=>{
-    alert("로그아웃되었습니다.")
-  })
-  router.push("/login");
-};
 //누르면 app.vue에 있는 sidebar와 연결됨-----------------------------------------------
 const showOrNot = ref(useRoute().meta.sidebar);
 const emit = defineEmits(['showSidebar']);
@@ -131,8 +122,17 @@ const newPassword = ref('');
 const inputPassword = ref('');
 const valid = ref(false);
  //현재 비밀번호 입력
-const checkPassword = () =>{
-  valid.value = userStore.password === inputPassword.value
+const checkPassword = async() =>{
+  try{
+    //로그인 유효성 체크
+    const res = await axios.post(`${axiosAddress}/login`,{
+    "userId" : userStore.userId,
+    "password" : inputPassword.value,
+    },{ withCredentials: true })
+    valid.value = true;
+    } catch (err){
+      alert(err.response.data.msg);
+    }
 }
  // 새로운 비밀번호 입력
 const setNewPassword = () =>{
@@ -204,6 +204,18 @@ watch(currentCooltime,(newValue)=>{
         sendButtonMsg.value = '인증번호 발송';
     }
 },{ deep : true})
+
+// 로그아웃 ----------------------
+const goToLoginPage = async() => {
+  await axios
+  .get(axiosAddress+"/logout",{withCredentials : true})
+  .then(()=>{
+    //pinia persist true로 인해 localstorage에 저장된 데이터 삭제
+    userStore.$reset();
+    alert("로그아웃되었습니다.")
+  })
+  router.push("/login");
+};
 </script> 
 <style scoped>
   .header-wrapper {
