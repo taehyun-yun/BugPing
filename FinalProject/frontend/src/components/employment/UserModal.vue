@@ -10,8 +10,8 @@
 
       <!-- 검색 컨테이너: 직원 검색을 위한 입력 필드와 아이콘 -->
       <div class="search-container">
-        <!-- 검색 입력 필드: 사용자가 이름, 사번, 휴대폰 번호로 직원 검색 -->
-        <input v-model="searchQuery" @input="searchEmployees" type="text" placeholder="이름/사번/휴대폰 번호로 검색"
+        <!-- 검색 입력 필드: 사용자가 이름, ID로 직원 검색 -->
+        <input v-model="searchQuery" type="text" placeholder="이름 / ID 검색"
           class="search-input" />
         <!-- 검색 아이콘: 검색 입력 필드 옆에 위치 -->
         <i class="search-icon"></i>
@@ -93,13 +93,13 @@ const searchQuery = ref('') // 초기값은 빈 문자열
 const showCurrentJobOnly = ref(false) // 현재 일하는 직업만 조회 여부
 const selectedEmployee = ref(null); // 🟦 선택된 직원 저장
 const employees = ref([]);
-const fetchAllEmployees = async (searchQuery = '') => {
+
+
+const fetchAllEmployees = async () => {
   try {
     const baseUrl = import.meta.env.VITE_API_URL;
     const companyId = 45; // 동적으로 처리 가능
-    const url = searchQuery
-      ? `${baseUrl}/api/worker/${companyId}/search?searchQuery=${encodeURIComponent(searchQuery)}`
-      : `${baseUrl}/api/worker/${companyId}`;
+    const url = `${baseUrl}/api/worker/${companyId}`; // 전체 데이터를 가져옴
 
     const response = await axios.get(url);
     employees.value = response.data.map(work => ({
@@ -109,14 +109,21 @@ const fetchAllEmployees = async (searchQuery = '') => {
       resignDate: work.resignDate || null,
       hireDate: work.hireDate,
     }));
+    console.log('전체 직원 데이터:', employees.value);
   } catch (error) {
     console.error('직원 데이터 가져오기 실패:', error);
   }
 };
+
 const filteredEmployees = computed(() => {
-  return employees.value.filter(employee => 
-    (!showCurrentJobOnly.value || !employee.resignDate) // '현재 근무 중' 체크 여부에 따라 필터링
-  );
+  return employees.value.filter(employee => {
+    const matchesSearch = searchQuery.value
+      ? employee.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        employee.userId.toLowerCase().includes(searchQuery.value.toLowerCase())
+      : true;
+    const matchesCurrentJob = !showCurrentJobOnly.value || employee.resignDate === null;
+    return matchesSearch && matchesCurrentJob;
+  });
 });
 
 
