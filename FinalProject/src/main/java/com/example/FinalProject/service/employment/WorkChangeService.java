@@ -34,7 +34,7 @@ public class WorkChangeService {
                 .orElseThrow(() -> new IllegalArgumentException("새로운 스케줄이 존재하지 않습니다."));
         createWorkChange(newSchedule, newDate, "in");
     }
-
+    @Transactional
     private void createWorkChange(Schedule schedule, LocalDate date, String inOut) {
         WorkChange workChange = new WorkChange();
         workChange.setSchedule(schedule);

@@ -59,69 +59,38 @@ public class ScheduleService {
                     if (schedule.getDay() == currentDate.getDayOfWeek().getValue()) {
 
                         // WorkChange에서 변경된 데이터 확인
-                        WorkChange workChange = workChangeRepository.findLatestWorkChange(
+                        Optional<WorkChange> workChangeOptional = workChangeRepository.findLatestWorkChange(
                                 schedule.getScheduleId(), currentDate);
 
-                        LocalDateTime officialStart;
-                        LocalDateTime officialEnd;
-                        String description = "기존 근무 일정";
+                        if (workChangeOptional.isPresent()) {
+                            WorkChange workChange = workChangeOptional.get();
+                            System.out.println("WorkChange 데이터: " + workChange);
+                            System.out.println("WorkChange 확인: " + workChange);
+                            System.out.println("WorkChange의 inOut 값: [" + workChange.getInOut() + "]");
 
-                        if (workChange != null) {
-                            if ("out".equals(workChange.getInOut())) {
-                                // 해당 날짜의 스케줄을 제외
+                            if ("OUT".equalsIgnoreCase(workChange.getInOut())) {
+                                // OUT 상태이면 스케줄 제외
+                                System.out.println("OUT 상태로 제외: " + currentDate);
                                 currentDate = currentDate.plusDays(1);
                                 continue;
-                            } else if ("in".equals(workChange.getInOut())) {
-                                // 변경된 시간 사용
-                                officialStart = workChange.getChangeStartTime();
-                                officialEnd = workChange.getChangeEndTime();
-                                description = "변경된 근무 일정";
-                            } else {
-                                // inOut 값이 없거나 다른 값인 경우 기본 일정 사용
-                                officialStart = currentDate.atTime(schedule.getOfficialStart());
-                                officialEnd = currentDate.atTime(schedule.getOfficialEnd());
                             }
-                        } else {
-                            // 변경 사항이 없으면 기존 데이터 사용
-                            officialStart = currentDate.atTime(schedule.getOfficialStart());
-                            officialEnd = currentDate.atTime(schedule.getOfficialEnd());
+
+                            if ("IN".equalsIgnoreCase(workChange.getInOut())) {
+                                System.out.println("IN 상태 확인, 스케줄 추가 준비");
+                                // IN 상태이면 WorkChange 데이터 사용
+                                Map<String, Object> scheduleMap = createScheduleMap(schedule, workChange.getChangeStartTime(), workChange.getChangeEndTime(), "변경된 근무 일정");
+                                System.out.println("스케줄 맵 생성: " + scheduleMap);
+                                scheduleList.add(scheduleMap);
+                                currentDate = currentDate.plusDays(1);
+                                continue;
+                            }
                         }
 
-                        // 종료 시간이 시작 시간보다 빠를 경우 처리
-                        if (officialEnd.isBefore(officialStart)) {
-                            officialEnd = officialEnd.plusDays(1);
-                        }
-
-                        // 근무 시간 계산이 하루가 넘어갈 경우 방지
-                        long totalMinutes = ChronoUnit.MINUTES.between(officialStart, officialEnd);
-                        if (totalMinutes > 1440) {
-                            currentDate = currentDate.plusDays(1);
-                            continue;
-                        }
-
-                        // 휴게시간 계산
-                        int breakMinutes = 0;
-                        LocalDateTime finalEnd = officialEnd;
-
-                        if (totalMinutes >= 480) { // 8시간 이상
-                            breakMinutes = 60;
-                            finalEnd = officialEnd.minusMinutes(breakMinutes);
-                        } else if (totalMinutes >= 240) { // 4시간 이상
-                            breakMinutes = 30;
-                            finalEnd = officialEnd.minusMinutes(breakMinutes);
-                        }
-
-                        // FullCalendar용 데이터 생성
-                        Map<String, Object> scheduleMap = new HashMap<>();
-                        String userName = schedule.getContract().getWork().getUser().getName();
-
-                        scheduleMap.put("scheduleId", schedule.getScheduleId());
-                        scheduleMap.put("title", userName + "님의 근무");
-                        scheduleMap.put("start", officialStart.toString());
-                        scheduleMap.put("end", finalEnd.toString());
-                        scheduleMap.put("description", description + " (근무 시간: " + totalMinutes / 60 + "시간 " +
-                                totalMinutes % 60 + "분, 휴게: " + breakMinutes + "분)");
-
+                        // WorkChange 데이터가 없으면 기존 Schedule 데이터 사용
+                        Map<String, Object> scheduleMap = createScheduleMap(schedule,
+                                currentDate.atTime(schedule.getOfficialStart()),
+                                currentDate.atTime(schedule.getOfficialEnd()),
+                                "기존 근무 일정");
                         scheduleList.add(scheduleMap);
                     }
                 }
@@ -130,6 +99,18 @@ public class ScheduleService {
         }
         return scheduleList;
     }
+
+    // 스케줄 맵 생성 메서드
+    private Map<String, Object> createScheduleMap(Schedule schedule, LocalDateTime start, LocalDateTime end, String description) {
+        Map<String, Object> scheduleMap = new HashMap<>();
+        scheduleMap.put("scheduleId", schedule.getScheduleId());
+        scheduleMap.put("title", schedule.getContract().getWork().getUser().getName() + "님의 근무");
+        scheduleMap.put("start", start.toString());
+        scheduleMap.put("end", end.toString());
+        scheduleMap.put("description", description);
+        return scheduleMap;
+    }
+
 
     // userId로 work의 companyId 조회
     public Integer getCompanyIdByUserId(String userId) {

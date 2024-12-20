@@ -3,6 +3,7 @@ package com.example.FinalProject.repository.employment;
 
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.employment.WorkChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,6 +56,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
+
+    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
+        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
+    }
+
 }
 
 

@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,41 +29,59 @@ public class WorkChangeController {
     @Autowired
     private WorkChangeRepository workChangeRepository;
 
-    // 근무 교대 요청 생성 (드래그 앤 드롭 처리 추가)
+    // 근무 교대 요청 생성 (드래그 앤 드롭 처리 추가
+
     @PostMapping("/workchange")
     public ResponseEntity<?> createWorkChange(@RequestBody Map<String, Object> updatedEvent) {
         try {
-            // 클라이언트에서 보낸 데이터 파싱
-            Integer originalScheduleId = (Integer) updatedEvent.get("originalScheduleId");
-            String originalDate = (String) updatedEvent.get("originalDate");
-            Integer newScheduleId = (Integer) updatedEvent.get("newScheduleId");
-            String newDate = (String) updatedEvent.get("newDate");
+            System.out.println("요청 데이터: " + updatedEvent);
 
-            // 필수 데이터 검증
-            if (originalScheduleId == null || originalDate == null || newScheduleId == null || newDate == null) {
-                throw new IllegalArgumentException("필수 요청 데이터가 누락되었습니다.");
-            }
+            Integer originalScheduleId = Integer.parseInt(updatedEvent.get("originalScheduleId").toString());
+            String originalDate = updatedEvent.get("originalDate").toString();
+            Integer newScheduleId = Integer.parseInt(updatedEvent.get("newScheduleId").toString());
+            String newDate = updatedEvent.get("newDate").toString();
 
-            // WorkChangeService를 호출하여 스케줄 변경 처리
-            workChangeService.updateWorkChange(
-                    originalScheduleId,
-                    LocalDate.parse(originalDate),
-                    newScheduleId,
-                    LocalDate.parse(newDate)
-            );
+            // UTC 시간 형식 파싱
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+            LocalDateTime startTime = LocalDateTime.parse(updatedEvent.get("startTime").toString(), formatter);
+            LocalDateTime endTime = LocalDateTime.parse(updatedEvent.get("endTime").toString(), formatter);
 
-            // 응답 데이터 생성
+            System.out.println("시간 파싱 완료: startTime=" + startTime + ", endTime=" + endTime);
+
+            // OUT 데이터 생성
+            Schedule originalSchedule = scheduleRepository.findById(originalScheduleId)
+                    .orElseThrow(() -> new IllegalArgumentException("스케줄을 찾을 수 없습니다. ID: " + originalScheduleId));
+            WorkChange outChange = new WorkChange();
+            outChange.setSchedule(originalSchedule);
+            outChange.setChangeDate(LocalDate.parse(originalDate));
+            outChange.setChangeStartTime(startTime);
+            outChange.setChangeEndTime(endTime);
+            outChange.setInOut("OUT");
+            workChangeRepository.save(outChange);
+
+            System.out.println("OUT 데이터 저장 완료: " + outChange);
+
+            // IN 데이터 생성
+            Schedule newSchedule = scheduleRepository.findById(newScheduleId)
+                    .orElseThrow(() -> new IllegalArgumentException("스케줄을 찾을 수 없습니다. ID: " + newScheduleId));
+            WorkChange inChange = new WorkChange();
+            inChange.setSchedule(newSchedule);
+            inChange.setChangeDate(LocalDate.parse(newDate));
+            inChange.setChangeStartTime(startTime);
+            inChange.setChangeEndTime(endTime);
+            inChange.setInOut("IN");
+            workChangeRepository.save(inChange);
+
+            System.out.println("IN 데이터 저장 완료: " + inChange);
+
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "스케줄이 성공적으로 변경되었습니다.");
-            response.put("originalScheduleId", originalScheduleId);
-            response.put("newScheduleId", newScheduleId);
-            response.put("originalDate", originalDate);
-            response.put("newDate", newDate);
-
+            response.put("message", "근무 변경이 성공적으로 처리되었습니다.");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.err.println("오류 발생: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body("서버에서 오류가 발생했습니다: " + e.getMessage());
         }
     }
-}
 
+}

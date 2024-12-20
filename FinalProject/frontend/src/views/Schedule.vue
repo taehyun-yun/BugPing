@@ -63,7 +63,7 @@ const getEmployeeColor = (name) => {
             newColor = `hsl(${newHue}, 70%, ${newLightness}%)`;
         } while (
             usedHues.value.some(hue => Math.abs(hue.h - newHue) < MIN_HUE_DIFFERENCE &&
-                                        Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
+                Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
         );
 
         // 색상 등록
@@ -215,6 +215,7 @@ const calendarOptions = ref({
                     singleEvents: true,
                     orderBy: 'startTime',
                 },
+                withCredentials: false,
             });
 
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);
@@ -225,12 +226,13 @@ const calendarOptions = ref({
             selectedCompanyId.value = companyId;
 
             scheduleItems.value = schedules.map((event) => ({
+                id: event.scheduleId, // FullCalendar 이벤트 ID 설정
                 title: event.title,
                 start: event.start,
                 end: event.end,
                 color: getEmployeeColor(event.title),
                 extendedProps: {
-                    isHoliday: false,
+                    originalScheduleId: event.scheduleId, // 원래 스케줄 ID
                     description: event.description,
                 },
             }));
@@ -272,29 +274,32 @@ const calendarOptions = ref({
 
             // 변경된 이벤트 데이터를 추출
             const updatedEvent = {
-                originalScheduleId: event.extendedProps.originalScheduleId,
-                originalDate: format(new Date(event.start), 'yyyy-MM-dd'),
-                newScheduleId: event.extendedProps.newScheduleId,
-                newDate: format(new Date(event.end), 'yyyy-MM-dd'),
+                originalScheduleId: event.extendedProps.originalScheduleId, // 기존 스케줄 ID
+                originalDate: format(info.oldEvent.start, 'yyyy-MM-dd'), // 이전 날짜
+                newScheduleId: event.id, // 새로운 스케줄 ID
+                newDate: format(event.start, 'yyyy-MM-dd'), // 새로운 날짜
+                startTime: event.start.toISOString(), // 시작 시간 추가
+                endTime: event.end.toISOString(), // 종료 시간 추가
             };
+
+            console.log("전송 데이터:", updatedEvent); // 디버깅용
 
             // 서버로 변경 요청 전송
             await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
                 withCredentials: true,
             });
 
-            // 성공적으로 저장되었으면 캘린더 새로고침
             calendarRef.value.getApi().refetchEvents();
             console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
         } catch (error) {
             console.error('일정 변경 중 오류 발생:', error);
-            // 변경 실패 시 원래 위치로 복구
             info.revert();
         }
     },
 });
 
 const calendarRef = ref(null);
+
 
 watch(buttonText, () => {
     const calendarApi = calendarRef.value.getApi();

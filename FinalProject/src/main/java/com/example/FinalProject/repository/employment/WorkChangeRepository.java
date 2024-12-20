@@ -1,5 +1,6 @@
 package com.example.FinalProject.repository.employment;
 
+import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.entity.employment.WorkChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import java.util.Optional;
 
 
 public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
@@ -28,11 +29,14 @@ public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer>
 */
      @Query("SELECT wc FROM WorkChange wc " +
              "WHERE wc.schedule.scheduleId = :scheduleId " +
-             "AND wc.changeDate = :date " +
-             "ORDER BY wc.changeStartTime DESC")
-     WorkChange findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
-                                     @Param("date") LocalDate date);
+             "AND wc.changeDate = :changeDate " +
+             "ORDER BY wc.workChangeId DESC")
+     Optional<WorkChange> findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
+                                                    @Param("changeDate") LocalDate changeDate);
 
 
+
+     Optional<WorkChange> findTopByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
 }
+
 

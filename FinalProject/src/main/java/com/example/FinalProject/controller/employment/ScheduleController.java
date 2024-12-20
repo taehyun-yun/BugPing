@@ -35,9 +35,6 @@ public class ScheduleController {
                     .anyMatch(authority -> authority.getAuthority().equalsIgnoreCase("ROLE_EMPLOYER"));
             String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
 
-            System.out.println("현재의 userId : " + userId);
-            System.out.println("현재의 role : " + role);
-
             Integer companyId = scheduleService.getCompanyIdByUserId(userId);
             if (companyId == null) {
                 throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
