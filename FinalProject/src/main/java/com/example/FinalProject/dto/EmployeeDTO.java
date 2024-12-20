@@ -15,6 +15,7 @@ public class EmployeeDTO {
     private String employeeId; // 직원 ID
     private String name;        // 이름
     private String startDate;   // 정산 시작일 (String 타입)
+    private String hireDate; // 고용 시작일 필드
     private String hourlyWage;  // 시급
     private double monthlyHours; // 월 근무시간
     private Integer workDays;   // 월 근무일수

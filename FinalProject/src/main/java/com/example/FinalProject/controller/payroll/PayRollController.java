@@ -50,10 +50,11 @@ public class PayRollController {
     }
 
     // 근무자 리스트 정보 반환
-    @GetMapping("/employees/paging")
-    public ResponseEntity<Page<EmployeeDTO>> getEmployeeListWithPagination(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+    @GetMapping("/employees")
+    public ResponseEntity<List<EmployeeDTO>> getEmployeeList(
+            @RequestParam(defaultValue = "") String searchQuery,
+            @RequestParam(defaultValue = "") String sortField,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
 
         // 로그인된 사용자 ID 가져오기
         String loggedInUserId = jwtService.getLoggedInUserId();
@@ -63,11 +64,11 @@ public class PayRollController {
         }
 
         log.info("로그인된 사용자 ID!!: {}", loggedInUserId);
-        log.info("페이징된 근무자 리스트 요청 - Page: {}, Size: {}", page, size);
+        log.info("정렬 요청 - Field: {}, Direction: {}", sortField, sortDirection);
 
 
         // 근무자 리스트 조회
-        Page<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId, page, size);
+        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId, searchQuery, sortField, sortDirection);
 
         log.info("계산된 근무자 리스트 데이터: {}", employeeList);
         return ResponseEntity.ok(employeeList);
