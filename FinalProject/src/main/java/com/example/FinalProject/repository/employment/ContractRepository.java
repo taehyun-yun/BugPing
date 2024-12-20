@@ -54,6 +54,16 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
     List<Contract> findAllContractsWithWorkAndUser();
 
 
+    // 특정 회사 ID로 계약 조회
+    @Query("SELECT c FROM Contract c " +
+            "JOIN c.work w " +
+            "JOIN w.company cp " +
+            "WHERE cp.companyId = :companyId " +
+            "ORDER BY c.contractStart DESC")
+    List<Contract> findAllContractsByCompanyId(@Param("companyId") Integer companyId);
+
+
+
 //---------------------JH----------------------
 
     // Work를 기준으로 Contract 조회
