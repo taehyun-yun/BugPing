@@ -3,10 +3,12 @@ package com.example.FinalProject.repository.employment;
 
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.employment.WorkChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +27,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
     List<Schedule> findSchedulesByCompanyId(@Param("companyId") Integer companyId);
 
+    List<Schedule> findByContract_Work_Company_CompanyId(Integer companyId);
 
     //----------------------------------- ES ---------------------------------
     // 특정 Contract ID로 스케줄을 조회하는 메서드
@@ -54,6 +57,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
+
+    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
+        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
+    }
+
 }
 
 

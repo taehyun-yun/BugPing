@@ -25,37 +25,28 @@ public class ScheduleController {
     public ResponseEntity<?> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam(required = false, defaultValue = "false") boolean viewCompanySchedule // 추가된 파라미터
+            @RequestParam(required = false, defaultValue = "false") boolean viewCompanySchedule
     ) {
         try {
-            // 로그인된 사용자 정보 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String userId = authentication.getName(); // 로그인된 userId
+            String userId = authentication.getName();
 
-            // 사용자 역할 확인
             boolean isEmployer = authentication.getAuthorities().stream()
                     .anyMatch(authority -> authority.getAuthority().equalsIgnoreCase("ROLE_EMPLOYER"));
             String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
 
-            System.out.println("현재의 userId : " + userId);
-            System.out.println("현재의 role : " + role);
-
-            // 회사 ID 조회
             Integer companyId = scheduleService.getCompanyIdByUserId(userId);
             if (companyId == null) {
                 throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
             }
 
-            // 역할에 따른 스케줄 조회
-            List<Map<String, Object>> schedules = new ArrayList<>();
+            List<Map<String, Object>> schedules;
             if (isEmployer) {
-                // ROLE_EMPLOYER 사용자는 항상 회사 전체 일정 반환
                 schedules = scheduleService.getCompanySchedule(companyId, start, end);
                 //System.out.println("사장입니다.");
                 //System.out.println(schedules.size());
                 schedules.forEach(s->System.out.println("제목"+s.get("title")));
             } else {
-                // ROLE_EMPLOYEE 사용자는 viewCompanySchedule에 따라 분기
                 if (viewCompanySchedule) {
                     schedules = scheduleService.getCompanySchedule(companyId, start, end);
                     //System.out.println("개인입니다.");
@@ -65,12 +56,20 @@ public class ScheduleController {
                 }
             }
 
+            // 각 스케줄에 scheduleId 추가
+            List<Map<String, Object>> updatedSchedules = new ArrayList<>();
+            for (Map<String, Object> schedule : schedules) {
+                Map<String, Object> updatedSchedule = new HashMap<>(schedule);
+                updatedSchedule.put("scheduleId", schedule.get("scheduleId")); // scheduleId 추가
+                updatedSchedules.add(updatedSchedule);
+            }
+
             // 응답 구성
             Map<String, Object> response = new HashMap<>();
             response.put("userId", userId);
             response.put("role", role);
             response.put("companyId", companyId);
-            response.put("schedules", schedules);
+            response.put("schedules", updatedSchedules); // 수정된 schedules 반환
 
             return ResponseEntity.ok(response);
 
@@ -78,6 +77,7 @@ public class ScheduleController {
             return ResponseEntity.status(500).body("서버에서 오류가 발생했습니다: " + e.getMessage());
         }
     }
+
 }
 
 
