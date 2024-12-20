@@ -63,8 +63,7 @@ const submitData = async() => {
         // 보내기
         await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
         .then((res)=>{
-            // alert(res.data);
-            router.push({name : '/home'})
+            router.push({name : 'home'})
         })
         .catch((err)=>{
             alert(err.response.data);

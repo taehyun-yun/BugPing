@@ -17,10 +17,10 @@
       <img src="../assets/SidebarImg/dollar-sign.png" alt="Dollar Icon" class="icon" />
       <div class="menu-title">급여 관리</div>
     </div>
-    <div class="menu-item" @click="goPage('commute')">
+    <!-- <div class="menu-item" @click="goPage('commute')">
       <img src="../assets/SidebarImg/credit-card.png" alt="Credit Card Icon" class="icon" />
       <div class="menu-title">근태 관리</div>
-    </div>
+    </div> -->
     <div class="menu-item" @click="goPage('notice')">
       <img src="../assets/SidebarImg/edit.png" alt="Edit Icon" class="icon" />
       <div class="menu-title">공지사항</div>

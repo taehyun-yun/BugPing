@@ -23,10 +23,10 @@
             <!-- <img src="../assets/MainheaderImg/book.png" alt="Book Icon" class="icon" />
             <img src="../assets/MainheaderImg/cloud.png" alt="Cloud Icon" class="icon" />
             <img src="../assets/MainheaderImg/message.png" alt="ChannelTalk Icon" class="icon" /> -->
-            <div class="column">
+            <!-- <div class="column">
               <img src="../assets/MainheaderImg/bell.png" alt="Bell Icon" class="icon" />
               <div class="row"></div>
-            </div>
+            </div> -->
             <div class="column">
               <img src="../assets/MainheaderImg/circle-user-solid.svg" alt="profile Icon" class="icon" />
                 <div class="row">
