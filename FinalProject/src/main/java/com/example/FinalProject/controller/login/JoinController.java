@@ -25,7 +25,8 @@ public class JoinController {
     //회원가입
     @PostMapping(value = "/userRegister")
     public ResponseEntity<String> register(@ModelAttribute User user, @ModelAttribute Company company){
-        System.out.println(company);
+//        System.out.println(user);
+//        System.out.println(company);
     //회사 등록 할 때
     if(company.getCname()!=null){
         if(!joinService.check(user)){

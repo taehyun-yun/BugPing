@@ -63,11 +63,11 @@ const submitData = async() => {
         // 보내기
         await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
         .then((res)=>{
-            alert(res.data);
-            push({name : ''})
+            // alert(res.data);
+            router.push({name : '/home'})
         })
         .catch((err)=>{
-            alert(err.response);
+            alert(err.response.data);
         })
     }else{
         alert("필수 항목을 전부 입력해주세요.");
