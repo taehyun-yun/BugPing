@@ -54,6 +54,15 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
+// ====================================== TH =============================================================
+//    // 금일 출근자 카운트
+//    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.day = :dayOfWeek AND s.status = 'active'")
+//    long countByDay(@Param("dayOfWeek") int dayOfWeek);
+
+    @Query("SELECT s, a FROM Schedule s " +
+            "LEFT JOIN Attendance a ON a.schedule = s " +
+            "WHERE s.day = :dayOfWeek")
+    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
 }
 
 

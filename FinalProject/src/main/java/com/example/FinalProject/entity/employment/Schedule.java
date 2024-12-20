@@ -22,7 +22,6 @@ public class Schedule {
     @JoinColumn(name = "contract_id")//, nullable = false, insertable = false, updatable = false
     private Contract contract;
 
-
     private Integer day; // Monday == 1 , Sunday == 7
     private LocalTime officialStart; //LocalTime.of(12,30) 12시 30분
     private LocalTime officialEnd;

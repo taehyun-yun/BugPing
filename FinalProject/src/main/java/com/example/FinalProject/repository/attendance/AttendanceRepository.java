@@ -1,5 +1,6 @@
 package com.example.FinalProject.repository.attendance;
 
+import com.example.FinalProject.entity.employment.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.FinalProject.entity.attendance.Attendance;
 import org.springframework.data.jpa.repository.Query;
@@ -100,14 +101,12 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "JOIN FETCH w.user u " +
             "WHERE a.id = :attendanceId")
     Attendance findAttendanceWithAll(@Param("attendanceId") Long attendanceId);
-
+    
+// ========================================== TH ====================================================
     // 금일 출근자 조회
-    @Query("SELECT DISTINCT a FROM Attendance a " +
-            "JOIN FETCH a.schedule s " +
-            "JOIN FETCH s.contract c " +
-            "JOIN FETCH c.work w " +
-            "JOIN FETCH w.user u " +
-            "WHERE a.actualStart BETWEEN :startOfDay AND :endOfDay")
-    List<Attendance> findTodayAttendances(@Param("startOfDay") LocalDateTime startOfDay,
-                                         @Param("endOfDay") LocalDateTime endOfDay);
+    @Query("SELECT s, a FROM Schedule s " +
+            "LEFT JOIN Attendance a ON a.schedule = s " +
+            "WHERE s.day = :dayOfWeek")
+    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
+
 }

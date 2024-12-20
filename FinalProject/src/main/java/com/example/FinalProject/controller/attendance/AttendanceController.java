@@ -1,6 +1,7 @@
 package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
+import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -91,15 +93,16 @@ public class AttendanceController {
         }
     }
 
-    // 금일 근무자들의 리스트 조회
+    // 금일 출근자 리스트 조회
     @GetMapping("/attendances/attendancesList")
-    public ResponseEntity<List<AdminAttendanceDTO>> getAttendancesList() {
-        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-        List<AdminAttendanceDTO> adminAttendances = attendanceService.getTodayAttendances(startOfDay, endOfDay);
-        return ResponseEntity.ok(adminAttendances);
+    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList() {
+        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances();
+        return ResponseEntity.ok(attendanceList);
     }
 
-
+    @GetMapping("/today/attendance-statistics")
+    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics() {
+        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics();
+        return ResponseEntity.ok(statistics);
+    }
 }
