@@ -63,7 +63,7 @@ const getEmployeeColor = (name) => {
             newColor = `hsl(${newHue}, 70%, ${newLightness}%)`;
         } while (
             usedHues.value.some(hue => Math.abs(hue.h - newHue) < MIN_HUE_DIFFERENCE &&
-                                        Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
+                Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
         );
 
         // 색상 등록
@@ -187,7 +187,7 @@ const calendarOptions = ref({
     headerToolbar: headerToolbarOptions,
     customButtons: {
         toggleViewButton: {
-            text: buttonText.value, // 동적으로 텍스트 설정
+            text: buttonText.value,
             click: () => {
                 isUserView.value = !isUserView.value;
                 calendarRef.value.getApi().refetchEvents(); // 일정 새로 로드
@@ -196,16 +196,15 @@ const calendarOptions = ref({
     },
     events: async (fetchInfo, successCallback, failureCallback) => {
         try {
-            // 서버와 날짜 요청 형식을 맞추기
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
             const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
                 params: {
                     start: startFormatted,
                     end: endFormatted,
-                    viewCompanySchedule: !isUserView.value, // 회사 근무 보기 활성화 여부
+                    viewCompanySchedule: !isUserView.value,
                 },
-                withCredentials: true, // 서버 요청에는 자격 증명 필요
+                withCredentials: true,
             });
 
             const holidaysResponse = axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
@@ -221,26 +220,23 @@ const calendarOptions = ref({
 
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);
 
-            // 서버 데이터 처리
             const { userId, role, companyId, schedules } = serverResult.data;
-            selectedUserId.value = userId; // userId 설정
-            userRole.value = role; // role 설정
-            selectedCompanyId.value = companyId; // companyId 설정
-            console.log('서버 데이터:', serverResult);
+            selectedUserId.value = userId;
+            userRole.value = role;
+            selectedCompanyId.value = companyId;
 
-            // scheduleItems에 데이터 저장
             scheduleItems.value = schedules.map((event) => ({
+                id: event.scheduleId, // FullCalendar 이벤트 ID 설정
                 title: event.title,
                 start: event.start,
                 end: event.end,
-                color: getEmployeeColor(event.title),  // 이름 기반 색상 적용
+                color: getEmployeeColor(event.title),
                 extendedProps: {
-                    isHoliday: false,
+                    originalScheduleId: event.scheduleId, // 원래 스케줄 ID
                     description: event.description,
                 },
             }));
 
-            // 공휴일 데이터 처리
             const holidaySchedules = holidayResult.data.items
                 .filter((event) => event.summary !== '섣달 그믐날')
                 .map((event) => ({
@@ -249,21 +245,14 @@ const calendarOptions = ref({
                     end: event.end.date || event.end.dateTime,
                     color: '#FF9999',
                     textColor: '#8B0000',
-                    editable: false, //드래그 앤 드롭 비활성화
+                    editable: false,
                     extendedProps: {
-                        isHoliday: true,  // 공휴일 여부 플래그 추가
-                    }
+                        isHoliday: true,
+                    },
                 }));
 
-            // 기존 일정 + 공휴일 
             const allEvents = [
-                ...scheduleItems.value.map((event) => ({
-                    ...event,
-                    extendedProps: {
-                        isHoliday: false, // 일반 일정은 공휴일 아님
-                        ...event.extendedProps,
-                    },
-                })),
+                ...scheduleItems.value,
                 ...holidaySchedules,
             ];
             successCallback(allEvents);
@@ -272,20 +261,46 @@ const calendarOptions = ref({
             failureCallback(error);
         }
     },
-
-    editable: true,     // 드래그로 이벤트 수정 가능
-    selectable: true,   // 드래그로 영역 선택 가능
-    eventColor: '#3788d8',  // 기본 이벤트 색상
-
-    // 제목만 표시
+    editable: true,
+    selectable: true,
+    eventColor: '#3788d8',
     eventContent: renderEventContent,
-    // 이벤트 클릭시 모달 열기
     eventClick: (info) => openModal(info.event),
+
+    // 드래그 앤 드롭 이벤트 추가
+    eventDrop: async (info) => {
+        try {
+            const { event } = info;
+
+            // 변경된 이벤트 데이터를 추출
+            const updatedEvent = {
+                originalScheduleId: event.extendedProps.originalScheduleId, // 기존 스케줄 ID
+                originalDate: format(info.oldEvent.start, 'yyyy-MM-dd'), // 이전 날짜
+                newScheduleId: event.id, // 새로운 스케줄 ID
+                newDate: format(event.start, 'yyyy-MM-dd'), // 새로운 날짜
+                startTime: event.start.toISOString(), // 시작 시간 추가
+                endTime: event.end.toISOString(), // 종료 시간 추가
+            };
+
+            console.log("전송 데이터:", updatedEvent); // 디버깅용
+
+            // 서버로 변경 요청 전송
+            await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
+                withCredentials: true,
+            });
+
+            calendarRef.value.getApi().refetchEvents();
+            console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
+        } catch (error) {
+            console.error('일정 변경 중 오류 발생:', error);
+            info.revert();
+        }
+    },
 });
 
 const calendarRef = ref(null);
 
-// 버튼 텍스트 변경 시 FullCalendar 업데이트
+
 watch(buttonText, () => {
     const calendarApi = calendarRef.value.getApi();
     calendarApi.setOption('customButtons', {
@@ -295,6 +310,7 @@ watch(buttonText, () => {
         },
     });
 });
+
 </script>
 
 <style scoped>
