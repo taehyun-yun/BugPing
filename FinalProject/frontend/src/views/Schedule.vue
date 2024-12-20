@@ -198,7 +198,7 @@ const calendarOptions = ref({
         try {
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
-            const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
+            const serverResponse = await axios.get("http://localhost:8707/api/calendar", {
                 params: {
                     start: startFormatted,
                     end: endFormatted,
