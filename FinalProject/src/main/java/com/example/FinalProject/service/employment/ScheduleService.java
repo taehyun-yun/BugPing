@@ -68,16 +68,16 @@ public class ScheduleService {
                             System.out.println("WorkChange 확인: " + workChange);
                             System.out.println("WorkChange의 inOut 값: [" + workChange.getInOut() + "]");
 
-                            if ("OUT".equalsIgnoreCase(workChange.getInOut())) {
-                                // OUT 상태이면 스케줄 제외
+                            String inOut = workChange.getInOut().trim().toUpperCase();
+
+                            if ("OUT".equals(inOut)) {
                                 System.out.println("OUT 상태로 제외: " + currentDate);
                                 currentDate = currentDate.plusDays(1);
                                 continue;
                             }
 
-                            if ("IN".equalsIgnoreCase(workChange.getInOut())) {
+                            if ("IN".equals(inOut)) {
                                 System.out.println("IN 상태 확인, 스케줄 추가 준비");
-                                // IN 상태이면 WorkChange 데이터 사용
                                 Map<String, Object> scheduleMap = createScheduleMap(schedule, workChange.getChangeStartTime(), workChange.getChangeEndTime(), "변경된 근무 일정");
                                 System.out.println("스케줄 맵 생성: " + scheduleMap);
                                 scheduleList.add(scheduleMap);
