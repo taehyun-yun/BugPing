@@ -140,6 +140,7 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 const employees = ref([]);
 const searchQuery = ref("");
@@ -154,7 +155,7 @@ const unpaidEmployees = computed(() => employees.value.filter(emp => !emp.isPaid
 // 직원 데이터 가져오기
 const fetchEmployees = async () => {
   try {
-    const response = await axios.get("http://localhost:8707/api/employees", { withCredentials: true });
+    const response = await axios.get(`${axiosAddress}/api/employees`, { withCredentials: true });
     employees.value = response.data || [];
   } catch (error) {
     console.error("데이터 로드 실패:", error);
@@ -192,7 +193,7 @@ const sortedEmployees = computed(() => {
 // 지급 상태 변경
 const togglePaid = async (employee) => {
   try {
-    await axios.patch(`http://localhost:8707/api/payroll/${employee.payRollId}/paid`, null, {
+    await axios.patch(`${axiosAddress}/api/payroll/${employee.payRollId}/paid`, null, {
       params: { isPaid: !employee.isPaid },
       withCredentials: true
     });

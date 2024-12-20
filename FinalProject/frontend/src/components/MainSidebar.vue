@@ -25,9 +25,9 @@
       <img src="../assets/SidebarImg/edit.png" alt="Edit Icon" class="icon" />
       <div class="menu-title">공지사항</div>
     </div>
-    <div class="menu-item">
+    <div class="menu-item" @click="goPage('AdministratorDailyCommuting')">
       <img src="../assets/SidebarImg/alert-circle.png" alt="Help Icon" class="icon" />
-      <div class="menu-title">Help</div>
+      <div class="menu-title">출결관리</div>
     </div>
     <div class="menu-item" @click="goPage('enrollEmployee')" v-if="forEmployee">
       <img src="../assets/SidebarImg/building-user-solid.svg" alt="enrollEmployee Icon" class="icon" />

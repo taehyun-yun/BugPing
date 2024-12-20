@@ -165,6 +165,7 @@ import docxIcon from "@/assets/noticeimg/docx.png";
 import xlsxIcon from "@/assets/noticeimg/xlsx.png";
 import pdfIcon from "@/assets/noticeimg/pdf.png";
 import elseIcon from "@/assets/noticeimg/else.png";
+import { axiosAddress } from "@/stores/axiosAddress";
 const previewImage = ref(""); // 이미지 미리보기 URL
 const previewFile = ref("");
 const uploadedFiles = ref([]); // 업로드된 파일 목록
@@ -247,7 +248,7 @@ const submitNotice = async () => {
 
   try {
     const response = await axios.post(
-      "http://localhost:8707/notice/create",
+      `${axiosAddress}/notice/create`,
       formData,
       { withCredentials: true },
       {

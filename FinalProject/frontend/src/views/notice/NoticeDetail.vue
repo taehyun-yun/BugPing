@@ -18,7 +18,7 @@
             alt="프로필 아이콘"
             class="profile-img"
           />
-          <span>{{ notice.work?.user?.name || "작성자 없음" }}</span>
+          <span>{{ notice.work?.userName || "작성자 없음" }}</span>
           <!-- 작성자 이름 표시 -->
         </div>
         <div class="date-info">
@@ -50,7 +50,7 @@
         >
           <!-- 이미지 미리보기 -->
           <img
-            :src="`http://localhost:8707/notice/files/${file.filePath}`"
+            :src="`${axios}/notice/files/${file.filePath}`"
             alt="첨부 이미지"
             class="preview-image"
             width="800"
@@ -58,7 +58,7 @@
           />
           <!-- 이미지 원본 보기 -->
           <a
-            :href="`http://localhost:8707/notice/files/${file.filePath}`"
+            :href="`${axiosAddress}/notice/files/${file.filePath}`"
             target="_blank"
             class="view-link"
           >
@@ -81,6 +81,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 const route = useRoute(); // 현재 라우트 정보 가져오기
 const router = useRouter();
@@ -108,7 +109,7 @@ const fetchNotice = async () => {
 
   try {
     const response = await axios.get(
-      `http://localhost:8707/notice/${noticeId}`
+      `${axiosAddress}/notice/${noticeId}`
     );
     notice.value = response.data;
   } catch (error) {
@@ -130,7 +131,7 @@ const editNotice = () => {
 const deleteNotice = async () => {
   if (confirm("이 공지사항을 삭제하시겠습니까?")) {
     try {
-      await axios.delete("http://localhost:8707/notice/delete", {
+      await axios.delete(`${axiosAddress}/notice/delete`, {
         data: [notice.value.noticeId],
       });
       alert("공지사항이 삭제되었습니다.");

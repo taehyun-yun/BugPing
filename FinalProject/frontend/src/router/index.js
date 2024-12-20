@@ -112,7 +112,7 @@ router.beforeEach(async(to, from, next) => {
     //로그인하면 못가는 페이지처리
     if(to?.meta?.onlyBeforeLogin){
         let auth = await getRole();
-        return !auth[0] ? next() : next("/");
+        return !auth[0] ? next() : next("/home");
     }
     //로그인이 필요없다면,
     if (!to?.meta?.requiresAuth) {

@@ -34,6 +34,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { axiosAddress } from '@/stores/axiosAddress';
 
 // HSL 색상에서 Hue와 Lightness를 추출하는 함수
 const extractHue = (hsl) => {
@@ -198,7 +199,7 @@ const calendarOptions = ref({
         try {
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
-            const serverResponse = await axios.get("http://localhost:8707/api/calendar", {
+            const serverResponse = await axios.get(`${axiosAddress}/api/calendar`, {
                 params: {
                     start: startFormatted,
                     end: endFormatted,
@@ -285,7 +286,7 @@ const calendarOptions = ref({
             console.log("전송 데이터:", updatedEvent); // 디버깅용
 
             // 서버로 변경 요청 전송
-            await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
+            await axios.post(`${axiosAddress}/api/workchange`, updatedEvent, {
                 withCredentials: true,
             });
 

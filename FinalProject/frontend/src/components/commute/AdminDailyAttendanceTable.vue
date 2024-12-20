@@ -31,13 +31,14 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 const employees = ref([]);
 
 onMounted(async () => {
   try {
     const response = await axios.get(
-      "http://localhost:8707/api/attendances/attendancesList"
+      `${axiosAddress}/api/attendances/attendancesList`
     );
     console.log("API Response:", response.data);
     employees.value = response.data;

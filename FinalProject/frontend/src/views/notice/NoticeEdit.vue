@@ -133,7 +133,7 @@
               <ul>
                 <li v-for="file in existingFiles" :key="file.fileId">
                   <a
-                    :href="`http://localhost:8707/notice/files/${file.filePath}`"
+                    :href="`${axiosAddress}/notice/files/${file.filePath}`"
                     target="_blank"
                   >
                     {{ file.filePath }}
@@ -174,6 +174,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 const route = useRoute();
 const router = useRouter();
@@ -212,7 +213,7 @@ const loadNotice = async () => {
   const noticeId = route.params.id; // URL에서 공지사항 ID 가져오기
   try {
     const response = await axios.get(
-      `http://localhost:8707/notice/${noticeId}`,
+      `${axiosAddress}/notice/${noticeId}`,
       { withCredentials: true }
     );
     notice.value = response.data;
@@ -232,7 +233,7 @@ const loadNotice = async () => {
       file.fileType.startsWith("image/")
     );
     if (imageFile) {
-      (previewImage.value = `http://localhost:8707/notice/files/${imageFile.filePath}`),
+      (previewImage.value = `${axiosAddress}/notice/files/${imageFile.filePath}`),
         { withCredentials: true };
     }
   } catch (error) {
@@ -278,7 +279,7 @@ const saveNotice = async () => {
 
   try {
     const response = await axios.put(
-      `http://localhost:8707/notice/update/${noticeId}`,
+      `${axiosAddress}/notice/update/${noticeId}`,
       formData,
       {
         headers: {

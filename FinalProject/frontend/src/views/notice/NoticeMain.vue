@@ -173,6 +173,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Axios를 사용하여 API 호출
 import { useUserStore } from "@/stores/userStore";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 const goToDetail = (noticeId) => {
   console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
@@ -210,7 +211,7 @@ const fetchNotices = async () => {
       // '전체 게시물' 탭인 경우
       if (activeCategory.value === "전체") {
         // '전체' 카테고리 선택 시 모든 공지사항 조회
-        response = await axios.get("http://localhost:8707/notice/list", {
+        response = await axios.get(`${axiosAddress}/notice/list`, {
           withCredentials: true,
         });
       } else {
@@ -221,7 +222,7 @@ const fetchNotices = async () => {
           매뉴얼: "MANUAL",
           특이사항: "SPECIAL",
         };
-        response = await axios.get("http://localhost:8707/notice/list/type", {
+        response = await axios.get(`${axiosAddress}/notice/list/type`, {
           params: { type: typeMap[activeCategory.value] },
           withCredentials: true,
         });
@@ -231,7 +232,7 @@ const fetchNotices = async () => {
       // 현재 예제에서는 모든 공지사항을 가져오지만,
       // 실제로는 로그인된 사용자의 work_id를 사용하여 필터링해야 합니다.
       const currentUserWorkId = 1; // 예시: 현재 사용자의 work_id (실제 로그인 로직에 따라 변경)
-      (response = await axios.get("http://localhost:8707/notice/list")),
+      (response = await axios.get(`${axiosAddress}/notice/list`)),
         { withCredentials: true };
       // 모든 공지사항 중에서 작성자가 현재 사용자와 일치하는 것만 필터링
       items.value = response.data.filter(
@@ -332,7 +333,7 @@ const deleteSelected = async () => {
   }
   if (confirm("선택한 공지사항을 삭제하시겠습니까?")) {
     try {
-      await axios.delete("http://localhost:8707/notice/delete", {
+      await axios.delete(`${axiosAddress}/notice/delete`, {
         data: selectedItems.value, // 삭제할 공지사항 ID 목록을 전송
       });
       alert("선택한 공지사항이 삭제되었습니다.");
