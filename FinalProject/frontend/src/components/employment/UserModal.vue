@@ -103,6 +103,7 @@ const fetchAllEmployees = async () => {
 
     const response = await axios.get(url);
     employees.value = response.data.map(work => ({
+      workId: work.workId, // workId 추가
       userId: work.user.userId,
       name: work.user.name,
       tel: work.user.tel,
@@ -149,15 +150,17 @@ const filteredEmployees = computed(() => {
 //   }
 //   closeModal() // 모달 닫기
 // }
-// 🟦 선택 저장: 부모 컴포넌트로 직원 데이터 전달
 const saveSelection = () => {
   if (selectedEmployee.value) {
-    emit("save", selectedEmployee.value); // 선택된 직원 전달
+    emit("save", { employee: selectedEmployee.value, workId: selectedEmployee.value.workId }); // 직원과 workId 함께 전달
+    console.log("saveSelection-selectedEmployee.value:"+selectedEmployee.value);
+    console.log("saveSelection-selectedEmployee.value.workId:"+selectedEmployee.value.workId);
     closeModal();
   } else {
     alert("직원을 선택해주세요.");
   }
 };
+
 
 
 // 모달을 닫는 함수: 부모 컴포넌트로 'close' 이벤트를 보내요.

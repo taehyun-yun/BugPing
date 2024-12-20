@@ -88,22 +88,20 @@
           <div class="break-time-input">
             <div class="select-wrapper">
               <select v-model="breakHour">
-                <option value="0">00</option> <!-- 기본값 0 -->
                 <option value="">선택</option>
                 <!-- 1시간부터 24시간까지 선택할 수 있는 옵션 -->
                 <option v-for="h in 24" :key="`break-hour-${h}`" :value="h">
-                  {{ String(h).padStart(2, '0') }}
+                  {{ String(h-1).padStart(2, '0') }}
                 </option>
               </select>
             </div>
             <span>시간</span>
             <div class="select-wrapper">
               <select v-model="breakMinute">
-                <option value="0">00</option> <!-- 기본값 0 -->
                 <option value="">선택</option>
                 <!-- 1분부터 60분까지 선택할 수 있는 옵션 -->
                 <option v-for="m in 60" :key="`break-minute-${m}`" :value="m">
-                  {{ String(m).padStart(2, '0') }}
+                  {{ String(m-1).padStart(2, '0') }}
                 </option>
               </select>
             </div>

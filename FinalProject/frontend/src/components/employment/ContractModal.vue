@@ -1,38 +1,25 @@
-<!-- ContractModal.vue -->
-
 <template>
-  <!-- 모달이 열려 있을 때만 이 부분이 보입니다. -->
   <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
-    <!-- 모달 내용 영역. 배경 클릭 시 모달이 닫히지 않도록 @click.stop을 사용합니다. -->
     <div class="modal-content" @click.stop>
-      <!-- 모달 헤더: 제목과 도움말 버튼 -->
       <div class="modal-header">
         <h2 class="title">
-          계약 정보 수정
-          <!-- 도움말 버튼: 클릭 시 추가적인 도움말을 제공할 수 있습니다. -->
+          계약 정보
           <button class="help-button">?</button>
         </h2>
       </div>
 
-      <!-- 모달 본문: 계약 세부 정보와 스케줄 관리 -->
       <div class="modal-body">
-        <!-- 구성원 섹션: 계약에 관련된 직원 정보를 보여줍니다. -->
         <section class="members-section">
           <h3>편집 대상 구성원</h3>
-          <!-- 구성원 아이템: 클릭 시 사용자 모달을 엽니다. -->
-
           <div class="member-item" @click="handleMemberClick">
             <div class="profile-image">
               <template v-if="selectedEmployee?.name">
-                <!-- 선택된 유저의 첫 글자 표시 -->
                 <div class="avatar">{{ selectedEmployee.name.charAt(0) }}</div>
               </template>
               <template v-else-if="contract?.work?.user?.name">
-                <!-- 계약된 유저의 첫 글자 표시 -->
                 <div class="avatar">{{ contract.work.user.name.charAt(0) }}</div>
               </template>
               <template v-else>
-                <!-- 기본 이미지 표시 -->
                 <img src="@/assets/AdminContractImg/placeholder.png" alt="기본 이미지" />
               </template>
             </div>
@@ -42,40 +29,31 @@
           </div>
         </section>
 
-        <!-- 계약 세부 정보 섹션: 시급, 계약 시작일, 계약 종료일을 편집할 수 있습니다. -->
         <section class="contract-details">
           <div class="form-group">
             <label for="hourlyWage">시급</label>
-            <!-- 시급 입력 필드: 숫자만 입력 가능하며 최소값은 0, 100 단위로 증가합니다. -->
             <input id="hourlyWage" v-model="editedContract.hourlyWage" type="number" min="0" step="100" />
           </div>
           <div class="form-group">
             <label for="contractStart">계약 시작일</label>
-            <!-- 계약 시작일 입력 필드: 날짜를 선택할 수 있습니다. -->
             <input id="contractStart" v-model="editedContract.contractStart" type="date" />
           </div>
           <div class="form-group">
             <label for="contractEnd">계약 종료일</label>
-            <!-- 계약 종료일 입력 필드: 날짜를 선택할 수 있습니다. -->
             <input id="contractEnd" v-model="editedContract.contractEnd" type="date" />
           </div>
         </section>
 
-        <!-- 스케줄 추가 버튼: 클릭 시 스케줄 추가 모달을 엽니다. -->
         <button class="add-button" @click="addSchedule">
           <span class="plus-icon">+</span>
           추가
         </button>
 
-        <!-- 스케줄 목록 섹션: 계약에 스케줄이 있을 때만 표시됩니다. -->
         <section v-if="contract?.schedules?.length">
-          <!-- 각 스케줄을 반복하여 표시합니다. -->
           <div v-for="schedule in contract.schedules" :key="schedule.scheduleId" class="schedule-section">
-            <!-- 스케줄 헤더: 요일을 표시합니다. -->
             <div class="schedule-header day-box">
               <span class="day">{{ getDayName(schedule.day) }}</span>
             </div>
-            <!-- 스케줄 액션: 수정 및 삭제 버튼을 포함합니다. -->
             <div class="schedule-actions">
               <button @click="editSchedule(schedule)" class="action-button edit-button">
                 <span class="icon">✏️</span>
@@ -84,7 +62,6 @@
                 <span class="icon">🗑️</span>
               </button>
             </div>
-            <!-- 스케줄 세부 정보: 시작 시간, 종료 시간, 휴게 시간을 표시합니다. -->
             <div class="schedule-details">
               <div class="time-slot">
                 <span class="time-icon">🕐</span>
@@ -98,7 +75,6 @@
           </div>
         </section>
 
-        <!-- 스케줄이 없는 경우 표시되는 섹션 -->
         <section class="weekdays-section" v-if="!contract?.schedules?.length">
           <div class="weekdays-header">
             월, 화, 수, 목, 금, 토, 일
@@ -106,248 +82,167 @@
           </div>
         </section>
 
-        <!-- 메시지 표시: 성공 또는 오류 메시지를 보여줍니다. -->
         <div v-if="message" :class="messageType" style="margin-top:20px;">
           {{ message }}
         </div>
       </div>
 
-      <!-- 모달 푸터: 취소 및 저장 버튼을 포함합니다. -->
       <div class="modal-footer">
         <button class="cancel-button" @click="closeModal">취소</button>
         <button class="save-button" @click="saveContract">저장</button>
       </div>
     </div>
 
-    <!-- 스케줄 추가/수정 모달 컴포넌트 -->
-    <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal"
-      @confirm="handleScheduleConfirm" />
+    <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal" @confirm="handleScheduleConfirm" />
 
-    <!-- 사용자 선택 모달 컴포넌트 -->
     <UserModal :is-open="showUserModal" @close="closeUserModal" @save="handleUserSelection" />
   </div>
 </template>
 
 <script setup>
-/*
-  Vue.js 3의 <script setup> 구문을 사용하여 컴포넌트 로직을 정의합니다.
-  Pinia 스토어와 다른 컴포넌트를 가져옵니다.
-*/
-import { ref, defineProps, defineEmits, watch , computed} from 'vue'
-import { useContractsStore } from '@/stores/contracts' // Pinia 스토어 import
-import ScheduleModal from '@/components/employment/ScheduleModal.vue' // 스케줄 모달 컴포넌트 import
-import UserModal from '@/components/employment/UserModal.vue' // 사용자 모달 컴포넌트 import
+import { ref, defineProps, defineEmits, watch } from 'vue';
+import { useContractsStore } from '@/stores/contracts';
+import ScheduleModal from '@/components/employment/ScheduleModal.vue';
+import UserModal from '@/components/employment/UserModal.vue';
 
-// Props 정의: 부모 컴포넌트로부터 전달받는 데이터
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    default: false // 기본값은 모달이 닫혀 있는 상태
+    default: false,
   },
   contract: {
-    type: Object, // 계약 정보는 객체 타입으로 설정 (빈 객체 기본값)
+    type: Object,
     default: () => ({
-      schedules: []
+      schedules: [],
+      work: {
+        user: null, // 🔵 추가된 기본값
+        workId: null, // 🔵 추가된 기본값
+      },
     }),
-  }
-  // contract: {
-  //   type: [Object, null],
-  //   required: false, // 계약 정보는 필수가 아님
-  // }
-})
+  },
+});
 
-// Emits 정의: 부모 컴포넌트로 이벤트를 보낼 때 사용
-const emit = defineEmits(['close', 'save'])
+const emit = defineEmits(['close', 'save']);
 
-// Pinia 스토어 사용: 계약 데이터를 관리
-const contractsStore = useContractsStore()
+const contractsStore = useContractsStore();
 
-//확인
-// const a = computed(()=> props.contract?.work?.user?.name==undefined);
-// watch(a, (newValue) => { console.log(newValue)})
+const editedContract = ref({});
+const addedSchedules = ref([]);
+const editedSchedules = ref([]);
+const deletedSchedules = ref([]);
+const message = ref('');
+const messageType = ref('');
+const showScheduleModal = ref(false);
+const currentSchedule = ref({});
+const showUserModal = ref(false);
+const selectedEmployee = ref(null);
+const selectedWorkId = ref(null); // 선택된 workId를 저장
 
-// watch(
-//   () => props.isOpen, // 모달이 열리는 상태를 감지
-//   (newVal) => {
-//     if (newVal) {
-//       console.log('모달이 열렸습니다.');
-//       console.log('contract?.work?.user?.name:', props.contract?.work?.user?.name);
-//       console.log('selectedEmployee?.name:', selectedEmployee?.name);
-//     }
-//   }
-// );
-
-
-// 수정된 계약 데이터를 저장하는 반응형 변수
-const editedContract = ref({
-  hourlyWage: 0, // 시급
-  contractStart: '', // 계약 시작일
-  contractEnd: '' // 계약 종료일
-})
-
-// 메시지 상태를 관리하는 반응형 변수
-const message = ref('')
-const messageType = ref('') // 'success' 또는 'error'
-
-// 사용자 모달 상태 관리
-const showUserModal = ref(false) // 사용자 모달이 열려 있는지 여부
-const selectedEmployee = ref(null) // 선택된 직원 정보
-
-// 🟢 수정: 스케줄 모달 상태 관리 추가
-const showScheduleModal = ref(false) // 스케줄 모달 열림 상태
-const currentSchedule = ref({}) // 현재 스케줄 정보
-
-// 🟢 수정: 스케줄 변경 사항을 저장할 로컬 리스트 추가
-const addedSchedules = ref([]) // 추가된 스케줄 목록
-const editedSchedules = ref([]) // 수정된 스케줄 목록
-const deletedSchedules = ref([]) // 삭제된 스케줄 목록
-
-
-// 🟢 수정: closeScheduleModal 메서드 정의
-const closeScheduleModal = () => {
-  showScheduleModal.value = false
-}
-
+watch(
+  () => props.contract,
+  (newContract) => {
+    if (newContract) {
+      const { contractStart, contractEnd, hourlyWage, work } = newContract;
+      editedContract.value = {
+        contractStart: contractStart?.split('T')[0] || '',
+        contractEnd: contractEnd?.split('T')[0] || '',
+        hourlyWage: hourlyWage || 0,
+      };
+      selectedEmployee.value = work?.user || null; // 🔵 work.user 설정
+      selectedWorkId.value = work?.workId || null; // 🔵 workId 설정
+    }
+  },
+  { immediate: true },
+);
 
 
 const handleMemberClick = () => {
-  console.log("Clicked member item");
-  console.log("contract?.work?.user?.name:", props.contract?.work?.user?.name);
-  console.log("selectedEmployee?.name:", selectedEmployee.value?.name);
-
-  if (!props.contract?.work?.user?.name) {//&& !selectedEmployee.value?.name
-    console.log("Opening user modal");
+  if (!props.contract?.work?.user?.name) {
     openUserModal();
-  } else {
-    console.log("Conditions not met for opening modal");
   }
 };
 
-// 사용자 모달 열기 메서드
 const openUserModal = () => {
-  console.log("openUserModal");
-  showUserModal.value = true // 사용자 모달을 열기 위해 상태를 true로 설정
-}
+  showUserModal.value = true;
+};
 
 
-// 사용자 모달에서 선택한 직원 처리 메서드
-const handleUserSelection = (employee) => {
-  selectedEmployee.value = employee // 선택된 직원을 저장
-  message.value = `${employee.name}이(가) 선택되었습니다.` // 성공 메시지 설정
-  messageType.value = 'success' // 메시지 타입을 성공으로 설정
-  console.log('선택된 직원:', employee) // 콘솔에 선택된 직원 정보 출력
+const handleUserSelection = ({ employee, workId }) => {
+  selectedEmployee.value = employee;
+  selectedWorkId.value = workId; // WorkID 저장
 
-  // 계약에 선택된 직원 반영
-  if (props.contract) {
-    // Props는 직접 수정하지 않는 것이 좋습니다.
-    // 대신, Pinia 스토어를 통해 업데이트하거나, 부모 컴포넌트에 변경 사항을 전달하세요.
-    // 예시:
-    contractsStore.updateContractUser(props.contract.contractId, employee)
-  }
-}
+  // 📌 콘솔 로그 추가: 선택된 사용자와 workId 확인
+  console.log('User Selected:', employee);
+  console.log('Work ID Selected:', workId);
 
-// 사용자 모달 닫기 메서드
+  message.value = `${employee.name}이(가) 선택되었습니다.`;
+  messageType.value = 'success';
+  clearMessage();
+};
+
+
+
+
+
 const closeUserModal = () => {
-  showUserModal.value = false // 사용자 모달을 닫기 위해 상태를 false로 설정
-}
+  showUserModal.value = false;
+};
 
-// 스케줄 모달 상태 관리
-// const showScheduleModal = ref(false) // 스케줄 모달이 열려 있는지 여부
-// const currentSchedule = ref({}) // 현재 수정 중인 스케줄 정보
-
-// 스케줄 추가 함수
 const addSchedule = () => {
   currentSchedule.value = {
-    id: null, // 새로운 스케줄이므로 ID는 null//////
-    day: '', // 요일
-    officialStart: '', // 공식 시작 시간
-    officialEnd: '', // 공식 종료 시간
-    breakMinute: 0 // 휴게 시간 (분)
-  }
-  showScheduleModal.value = true // 스케줄 모달을 열기 위해 상태를 true로 설정
-}
+    id: null,
+    day: '',
+    officialStart: '',
+    officialEnd: '',
+    breakMinute: 0,
+  };
+  showScheduleModal.value = true;
+};
 
-// 스케줄 수정 함수
 const editSchedule = (schedule) => {
-  currentSchedule.value = { ...schedule } // 기존 스케줄 정보를 복사하여 저장
-  showScheduleModal.value = true // 스케줄 모달을 열기 위해 상태를 true로 설정
-  console.log("editSchedule schedule:", JSON.stringify(schedule, null, 2)) // 수정할 스케줄 정보 콘솔 출력
-}
+  currentSchedule.value = { ...schedule };
+  showScheduleModal.value = true;
+};
 
-// 🟢 수정: 스케줄 삭제 함수 수정
 const handleDeleteSchedule = (schedule) => {
-  // 먼저, 스케줄이 추가된 스케줄인지 확인
-  const addedIndex = addedSchedules.value.findIndex(s => s.scheduleId === schedule.scheduleId)
-  if (addedIndex !== -1) {
-    // 🟢 스케줄이 추가된 스케줄이면, 추가된 스케줄 목록에서 제거
-    addedSchedules.value.splice(addedIndex, 1)
-    message.value = '새로 추가된 스케줄이 삭제되었습니다.'
-    messageType.value = 'success'
+  if (!schedule.scheduleId) {
+    addedSchedules.value = addedSchedules.value.filter((s) => s.id !== schedule.id);
   } else {
-    // 🟢 기존 스케줄이면, 삭제된 스케줄 목록에 추가하고 화면에서 제거
-    deletedSchedules.value.push(schedule)
-    props.contract.schedules = props.contract.schedules.filter(s => s.scheduleId !== schedule.scheduleId)
-    message.value = '스케줄이 삭제되었습니다.'
-    messageType.value = 'success'
+    deletedSchedules.value.push(schedule);
+    props.contract.schedules = props.contract.schedules.filter((s) => s.scheduleId !== schedule.scheduleId);
   }
-}
+  message.value = '스케줄이 삭제되었습니다.';
+  messageType.value = 'success';
+  clearMessage();
+};
 
-// 🟢 수정: 스케줄 확인 처리 함수 추가
 const handleScheduleConfirm = (schedule) => {
-  if (schedule.scheduleId) { // 기존 스케줄 수정
-    const index = props.contract.schedules.findIndex(s => s.scheduleId === schedule.scheduleId)
+  if (schedule.scheduleId) {
+    const index = props.contract.schedules.findIndex((s) => s.scheduleId === schedule.scheduleId);
     if (index !== -1) {
-      // 스케줄 업데이트
-      props.contract.schedules[index] = schedule
-      // 수정된 스케줄 목록에 추가
-      editedSchedules.value.push(schedule)
-      message.value = '스케줄이 수정되었습니다.'
-      messageType.value = 'success'
+      props.contract.schedules[index] = schedule;
+      editedSchedules.value.push(schedule);
+      message.value = '스케줄이 수정되었습니다.';
+      messageType.value = 'success';
     }
-  } else { // 새로운 스케줄 추가
-    const newSchedule = { ...schedule, id: Date.now() } // 🟢 임시 ID 할당
-    props.contract.schedules.push(newSchedule)
-    // 추가된 스케줄 목록에 추가
-    addedSchedules.value.push(newSchedule)
-    message.value = '스케줄이 추가되었습니다.'
-    messageType.value = 'success'
+  } else {
+    const newSchedule = { ...schedule, id: Date.now() };
+    props.contract.schedules.push(newSchedule);
+    addedSchedules.value.push(newSchedule);
+    message.value = '스케줄이 추가되었습니다.';
+    messageType.value = 'success';
   }
-}
+  showScheduleModal.value = false;
+  clearMessage();
+};
 
+const clearMessage = () => {
+  setTimeout(() => {
+    message.value = '';
+    messageType.value = '';
+  }, 2000);
+};
 
-// 스케줄 모달 닫기 함수
-// const closeScheduleModal = () => {
-//   showScheduleModal.value = false // 스케줄 모달을 닫기 위해 상태를 false로 설정
-// }
-
-// 계약 데이터 감시 및 편집 데이터 초기화
-watch(() => props.contract, (newContract) => {
-  if (newContract) { // 새로운 계약 정보가 들어오면
-    // LocalDateTime 형식을 YYYY-MM-DD로 변환
-    const startDate = newContract.contractStart ? newContract.contractStart.split('T')[0] : ''
-    const endDate = newContract.contractEnd ? newContract.contractEnd.split('T')[0] : ''
-
-    // 편집된 계약 데이터를 설정
-    editedContract.value = {
-      hourlyWage: newContract.hourlyWage, // 시급
-      contractStart: startDate, // 계약 시작일
-      contractEnd: endDate, // 계약 종료일
-    }
-  } else { // 계약 정보가 없으면 기본값으로 초기화
-    editedContract.value = {
-      hourlyWage: 0,
-      contractStart: '',
-      contractEnd: '',
-    }
-  }
-}, { immediate: true }) // 컴포넌트가 처음 로드될 때도 실행
-
-// 모달 닫기 함수: 부모 컴포넌트로 'close' 이벤트를 보냅니다.
-const closeModal = () => {
-  emit('close') // 부모 컴포넌트에 'close' 이벤트 전달
-}
-
-// 요일 정보 가져오기 함수: 숫자를 요일 이름으로 변환
 const getDayName = (day) => {
   const dayMapNumber = {
     1: '월',
@@ -357,79 +252,89 @@ const getDayName = (day) => {
     5: '금',
     6: '토',
     7: '일',
-  }
-  return dayMapNumber[day] || '요일 정보 없음' // 유효하지 않은 숫자는 '요일 정보 없음'으로 표시
-}
+  };
+  return dayMapNumber[day] || '요일 정보 없음';
+};
 
-// 휴게 시간 포맷팅 함수: 분을 시와 분으로 변환
 const formatDuration = (minutes) => {
-  const hours = Math.floor(minutes / 60) // 전체 시 계산
-  const mins = minutes % 60 // 남은 분 계산
-  return `${hours}시간 ${mins}분` // "1시간 30분"과 같은 형식으로 반환
-}
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}시간 ${mins}분`;
+};
 
-// 🟢 수정: 계약 저장 함수 수정
+
 const saveContract = async () => {
-  const baseUrl = import.meta.env.VITE_API_URL
-  console.log('baseUrl:', baseUrl)
+  try {
+    // 📌 콘솔 로그 추가: 현재 selectedEmployee와 selectedWorkId 확인
+    console.log('Selected Employee:', selectedEmployee.value);
+    console.log('Selected Work ID:', selectedWorkId.value);
 
-  console.log('props.contract:', props.contract)
-  if (props.contract && props.contract.contractId) {
-    const updatedContract = {
+    // 📌 유효성 검사: 구성원이 선택되었는지 확인
+    if (!selectedEmployee.value) {
+      throw new Error('구성원이 선택되지 않았습니다.');
+    }
+
+    const contractData = {
       ...props.contract,
       ...editedContract.value,
+      work: {
+        user: {
+          userId: selectedEmployee.value.userId,
+          name: selectedEmployee.value.name,
+        },
+        workId: selectedWorkId.value,
+      },
       contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
       contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
+    };
+
+    // 📌 콘솔 로그 추가: 구성된 contractData 확인
+    console.log('Contract Data to Save:', contractData);
+
+    let newContract;
+    if (props.contract?.contractId) {
+      // 기존 계약 업데이트
+      await contractsStore.updateContract(props.contract.contractId, contractData);
+      console.log('Contract updated successfully in store.');
+    } else {
+      // 새 계약 생성
+      newContract = await contractsStore.addContract(contractData);
+
+      // 📌 콘솔 로그 추가: addContract의 반환값 확인
+      console.log('Added Contract:', newContract);
+
+      if (newContract?.contractId) {
+        emit('save', newContract); // 생성된 계약 데이터를 부모 컴포넌트로 전달
+      } else {
+        throw new Error('새 계약 생성 실패: contractId가 반환되지 않았습니다.');
+      }
     }
 
-    try {
-      // 🟢 계약 정보 업데이트
-      await contractsStore.updateContract(props.contract.contractId, updatedContract)
-
-      // 🟢 추가된 스케줄 저장
-      for (const schedule of addedSchedules.value) {
-        console.log('Adding schedule:', schedule)
-        await contractsStore.addSchedule(props.contract.contractId, schedule)
-      }
-
-      // 🟢 수정된 스케줄 저장
-      for (const schedule of editedSchedules.value) {
-        console.log('Editing schedule:', schedule)
-        await contractsStore.editSchedule(props.contract.contractId, schedule.scheduleId, schedule)
-      }
-
-      // 🟢 삭제된 스케줄 삭제
-      for (const schedule of deletedSchedules.value) {
-        console.log('Deleting schedule:', schedule)
-        await contractsStore.deleteSchedule(props.contract.contractId, schedule.scheduleId)
-      }
-      // 🟢 모든 스케줄 변경 사항 초기화
-      addedSchedules.value = []
-      editedSchedules.value = []
-      deletedSchedules.value = []
-
-      // 부모 컴포넌트에 저장 이벤트 전달
-      emit('save', updatedContract)
-      console.log('계약 업데이트 성공')
-      message.value = '계약 정보가 성공적으로 업데이트되었습니다.'
-      messageType.value = 'success'
-    } catch (error) {
-      console.error('계약 업데이트 실패:', error)
-      message.value = '계약 업데이트에 실패했습니다. 다시 시도해주세요.'
-      messageType.value = 'error'
-    }
-
-    // 2초 후에 모달을 닫고 메시지를 초기화합니다.
-    setTimeout(() => {
-      closeModal()
-      message.value = ''
-      messageType.value = ''
-    }, 2000)
-  } else {
-    message.value = '유효한 계약 ID가 없습니다.'
-    messageType.value = 'error'
+    message.value = '계약이 성공적으로 저장되었습니다.';
+    messageType.value = 'success';
+    closeModal();
+  } catch (error) {
+    console.error('계약 저장 실패:', error);
+    message.value = '계약 저장에 실패했습니다.';
+    messageType.value = 'error';
+  } finally {
+    clearMessage();
   }
-}
+};
+
+
+
+
+
+
+const closeModal = () => {
+  emit('close');
+};
+const closeScheduleModal = () => {
+  showScheduleModal.value = false;
+};
+
+
 </script>
 
 <style scoped>

@@ -27,6 +27,8 @@ export const useContractsStore = defineStore("contracts", {
         
         // 서버에 GET 요청을 보내서 계약 목록을 가져옵니다.
         const response = await axios.get(`${baseUrl}/api/contracts`);
+        this.contracts = response.data;
+        console.log('Fetched Contracts:', this.contracts);
         
         // 모든 계약에 대해 스케줄 정보를 추가로 가져옵니다.
         const contractsWithSchedules = await Promise.all(
@@ -79,6 +81,10 @@ export const useContractsStore = defineStore("contracts", {
 
         // 계약 목록에 새로운 계약을 추가합니다.
         this.contracts.push(addedContract);
+        // 추가된 계약 데이터 확인
+        console.log('Added Contract:', addedContract); // 🔵 추가된 콘솔 로그
+
+        return addedContract; // 추가된 계약을 반환!!
       } catch (err) {
         // 계약 추가에 실패했을 때의 처리입니다.
         this.error = "계약 추가에 실패했습니다.";
@@ -115,43 +121,47 @@ export const useContractsStore = defineStore("contracts", {
 
     // updateContract는 특정 계약을 업데이트하는 함수입니다.
     async updateContract(contractId, updatedData) {
-      this.loading = true;   // 데이터를 업데이트하는 중임을 나타냅니다.
-      this.error = null;     // 이전 오류 메시지를 초기화합니다.
+
+      this.loading = true;
+      this.error = null;
+
+      if (!contractId) {
+        console.error('contractId가 유효하지 않습니다:', contractId);
+        return;
+      }
+
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
         
-        // 서버에 PUT 요청을 보내서 계약 정보를 업데이트합니다.
         const response = await axios.put(`${baseUrl}/api/contracts/${contractId}`, updatedData);
-        const updatedContract = response.data; // 업데이트된 계약 정보를 가져옵니다.
+        const updatedContract = response.data;
 
-        // 업데이트된 계약에 스케줄 정보가 없는 경우, 다시 스케줄 정보를 가져옵니다.
+        console.log('Updating Contract:', updatedContract);
+
         if (!updatedContract.schedules) {
           try {
             const schedulesResponse = await axios.get(`${baseUrl}/api/contracts/${contractId}/schedules`);
             updatedContract.schedules = schedulesResponse.data;
           } catch (error) {
-            // 스케줄 정보를 가져오지 못했을 때의 처리입니다.
             console.error(`스케줄 정보를 가져오는 데 실패했습니다: 계약 ID ${contractId}`, error);
             updatedContract.schedules = [];
           }
         }
 
-        // 계약 목록에서 해당 계약의 인덱스를 찾습니다.
         const index = this.contracts.findIndex((contract) => contract.contractId === contractId);
         if (index !== -1) {
-          // 계약 정보를 업데이트합니다. 기존의 'expanded' 상태는 유지합니다.
           this.contracts[index] = {
             ...updatedContract,
             schedules: updatedContract.schedules || [],
             expanded: this.contracts[index].expanded,
           };
+          console.log('Contract updated successfully:', this.contracts[index]);
         }
       } catch (err) {
-        // 계약 업데이트에 실패했을 때의 처리입니다.
         this.error = "계약 업데이트에 실패했습니다.";
         console.error('Failed to update contract:', err);
       } finally {
-        this.loading = false; // 데이터 업데이트가 끝났음을 나타냅니다.
+        this.loading = false;
       }
     },
 
