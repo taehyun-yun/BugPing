@@ -216,6 +216,7 @@ const calendarOptions = ref({
                     singleEvents: true,
                     orderBy: 'startTime',
                 },
+                withCredentials: false,
             });
 
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);

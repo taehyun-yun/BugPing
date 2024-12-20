@@ -292,6 +292,11 @@ public class PayrollService {
         LocalDateTime startDateTime = attendance.getActualStart();
         LocalDateTime endDateTime = attendance.getActualEnd();
 
+        if (endDateTime == null) {
+            // null인 경우, 바로 0 반환
+            return 0;
+        }
+
         LocalDateTime nightStart = startDateTime.toLocalDate().atTime(22, 0);
         LocalDateTime nightEnd = startDateTime.toLocalDate().plusDays(1).atTime(6, 0);
 

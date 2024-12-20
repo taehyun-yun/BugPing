@@ -17,12 +17,12 @@ public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer attendanceId;
-    //1안
+
     @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")//, nullable = false, insertable = false, updatable = false
     private Schedule schedule;
 
-    //1안
+
     @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "change_id")//, nullable = false, insertable = false, updatable = false
     private WorkChange workChange;

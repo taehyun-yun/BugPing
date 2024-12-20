@@ -1,30 +1,35 @@
 package com.example.FinalProject.controller.attendance;
 
+import com.example.FinalProject.dto.AdminAttendanceDTO;
+import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
-import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.service.employment.AttendanceService;
-import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class AttendanceController {
+
     @Autowired
     private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private AttendanceService attendanceService;
+
+    private final CompanyRepository companyRepository;
+
+    public AttendanceController(AttendanceService attendanceService, CompanyRepository companyRepository){
+        this.attendanceService = attendanceService;
+        this.companyRepository = companyRepository;
+    }
+
 
     // 스케줄 ID로 출석 정보를 가져옵니다
     @GetMapping("/schedules/{scheduleId}/attendances")
@@ -83,5 +88,18 @@ public class AttendanceController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // 금일 출근자 리스트 조회
+    @GetMapping("/attendances/attendancesList")
+    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList() {
+        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances();
+        return ResponseEntity.ok(attendanceList);
+    }
+
+    @GetMapping("/today/attendance-statistics")
+    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics() {
+        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics();
+        return ResponseEntity.ok(statistics);
     }
 }
