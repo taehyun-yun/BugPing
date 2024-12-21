@@ -75,6 +75,7 @@
 import axios from 'axios'; // axios 임포트
 import { ref, computed, watch, onMounted } from 'vue' // Vue의 반응성 API 가져오기
 import { defineProps, defineEmits } from 'vue' // Props와 Emits 정의를 위해 가져오기
+import { useUserStore } from '@/stores/userStore';
 
 // 부모 컴포넌트로부터 전달받는 Props 정의
 const props = defineProps({
@@ -94,11 +95,14 @@ const showCurrentJobOnly = ref(false) // 현재 일하는 직업만 조회 여�
 const selectedEmployee = ref(null); // 🟦 선택된 직원 저장
 const employees = ref([]);
 
+// 스토어 아이디 가져오기 위해서 사용
+const userStore = useUserStore();
 
 const fetchAllEmployees = async () => {
   try {
     const baseUrl = import.meta.env.VITE_API_URL;
-    const companyId = 45; // 동적으로 처리 가능
+    const companyId = userStore.company.companyId; 
+    //alert(companyId);
     const url = `${baseUrl}/api/worker/${companyId}`; // 전체 데이터를 가져옴
 
     const response = await axios.get(url);

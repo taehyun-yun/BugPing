@@ -22,11 +22,17 @@ public class EmploymentController {
 
     // Contract 엔드포인트
 
-    // 모든 계약 정보를 가져옵니다
+    // 모든 계약 정보를 가져옵니다 //이거 말고 회사별로 써야함
     @GetMapping("/contracts")
     public List<Contract> getAllContracts() {
         //return contractRepository.findAll();
         return contractRepository.findAllContractsWithWorkAndUser(); //fetch join
+    }
+
+    //회사별 계약 정보
+    @GetMapping("/contracts/company/{companyId}")
+    public List<Contract> getContractsByCompanyId(@PathVariable Integer companyId) {
+        return contractRepository.findAllContractsByCompanyId(companyId);
     }
 
     // ID를 통해 특정 계약 정보를 가져옵니다
