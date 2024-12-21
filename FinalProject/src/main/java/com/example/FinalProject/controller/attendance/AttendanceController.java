@@ -97,9 +97,11 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceList);
     }
 
+    // 출결 확인
     @GetMapping("/today/attendance-statistics")
     public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics() {
         AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics();
         return ResponseEntity.ok(statistics);
     }
+
 }
