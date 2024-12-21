@@ -23,8 +23,8 @@
 <script setup>
 import { ref } from 'vue'
 import AdminDailyWidget from '@/components/commute/AdminDailyWidget.vue';
-// import AdminDailyColleagueWidget from '@/components/commute/AdminDailyColleagueWidget.vue';
-//import AdminDailyAttendanceTable from '@/components/commute/AdminDailyAttendanceTable.vue';
+import AdminDailyColleagueWidget from '@/components/commute/AdminDailyColleagueWidget.vue';
+import AdminDailyAttendanceTable from '@/components/commute/AdminDailyAttendanceTable.vue';
 
 const today = ref(new Date().toLocaleDateString());
 </script>

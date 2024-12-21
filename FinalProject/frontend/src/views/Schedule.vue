@@ -12,7 +12,6 @@
                 </li>
             </ul>
         </div>
-
         <!-- 모달 -->
         <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
             <div class="modal-content" @click.stop>
@@ -25,7 +24,6 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref, computed, watch } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
@@ -34,7 +32,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
-
 // HSL 색상에서 Hue와 Lightness를 추출하는 함수
 const extractHue = (hsl) => {
     const matches = hsl.match(/hsl\((\d+), \d+%, (\d+)%\)/);
@@ -42,57 +39,43 @@ const extractHue = (hsl) => {
 };
 // 로컬 스토리지 키 설정
 const COLOR_STORAGE_KEY = 'employeeColors';
-
 const employeeColorMap = ref(JSON.parse(localStorage.getItem(COLOR_STORAGE_KEY)) || {});
 const usedHues = ref(Object.values(employeeColorMap.value).map(color => extractHue(color)));
-
 const MIN_HUE_DIFFERENCE = 30;
 const MIN_LIGHTNESS_DIFFERENCE = 20;
-
 // 이름 기반 색상 반환
 const getEmployeeColor = (name) => {
     if (!employeeColorMap.value[name]) {
         let newHue, newLightness, newColor;
-
         do {
             // 랜덤한 Hue(0~360), Lightness(70~85)를 생성
             newHue = Math.floor(Math.random() * 360);
             newLightness = Math.floor(Math.random() * 15) + 70; // 70% ~ 85%
-
             // 색상 값 생성
             newColor = `hsl(${newHue}, 70%, ${newLightness}%)`;
         } while (
             usedHues.value.some(hue => Math.abs(hue.h - newHue) < MIN_HUE_DIFFERENCE &&
                 Math.abs(hue.l - newLightness) < MIN_LIGHTNESS_DIFFERENCE)
         );
-
         // 색상 등록
         employeeColorMap.value[name] = newColor;
         usedHues.value.push({ h: newHue, l: newLightness });
-
         // 로컬 스토리지에 저장
         localStorage.setItem(COLOR_STORAGE_KEY, JSON.stringify(employeeColorMap.value));
     }
-
     return employeeColorMap.value[name];
 };
-
-
-
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
 const selectedCompanyId = ref(''); // 회사 ID
 const userRole = ref(''); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 const scheduleItems = ref([]);
-
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
     const names = scheduleItems.value.map((item) => item.title);
     return [...new Set(names)];
 });
-
-
 // 모달 관련 데이터
 const isModalVisible = ref(false);
 const modalData = ref({
@@ -101,7 +84,6 @@ const modalData = ref({
     start: '',
     end: '',
 });
-
 // 모달 열기
 const openModal = (event) => {
     modalData.value = {
@@ -112,20 +94,15 @@ const openModal = (event) => {
     };
     isModalVisible.value = true;
 };
-
-
 // 모달 닫기
 const closeModal = () => {
     isModalVisible.value = false;
 };
-
 // 구글 Calendar API
 const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
 const holidayCalendarId = 'ko.south_korea%23holiday@group.v.calendar.google.com';
-
 // 버튼 텍스트 동적 설정
 const buttonText = computed(() => (isUserView.value ? '회사 근무 보기' : '내 근무 보기'));
-
 // 공통 옵션 설정
 const commonOptions = {
     plugins: [dayGridPlugin, interactionPlugin, timeGridPlugin],
@@ -140,7 +117,6 @@ const commonOptions = {
         }
     },
 };
-
 const headerToolbarOptions = computed(() => {
     return userRole.value === 'ROLE_EMPLOYER'
         ? {
@@ -154,7 +130,6 @@ const headerToolbarOptions = computed(() => {
             right: 'dayGridMonth,timeGridWeek,timeGridDay,toggleViewButton',
         };
 });
-
 // 공휴일과 일반 이벤트 처리 함수
 const renderEventContent = (info) => {
     if (info.event.extendedProps?.isHoliday) {
@@ -180,7 +155,6 @@ const renderEventContent = (info) => {
         };
     }
 };
-
 // FullCalendar 옵션
 const calendarOptions = ref({
     ...commonOptions,
@@ -206,7 +180,6 @@ const calendarOptions = ref({
                 },
                 withCredentials: true,
             });
-
             const holidaysResponse = axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
                 params: {
                     key: apiKey,
@@ -217,14 +190,11 @@ const calendarOptions = ref({
                 },
                 withCredentials: false,
             });
-
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);
-
             const { userId, role, companyId, schedules } = serverResult.data;
             selectedUserId.value = userId;
             userRole.value = role;
             selectedCompanyId.value = companyId;
-
             scheduleItems.value = schedules.map((event) => ({
                 id: event.scheduleId, // FullCalendar 이벤트 ID 설정
                 title: event.title,
@@ -236,7 +206,6 @@ const calendarOptions = ref({
                     description: event.description,
                 },
             }));
-
             const holidaySchedules = holidayResult.data.items
                 .filter((event) => event.summary !== '섣달 그믐날')
                 .map((event) => ({
@@ -250,7 +219,6 @@ const calendarOptions = ref({
                         isHoliday: true,
                     },
                 }));
-
             const allEvents = [
                 ...scheduleItems.value,
                 ...holidaySchedules,
@@ -266,12 +234,10 @@ const calendarOptions = ref({
     eventColor: '#3788d8',
     eventContent: renderEventContent,
     eventClick: (info) => openModal(info.event),
-
     // 드래그 앤 드롭 이벤트 추가
     eventDrop: async (info) => {
         try {
             const { event } = info;
-
             // 변경된 이벤트 데이터를 추출
             const updatedEvent = {
                 originalScheduleId: event.extendedProps.originalScheduleId, // 기존 스케줄 ID
@@ -281,14 +247,11 @@ const calendarOptions = ref({
                 startTime: event.start.toISOString(), // 시작 시간 추가
                 endTime: event.end.toISOString(), // 종료 시간 추가
             };
-
             console.log("전송 데이터:", updatedEvent); // 디버깅용
-
             // 서버로 변경 요청 전송
             await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
                 withCredentials: true,
             });
-
             calendarRef.value.getApi().refetchEvents();
             console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
         } catch (error) {
@@ -297,10 +260,7 @@ const calendarOptions = ref({
         }
     },
 });
-
 const calendarRef = ref(null);
-
-
 watch(buttonText, () => {
     const calendarApi = calendarRef.value.getApi();
     calendarApi.setOption('customButtons', {
@@ -310,12 +270,9 @@ watch(buttonText, () => {
         },
     });
 });
-
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-
 /* 전체 캘린더 스타일 */
 .calendar-and-schedule {
     font-family: 'Noto Sans KR', sans-serif;
@@ -336,7 +293,6 @@ watch(buttonText, () => {
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 .calendar-container {
     flex: 1;
     background-color: #ffffff;
@@ -344,7 +300,6 @@ watch(buttonText, () => {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
-
 /* FullCalendar 스타일 오버라이드 */
 .fc {
     --fc-border-color: var(--border-color);
@@ -357,8 +312,6 @@ watch(buttonText, () => {
     --fc-button-active-border-color: #2c5d8f;
     font-family: 'Noto Sans KR', sans-serif;
 }
-
-
 .fc .fc-button-primary {
     text-transform: uppercase;
     font-weight: 500;
@@ -366,19 +319,16 @@ watch(buttonText, () => {
     border-radius: 6px;
     transition: all 0.3s ease;
 }
-
 .fc .fc-button-primary:not(:disabled):active,
 .fc .fc-button-primary:not(:disabled).fc-button-active {
     background-color: #2c5d8f;
     border-color: #2c5d8f;
 }
-
 .fc .fc-toolbar-title {
     font-size: 1.5em;
     font-weight: 700;
     color: var(--text-color);
 }
-
 /* 헤더 스타일 */
 .fc .fc-toolbar.fc-header-toolbar {
     margin-bottom: 1.5em;
@@ -386,22 +336,18 @@ watch(buttonText, () => {
     background-color: var(--secondary-color);
     border-radius: 8px;
 }
-
 /* 날짜 셀 스타일 */
 .fc .fc-daygrid-day {
     transition: background-color 0.3s ease;
 }
-
 .fc .fc-daygrid-day:hover {
     background-color: #e6f2ff;
 }
-
 .fc .fc-daygrid-day-number {
     font-weight: 500;
     color: var(--text-color);
     padding: 8px;
 }
-
 /* 이벤트 스타일 */
 .fc-event {
     border: none;
@@ -410,24 +356,19 @@ watch(buttonText, () => {
     font-size: 0.85em;
     transition: transform 0.2s ease;
 }
-
 .fc-event:hover {
     transform: translateY(-2px);
 }
-
 .fc-event-title {
     font-weight: 500;
 }
-
 /* 토요일, 일요일 스타일 */
 .fc-day-sat {
     color: #4a90e2;
 }
-
 .fc-day-sun {
     color: #e25a5a;
 }
-
 /* 모달 스타일 */
 .modal-overlay {
     position: fixed;
@@ -441,7 +382,6 @@ watch(buttonText, () => {
     align-items: center;
     z-index: 1000;
 }
-
 .modal-content {
     background: #fff;
     padding: 30px;
@@ -450,20 +390,17 @@ watch(buttonText, () => {
     max-width: 90%;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
-
 .modal-content h3 {
     margin-top: 0;
     font-size: 1.8rem;
     color: var(--main-color);
     font-weight: 700;
 }
-
 .modal-content p {
     margin: 15px 0;
     line-height: 1.6;
     font-weight: 400;
 }
-
 .modal-content button {
     display: block;
     width: 100%;
@@ -477,22 +414,18 @@ watch(buttonText, () => {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
 .modal-content button:hover {
     background-color: #3a7cbd;
 }
-
 /* 모달 트랜지션 */
 .modal-enter-active,
 .modal-leave-active {
     transition: opacity 0.3s ease;
 }
-
 .modal-enter-from,
 .modal-leave-to {
     opacity: 0;
 }
-
 .employee-list {
     width: 250px;
     padding: 20px;
@@ -500,7 +433,6 @@ watch(buttonText, () => {
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 .employee-list h3 {
     font-size: 1.2rem;
     font-weight: 700;
@@ -508,12 +440,10 @@ watch(buttonText, () => {
     color: var(--main-color);
     text-align: center;
 }
-
 .employee-list ul {
     list-style-type: none;
     padding: 0;
 }
-
 .employee-list li {
     display: flex;
     align-items: center;
@@ -521,25 +451,21 @@ watch(buttonText, () => {
     font-weight: 400;
     border-bottom: 1px solid var(--border-color);
 }
-
 .employee-list li:last-child {
     border-bottom: none;
 }
-
 .employee-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     margin-right: 5px;
 }
-
 /* 달력 구분선 스타일 수정 */
 .fc-theme-standard td,
 .fc-theme-standard th {
     border: 1px solid #ddd;
     /* 더 진한 색상으로 변경 */
 }
-
 .fc .fc-scrollgrid {
     border: 1px
 }
