@@ -68,7 +68,7 @@
       <!-- 지각/조퇴 카드들 -->
       <div class="status-card late-card">
         <div class="status-label">지각</div>
-        <div class="status-value">선우태현</div>
+        <div class="status-value">-</div>
       </div>
 
       <div class="status-card early-leave-card">

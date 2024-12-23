@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,10 @@ public class AttendanceService {
     // 금일 근무자 리스트 조회
     public List<AdminAttendanceDTO> getTodayAttendances() {
         int todayDayOfWeek = LocalDate.now().getDayOfWeek().getValue(); // 월요일: 1 ~ 일요일: 7
-        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(todayDayOfWeek);
+        LocalDate todayDate = LocalDate.now(); // 오늘 날짜
+
+        // 오늘 날짜와 요일을 기준으로 스케쥴 및 출근 데이터를 조회
+        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(todayDayOfWeek, todayDate);
 
         List<AdminAttendanceDTO> dtoList = new ArrayList<>();
         for (Object[] result : results) {
@@ -70,36 +74,45 @@ public class AttendanceService {
     }
 
     public AttendanceDetailsDTO getTodayScheduleBasedStatistics() {
-        LocalDate today = LocalDate.now();
-        int dayOfWeek = today.getDayOfWeek().getValue();
+        LocalDate today = LocalDate.now(); // 오늘 날짜
+        int dayOfWeek = today.getDayOfWeek().getValue(); // 요일 (월요일: 1, 일요일: 7)
+        LocalDateTime startOfDay = today.atStartOfDay(); // 오늘 00:00:00
+        LocalDateTime endOfDay = today.atTime(23, 59, 59); // 오늘 23:59:59
 
         // Schedule과 Attendance를 LEFT JOIN한 결과 가져오기
-        List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(dayOfWeek);
+        List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(dayOfWeek, startOfDay, endOfDay);
 
-        long totalScheduled = results.size(); // 전체 스케줄 수
+        long totalScheduled = 0; // 전체 스케줄 수
         long attended = 0; // 출근한 사람 수
-        long notAttended = 0; // 출근하지 않은 사람 수
         long onLeave = 0; // 휴무 상태인 사람 수
+        long notYetStarted = 0; // 출근 전인 사람 수
 
         for (Object[] result : results) {
             Schedule schedule = (Schedule) result[0];
-            Attendance attendance = result.length > 1 ? (Attendance) result[1] : null;
+            Attendance attendance = (Attendance) result[1]; // Attendance 데이터가 없을 수 있음 (LEFT JOIN)
 
-            if (attendance == null || attendance.getActualStart() == null) {
-                notAttended++; // 출근 기록이 없으면 미출근
+            if (schedule.getDay() == dayOfWeek) { // 금일 스케줄 여부 확인
+                totalScheduled++; // 금일 스케줄에 해당하면 카운트 증가
+                if (attendance == null) {
+                    // Attendance 데이터가 없으면
+                    notYetStarted++; // 출근 전 상태
+                } else if (attendance.getActualStart() == null) {
+                    // 출근 기록이 없으면
+                    notYetStarted++; // 출근 전 상태
+                } else {
+                    // 출근 기록이 있으면
+                    attended++; // 출근 상태
+                }
             } else {
-                attended++; // 출근 기록이 있으면 출근한 것으로 간주
-            }
-
-            if ("휴무".equals(schedule.getStatus())) {
-                onLeave++; // 스케줄 상태가 "휴무"라면 휴무로 간주
+                // 금일 스케줄이 아니면 휴무로 간주
+                onLeave++;
             }
         }
 
         // 출근율 계산
         double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
 
-        // DTO 반환
-        return new AttendanceDetailsDTO(totalScheduled, attended, onLeave, notAttended, attendanceRate);
+        // DTO 생성 및 반환
+        return new AttendanceDetailsDTO(totalScheduled, attended, onLeave, notYetStarted, attendanceRate);
     }
 }

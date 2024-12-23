@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -103,10 +104,14 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
     Attendance findAttendanceWithAll(@Param("attendanceId") Long attendanceId);
     
 // ========================================== TH ====================================================
+
     // 금일 출근자 조회
     @Query("SELECT s, a FROM Schedule s " +
-            "LEFT JOIN Attendance a ON a.schedule = s " +
-            "WHERE s.day = :dayOfWeek")
-    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
+            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+            "WHERE s.day = :dayOfWeek " +
+            "AND (a.actualStart IS NULL OR DATE(a.actualStart) = :todayDate)")
+    List<Object[]> findSchedulesWithAttendances(
+            @Param("dayOfWeek") int dayOfWeek,
+            @Param("todayDate") LocalDate todayDate);
 
 }
