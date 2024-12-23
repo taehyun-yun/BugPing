@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 
 
 @Service
-@Transactional
 public class WorkChangeService {
 
     @Autowired
@@ -23,28 +22,24 @@ public class WorkChangeService {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    public void updateWorkChange(Integer originalScheduleId, LocalDate originalDate, Integer newScheduleId, LocalDate newDate) {
-        // 기존 스케줄 처리
-        Schedule originalSchedule = scheduleRepository.findById(originalScheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("기존 스케줄이 존재하지 않습니다."));
-        createWorkChange(originalSchedule, originalDate, "out");
+    public void updateWorkChange(Integer scheduleId, String newStart, String newEnd) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄을 찾을 수 없습니다."));
 
-        // 새로운 스케줄 처리
-        Schedule newSchedule = scheduleRepository.findById(newScheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("새로운 스케줄이 존재하지 않습니다."));
-        createWorkChange(newSchedule, newDate, "in");
-    }
-    @Transactional
-    private void createWorkChange(Schedule schedule, LocalDate date, String inOut) {
-        WorkChange workChange = new WorkChange();
-        workChange.setSchedule(schedule);
-        workChange.setChangeDate(date);
-        workChange.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
-        workChange.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
-        workChange.setInOut(inOut);
-        workChange.setPermit(true);
-        workChange.setStatus("변경됨");
+        // 기존 WorkChange를 "OUT"으로 설정
+        workChangeRepository.findFirstByScheduleAndInOutOrderByWorkChangeIdDesc(schedule, "IN")
+                .ifPresent(existingWorkChange -> {
+                    existingWorkChange.setInOut("OUT");
+                    workChangeRepository.save(existingWorkChange);
+                });
 
-        workChangeRepository.save(workChange);
+        // 새로운 WorkChange 생성
+        WorkChange newWorkChange = new WorkChange();
+        newWorkChange.setSchedule(schedule);
+        newWorkChange.setChangeDate(LocalDate.now());
+        newWorkChange.setChangeStartTime(LocalDateTime.parse(newStart));
+        newWorkChange.setChangeEndTime(newEnd != null ? LocalDateTime.parse(newEnd) : null);
+        newWorkChange.setInOut("IN");
+        workChangeRepository.save(newWorkChange);
     }
 }
