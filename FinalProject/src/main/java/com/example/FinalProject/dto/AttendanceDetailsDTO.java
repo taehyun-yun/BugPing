@@ -11,6 +11,6 @@ public class AttendanceDetailsDTO {
     private long totalScheduled;
     private long attended;
     private long onLeave;
-    private long extraWork;
+    private long notYetStarted;
     private double attendanceRate; // 출근율 추가
 }

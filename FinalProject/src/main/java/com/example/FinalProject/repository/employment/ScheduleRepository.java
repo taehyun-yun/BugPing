@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,15 +63,16 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 //    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.day = :dayOfWeek AND s.status = 'active'")
 //    long countByDay(@Param("dayOfWeek") int dayOfWeek);
 
-    @Query("SELECT s, a FROM Schedule s " +
-            "LEFT JOIN Attendance a ON a.schedule = s " +
-            "WHERE s.day = :dayOfWeek")
-    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON a.schedule = s " +
+//            "WHERE s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
 
-    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
-        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
-    }
-
+    @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+            "WHERE s.day = :dayOfWeek AND (a.actualStart IS NULL OR a.actualStart BETWEEN :startOfDay AND :endOfDay)")
+    List<Object[]> findSchedulesWithAttendances(
+            @Param("dayOfWeek") int dayOfWeek,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
 }
-
-
