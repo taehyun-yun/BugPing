@@ -25,7 +25,8 @@ public class ScheduleController {
     public ResponseEntity<?> getSchedules(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam(required = false, defaultValue = "false") boolean viewCompanySchedule
+            @RequestParam(required = false, defaultValue = "false") boolean viewCompanySchedule,
+            @RequestParam(required = false) Integer companyId
     ) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -35,7 +36,6 @@ public class ScheduleController {
                     .anyMatch(authority -> authority.getAuthority().equalsIgnoreCase("ROLE_EMPLOYER"));
             String role = isEmployer ? "ROLE_EMPLOYER" : "ROLE_EMPLOYEE";
 
-            Integer companyId = scheduleService.getCompanyIdByUserId(userId);
             if (companyId == null) {
                 throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
             }
@@ -45,7 +45,7 @@ public class ScheduleController {
                 schedules = scheduleService.getCompanySchedule(companyId, start, end);
                 //System.out.println("사장입니다.");
                 //System.out.println(schedules.size());
-                schedules.forEach(s->System.out.println("제목"+s.get("title")));
+
             } else {
                 if (viewCompanySchedule) {
                     schedules = scheduleService.getCompanySchedule(companyId, start, end);
