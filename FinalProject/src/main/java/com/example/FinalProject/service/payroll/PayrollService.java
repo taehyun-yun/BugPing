@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.*;
 
 @Slf4j
@@ -250,28 +251,41 @@ public class PayrollService {
         double basicSalary = 0.0;
 
         for (Attendance attendance : attendanceList) {
-            int regularMinutes = attendance.getRecognizedWorkMinute() - attendance.getRecognizedWorkBreakMinute();
+            int regularMinutes = attendance.getRecognizedWorkMinute();
             basicSalary += (regularMinutes / 60.0) * contract.getHourlyWage();
         }
         log.info("기본급 계산 완료: {}", basicSalary);
         return basicSalary;
     }
 
+    // 주 근로시간 계산
+    private Map<Integer, Double> calculateWeeklyHours(List<Attendance> attendanceList) {
+        Map<Integer, Double> weeklyHours = new HashMap<>();
+
+        for (Attendance attendance : attendanceList) {
+            LocalDate date = attendance.getActualStart().toLocalDate();
+            int weekOfYear = date.get(ChronoField.ALIGNED_WEEK_OF_YEAR);
+
+            double hours = (attendance.getRecognizedWorkMinute() - attendance.getRecognizedWorkBreakMinute()) / 60.0;
+            weeklyHours.put(weekOfYear, weeklyHours.getOrDefault(weekOfYear, 0.0) + hours);
+        }
+
+        log.info("주별 근로시간 계산 완료: {}", weeklyHours);
+        return weeklyHours;
+    }
+
     // 주휴수당 계산
     private double calculateWeeklyAllowance(List<Attendance> attendanceList, double hourlyWage) {
-        double totalMinutes = 0;
-        for (Attendance attendance : attendanceList) {
-            totalMinutes += attendance.getRecognizedWorkMinute();
+        Map<Integer, Double> weeklyHours = calculateWeeklyHours(attendanceList);
+        double weeklyAllowance = 0.0;
+
+        for (Map.Entry<Integer, Double> entry : weeklyHours.entrySet()) {
+            double hours = entry.getValue();
+            if (hours >= 15) {
+                weeklyAllowance += hourlyWage * 8; // 주휴수당
+            }
         }
-        double avgWeeklyHours = (totalMinutes / 60.0) / 4.0;
-        log.info("주간 평균 시간 : {}", avgWeeklyHours);
 
-
-        boolean isFullAttendance = attendanceList.stream()
-                .allMatch(att -> "정상".equals(att.getIsNormalAttendance()));
-        log.info("정상 출근 여부: {}", isFullAttendance);
-
-        double weeklyAllowance = (avgWeeklyHours >= 15 && isFullAttendance) ? hourlyWage * 8 : 0;
         log.info("주휴수당 계산 완료: {}", weeklyAllowance);
         return weeklyAllowance;
     }
@@ -432,5 +446,31 @@ public class PayrollService {
                 0.0, // 시급
                 requestDTO.getStartDate() // 시작 날짜
         );
+    }
+
+    // 급여 페이지 렌더링 시 contractDB 조회 후 if new Data 있다면? -> payRollDB 자동 생성
+    public void generatePayrollForAllContracts() {
+        // 모든 계약 조회 (조건 없이)
+        List<Contract> allContracts = contractRepository.findAll();
+
+        for (Contract contract : allContracts) {
+            // PayRoll 데이터 이미 존재하는지 확인
+            boolean payrollExists = payrollRepository.existsByWork_WorkId(contract.getWork().getWorkId());
+
+            if (payrollExists) {
+                System.out.println("PayRoll 데이터가 이미 존재합니다.");
+            } else {
+                System.out.println("PayRoll 데이터가 존재하지 않습니다. 새로 생성해야 합니다.");
+            }
+
+            if (!payrollExists) {
+                // payroll 데이터 생성
+                PayRoll newPayRoll = new PayRoll();
+                newPayRoll.setPaymentDate(LocalDate.now().plusMonths(1)); // 기본 지급일
+                newPayRoll.setPaid(false);
+                newPayRoll.setWork(contract.getWork()); // 계약과 연결된 Work 설정
+                payrollRepository.save(newPayRoll);
+            }
+        }
     }
 }

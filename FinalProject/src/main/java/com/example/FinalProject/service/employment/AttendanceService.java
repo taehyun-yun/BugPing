@@ -46,7 +46,10 @@ public class AttendanceService {
     // 금일 근무자 리스트 조회
     public List<AdminAttendanceDTO> getTodayAttendances() {
         int todayDayOfWeek = LocalDate.now().getDayOfWeek().getValue(); // 월요일: 1 ~ 일요일: 7
-        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(todayDayOfWeek);
+        LocalDate todayDate = LocalDate.now(); // 오늘 날짜
+
+        // 오늘 날짜와 요일을 기준으로 스케쥴 및 출근 데이터를 조회
+        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(todayDayOfWeek, todayDate);
 
         List<AdminAttendanceDTO> dtoList = new ArrayList<>();
         for (Object[] result : results) {

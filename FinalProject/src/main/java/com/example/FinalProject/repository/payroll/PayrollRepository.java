@@ -20,4 +20,5 @@ public interface PayrollRepository extends JpaRepository<PayRoll, Integer> {
                 "WHERE w.company.companyId = :companyId")
     List<PayRoll> findPayRollsByCompanyId(@Param("companyId") Integer companyId);
 
+    boolean existsByWork_WorkId(Integer workId);
 }

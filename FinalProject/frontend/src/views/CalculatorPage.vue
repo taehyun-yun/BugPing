@@ -92,11 +92,11 @@
         <button @click="closeModal" class="modal-close">✖</button>
       </div>
       <div class="modal-subtitle">
-        <span>귀속월</span> &nbsp;&nbsp;&nbsp;<span> {{ currentMonth }} 월</span>
+        <span>귀속월</span> &nbsp;&nbsp;&nbsp;<span> {{ currentMonth }}월</span>
       </div>
       <div class="modal-payment-date">
         <span class="modal-label">지급 일자</span>
-        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }} 지급</span>
+        <span class="modal-value">&nbsp;&nbsp;&nbsp; {{ selectedEmployee.paymentDate }}</span>
         <span class="dotted-line"></span>
       </div>
 
@@ -147,10 +147,23 @@ const searchQuery = ref("");
 const sortOption = ref("longest");
 const isModalVisible = ref(false);
 const selectedEmployee = ref(null);
+const hoveredEmployeeId = ref(null);
 
 const totalEmployees = computed(() => employees.value.length);
 const paidEmployees = computed(() => employees.value.filter(emp => emp.isPaid).length);
 const unpaidEmployees = computed(() => employees.value.filter(emp => !emp.isPaid).length);
+
+// PayRoll 데이터 생성
+const generatePayroll = async() => {
+  try {
+    const response = await axios.post(`${axiosAddress}/api/generate`, {}, { withCredentials: true });
+    console.log(response.data);
+  } catch (error) {
+    console.error("payroll 데이터 생성 싱패 : ", error)
+  }
+}
+
+
 
 // 직원 데이터 가져오기
 const fetchEmployees = async () => {
@@ -200,6 +213,7 @@ const togglePaid = async (employee) => {
     employee.isPaid = !employee.isPaid;
   } catch (error) {
     console.error("지급 상태 변경 실패:", error);
+    alert("지급 상태 변경에 실패했습니다. 다시 시도해주세요."); // 사용자 알림
   }
 };
 
@@ -218,8 +232,20 @@ const closeModal = () => {
   isModalVisible.value = false;
 };
 
-// 초기 데이터 로드
-onMounted(fetchEmployees);
+// 마우스 엔터 이벤트 핸들러
+function handleMouseEnter(employeeId) {
+  hoveredEmployeeId.value = employeeId;
+}
+// 마우스 리브 이벤트 핸들러
+function handleMouseLeave() {
+  hoveredEmployeeId.value = null;
+}
+
+//급여 페이지 진입 시 호출
+onMounted(async () => {
+  await generatePayroll(); // PayRoll 데이터 생성
+  await fetchEmployees();  // 생성된 데이터 로드
+});
 </script>
 
 <style scoped>

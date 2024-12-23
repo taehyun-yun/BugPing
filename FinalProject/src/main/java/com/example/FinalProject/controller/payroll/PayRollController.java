@@ -3,7 +3,9 @@ package com.example.FinalProject.controller.payroll;
 import com.example.FinalProject.dto.EmployeeDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
+import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.payroll.PayRoll;
+import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.payroll.PayrollRepository;
 import com.example.FinalProject.service.jwt.JwtService;
 import com.example.FinalProject.service.jwt.JwtServiceImpl;
@@ -34,6 +36,9 @@ public class PayRollController {
     @Autowired
     private PayrollRepository payrollRepository;
 
+    @Autowired
+    private ContractRepository contractRepository;
+
     // 지급 상태 업데이트
     @PatchMapping("/payroll/{payRollId}/paid")
     public ResponseEntity<Void> updatePayrollStatus(@PathVariable("payRollId") Integer payRollId, @RequestParam boolean isPaid) {
@@ -47,6 +52,13 @@ public class PayRollController {
 
         log.info("지급 상태 업데이트 완료 - PayRoll ID : {}, 상태 : {}", payRollId, isPaid);
         return ResponseEntity.noContent().build(); // 응답
+    }
+
+    // ContractDB 조회 후 새로운 데이터 생성
+    @PostMapping("/generate")
+    public ResponseEntity<String> generatePayrollForAllContracts() {
+        payrollService.generatePayrollForAllContracts();
+        return ResponseEntity.ok("PayRoll 데이터 생성 완료");
     }
 
     // 근무자 리스트 정보 반환
