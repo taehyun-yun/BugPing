@@ -125,19 +125,19 @@ public class PayrollService {
     }
 
     // 근무자 리스트와 급여 정보를 포함한 데이터 생성
-    public List<EmployeeDTO> getEmployeeListWithPayroll(String loggedInUserId, String searchQuery, String sortField, String sortDirection) {
+    public List<EmployeeDTO> getEmployeeListWithPayroll(Integer companyId, String searchQuery, String sortField, String sortDirection) {
         log.info("근무자 리스트 요청 - Search Query: {}, Sort Field: {}, Sort Direction: {}", searchQuery, sortField, sortDirection);
 
         // 로그인된 사용자의 회사 정보 조회
-        Company company = companyRepository.findByUserId(loggedInUserId);
-        if (company == null) {
-            log.error("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다. User ID: {}", loggedInUserId);
+        //Company company = companyRepository.findByUserId(companyId);
+        if (companyId == null) {
+            log.error("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다. User ID: {}", companyId);
             throw new IllegalArgumentException("해당 사용자와 연결된 회사 정보를 찾을 수 없습니다.");
         }
-        log.info("조회된 회사 정보: {}", company);
+        log.info("조회된 회사 정보: {}", companyId);
 
         // PayRoll 데이터 조회
-        List<PayRoll> payrollList = payrollRepository.findPayRollsByCompanyId(company.getCompanyId());
+        List<PayRoll> payrollList = payrollRepository.findPayRollsByCompanyId(companyId);
 
         // 중복 검사용 Set
         Set<String> processedUserIds = new HashSet<>();

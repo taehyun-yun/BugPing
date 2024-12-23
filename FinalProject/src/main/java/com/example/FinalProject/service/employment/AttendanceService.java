@@ -82,6 +82,7 @@ public class AttendanceService {
         // Schedule과 Attendance를 LEFT JOIN한 결과 가져오기
         List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(dayOfWeek, startOfDay, endOfDay);
 
+
         long totalScheduled = 0; // 전체 스케줄 수
         long attended = 0; // 출근한 사람 수
         long onLeave = 0; // 휴무 상태인 사람 수
@@ -91,24 +92,23 @@ public class AttendanceService {
             Schedule schedule = (Schedule) result[0];
             Attendance attendance = (Attendance) result[1]; // Attendance 데이터가 없을 수 있음 (LEFT JOIN)
 
+            System.out.println("Schedule day: " + schedule.getDay() + ", Today day: " + dayOfWeek);
+
             if (schedule.getDay() == dayOfWeek) { // 금일 스케줄 여부 확인
                 totalScheduled++; // 금일 스케줄에 해당하면 카운트 증가
-                if (attendance == null) {
-                    // Attendance 데이터가 없으면
-                    notYetStarted++; // 출근 전 상태
-                } else if (attendance.getActualStart() == null) {
-                    // 출근 기록이 없으면
-                    notYetStarted++; // 출근 전 상태
+                if (attendance == null || attendance.getActualStart() == null) {
+                    // 출근 기록이 없으면 출근 전 상태로 처리
+                    notYetStarted++;
                 } else {
-                    // 출근 기록이 있으면
-                    attended++; // 출근 상태
+                    // 출근 기록이 있으면 출근으로 처리
+                    attended++;
                 }
             } else {
                 // 금일 스케줄이 아니면 휴무로 간주
                 onLeave++;
             }
         }
-
+        System.out.println("휴무자 : " + onLeave);
         // 출근율 계산
         double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
 

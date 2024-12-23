@@ -141,6 +141,7 @@
 import { onMounted, ref, computed } from "vue";
 import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from "@/stores/userStore";
 
 const employees = ref([]);
 const searchQuery = ref("");
@@ -148,6 +149,7 @@ const sortOption = ref("longest");
 const isModalVisible = ref(false);
 const selectedEmployee = ref(null);
 const hoveredEmployeeId = ref(null);
+const userStore = useUserStore();  // pinia에 저장된 user정보 불러오기
 
 const totalEmployees = computed(() => employees.value.length);
 const paidEmployees = computed(() => employees.value.filter(emp => emp.isPaid).length);
@@ -168,13 +170,25 @@ const generatePayroll = async() => {
 // 직원 데이터 가져오기
 const fetchEmployees = async () => {
   try {
-    const response = await axios.get(`${axiosAddress}/api/employees`, { withCredentials: true });
-    employees.value = response.data || [];
+    const response = await axios.get(`${axiosAddress}/api/employees`, {
+      params: {
+        companyId: userStore.company.companyId,
+      },
+    });
+
+    // 응답 데이터에서 employees 키 추출
+    if (response.data && Array.isArray(response.data.employees)) {
+      employees.value = response.data.employees; // employees 리스트 설정
+    } else {
+      console.error("응답 데이터가 올바르지 않습니다:", response.data);
+      employees.value = []; // 오류 발생 시 빈 배열로 초기화
+    }
   } catch (error) {
     console.error("데이터 로드 실패:", error);
-    employees.value = [];
+    employees.value = []; // 오류 발생 시 빈 배열로 초기화
   }
 };
+
 
 // 검색 및 정렬된 직원 목록
 const filteredEmployees = computed(() => {

@@ -12,6 +12,7 @@ public interface CompanyRepository extends JpaRepository<Company,Integer> {
 
     @Query("SELECT DISTINCT w.company FROM Work w WHERE w.user.userId = :userId")
     Company findByUserId(@Param("userId") String userId);
+
     Boolean existsByCompanyCode(String companyCode);
     Optional<Company> findByCompanyCode(String companyCode);
 }

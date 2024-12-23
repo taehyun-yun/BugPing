@@ -32,9 +32,9 @@
           <div class="stat-group">
             <div class="stat-comparison">휴무</div>
             <div class="bar-track">
-              <div class="bar-progress red" :style="{ width: `${30}%` }"></div>
+              <div class="bar-progress red" :style="{width: `${onLeavePercentage}%`}"></div>
             </div>
-            <div class="stat-value red">{{ 3 }}</div>
+            <div class="stat-value red">{{ onLeave }}</div>
           </div>
         </div>
 
@@ -44,17 +44,17 @@
             <div class="stat-label">출근 전</div>
             <div class="stat-bar">
               <div class="bar-track">
-                <div class="bar-progress" :style="{ width: `${extraWorkPercentage}%` }"></div>
+                <div class="bar-progress" :style="{width: `${notYetStartedPercentage}%`}"></div>
               </div>
-              <div class="stat-value">{{ extraWork }}</div>
+              <div class="stat-value">{{ notYetStarted }}</div>
             </div>
           </div>
           <div class="stat-group">
             <div class="stat-comparison">추가 근무자</div>
             <div class="bar-track">
-              <div class="bar-progress red" :style="{ width: `${0}%` }"></div>
+              <div class="bar-progress red" :style="{width: `${extraWorkPercentage}%`}"></div>
             </div>
-            <div class="stat-value red">{{ 0 }}</div>
+            <div class="stat-value red">{{ extraWork }}</div>
           </div>
         </div>
 
@@ -89,7 +89,7 @@ const attendanceRate = ref(0); // 출근율
 const totalScheduled = ref(0);
 const totalAttended = ref(0);
 const onLeave = ref(0);
-const notAttended = ref(0);
+const notYetStarted = ref(0);
 const extraWork = ref(0);
 
 // 계산 속성
@@ -99,8 +99,8 @@ const attendedPercentage = computed(() =>
 const onLeavePercentage = computed(() =>
   totalScheduled.value > 0 ? (onLeave.value / totalScheduled.value) * 100 : 0
 );
-const notAttendedPercentage = computed(() =>
-  totalScheduled.value > 0 ? (notAttended.value / totalScheduled.value) * 100 : 0
+const notYetStartedPercentage = computed(() =>
+  totalScheduled.value > 0 ? (notYetStarted.value / totalScheduled.value) * 100 : 0
 );
 const extraWorkPercentage = computed(() =>
   totalScheduled.value > 0 ? (extraWork.value / totalScheduled.value) * 100 : 0
@@ -117,8 +117,14 @@ async function fetchAttendanceStatistics() {
     totalScheduled.value = data.totalScheduled || 0;
     totalAttended.value = data.attended || 0;
     onLeave.value = data.onLeave || 0;
-    notAttended.value = data.notAttended || 0;
+    notYetStarted.value = data.notYetStarted || 0;
     extraWork.value = data.extraWork || 0;
+
+    console.log("지금 총출근자 : ", totalScheduled.value);
+    console.log("지금 출근자 : ", totalAttended.value);
+    console.log("지금 휴무자 : ", onLeave.value);
+    console.log("지금 미출근자 : ", notYetStarted.value);
+
   } catch (error) {
     console.error('Error fetching attendance statistics:', error);
   }
@@ -129,7 +135,7 @@ onMounted(fetchAttendanceStatistics);
 </script>
 
   
-  <style scoped>
+<style scoped>
   .status-container {
     padding: 20px;
     max-width: 720px;

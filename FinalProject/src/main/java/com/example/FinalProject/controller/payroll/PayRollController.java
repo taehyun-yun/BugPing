@@ -21,7 +21,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -63,27 +66,38 @@ public class PayRollController {
 
     // 근무자 리스트 정보 반환
     @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeDTO>> getEmployeeList(
+    public ResponseEntity<Map<String, Object>> getEmployeeList(
             @RequestParam(defaultValue = "") String searchQuery,
             @RequestParam(defaultValue = "") String sortField,
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
+            @RequestParam(defaultValue = "ASC") String sortDirection,
+            @RequestParam(required = false) Integer companyId) {
 
-        // 로그인된 사용자 ID 가져오기
-        String loggedInUserId = jwtService.getLoggedInUserId();
-        if (loggedInUserId.equals("anonymousUser")) {
-            log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+//        // 로그인된 사용자 ID 가져오기
+//        String loggedInUserId = jwtService.getLoggedInUserId();
+//        if (loggedInUserId.equals("anonymousUser")) {
+//            log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+        if (companyId == null) {
+            log.error("회사 ID가 전달되지 않았습니다.");
+            return ResponseEntity.badRequest().body(Map.of("error", "회사 ID가 필요합니다."));
         }
 
-        log.info("로그인된 사용자 ID!!: {}", loggedInUserId);
         log.info("정렬 요청 - Field: {}, Direction: {}", sortField, sortDirection);
+        log.info("회사 아이디==========================: {}", companyId);
 
 
         // 근무자 리스트 조회
-        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(loggedInUserId, searchQuery, sortField, sortDirection);
+        List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(companyId, searchQuery, sortField, sortDirection);
 
         log.info("계산된 근무자 리스트 데이터: {}", employeeList);
-        return ResponseEntity.ok(employeeList);
+        // 응답 데이터 구성
+        Map<String, Object> response = new HashMap<>();
+        response.put("employees", employeeList);
+        response.put("companyId", companyId); // companyId를 응답에 포함
+
+        return ResponseEntity.ok(response);
     }
 
 }
