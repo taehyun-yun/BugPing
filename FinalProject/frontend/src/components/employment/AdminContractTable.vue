@@ -84,7 +84,7 @@
       :is-open="showModal"
       :contract="selectedContract"
       @close="closeModal"
-      @save="addOrUpdateContract"
+      @save="updateContracts"
     />
   </div>
 </template>
@@ -248,47 +248,16 @@ const getDayName = (dayNumber) => {
   return days[dayNumber - 1] || '요일 정보 없음';
 };
 
-/* 
-  계약 정보를 업데이트하는 함수.
-  ContractModal 컴포넌트에서 저장 이벤트가 발생하면 호출됩니다.
-*/
-// const addOrUpdateContract = (updatedContract) => {
-
-
-//   if (!contractId) {
-//     console.error('contractId가 유효하지 않습니다:', contractId);
-//     return;
-//   }
-
-
-//   // 업데이트할 계약의 인덱스를 찾습니다.
-//   const index = contractsStore.contracts.findIndex((c) => c.contractId === updatedContract.contractId);
-//   if (index !== -1) {
-//     // 계약 정보를 업데이트합니다.
-//     contractsStore.contracts[index] = { ...contractsStore.contracts[index], ...updatedContract };
-//   } else {
-//     console.error('업데이트할 계약을 찾을 수 없습니다:', updatedContract.contractId);
-//   }
-// };
-// 🔵 수정된 addOrUpdateContract 함수
-const addOrUpdateContract = async (contract) => { 
-  console.log('addOrUpdateContract called with:', contract); // 🔵 추가된 콘솔 로그
-  if (contract.contractId) {
-    // 기존 계약 업데이트: 스토어의 updateContract 액션 호출
-    try {
-      await contractsStore.updateContract(contract.contractId, contract);
-      console.log('Contract updated successfully:', contract); // 🔵 추가된 콘솔 로그
-    } catch (error) {
-      console.error('Failed to update contract:', error); // 🔵 추가된 콘솔 로그
-    }
+const updateContracts = (updatedContract) => {
+  const index = contractsStore.contracts.findIndex(
+    (c) => c.contractId === updatedContract.contractId
+  );
+  if (index !== -1) {
+    // 기존 계약 업데이트
+    contractsStore.contracts[index] = { ...contractsStore.contracts[index], ...updatedContract };
   } else {
-    // 새 계약 추가: 스토어의 addContract 액션 호출
-    try {
-      const newContract = await contractsStore.addContract(contract);
-      console.log('Contract added successfully:', newContract); // 🔵 추가된 콘솔 로그
-    } catch (error) {
-      console.error('Failed to add contract:', error); // 🔵 추가된 콘솔 로그
-    }
+    // 새 계약 추가
+    contractsStore.contracts.push(updatedContract);
   }
 };
 

@@ -87,7 +87,7 @@
           <!-- 휴식 시간 입력 필드: 시간과 분을 선택할 수 있습니다. -->
           <div class="break-time-input">
             <div class="select-wrapper">
-              <select v-model="breakHour">
+              <select v-model="breakTimeHour">
                 <option value="">선택</option>
                 <!-- 1시간부터 24시간까지 선택할 수 있는 옵션 -->
                 <option v-for="h in 24" :key="`break-hour-${h}`" :value="h">
@@ -97,7 +97,7 @@
             </div>
             <span>시간</span>
             <div class="select-wrapper">
-              <select v-model="breakMinute">
+              <select v-model="breakTimeMinute">
                 <option value="">선택</option>
                 <!-- 1분부터 60분까지 선택할 수 있는 옵션 -->
                 <option v-for="m in 60" :key="`break-minute-${m}`" :value="m">
@@ -140,6 +140,9 @@ const props = defineProps({
   }
 })
 
+console.log('Initial schedule:', props.schedule); // 🔵 초기 스케줄 정보 확인
+
+
 // 부모 컴포넌트로 이벤트를 보낼 때 사용
 const emit = defineEmits(['close', 'confirm']) // 'close'와 'confirm' 이벤트 선언
 
@@ -149,40 +152,33 @@ const startHour = ref('') // 근무 시작 시간 (시)
 const startMinute = ref('') // 근무 시작 시간 (분)
 const endHour = ref('') // 근무 종료 시간 (시)
 const endMinute = ref('') // 근무 종료 시간 (분)
-const breakHour = ref(0) // 휴식 시간 (시간, 기본값: 0)
-const breakMinute = ref(0) // 휴식 시간 (분, 기본값: 0)
+const breakTimeHour = ref(0) // 휴식 시간 (시간, 기본값: 0)
+const breakTimeMinute = ref(0) // 휴식 시간 (분, 기본값: 0)
 
 // 스케줄 정보가 변경될 때마다 모달 내부 상태를 업데이트
 watch(
-  () => props.schedule, // 감시할 대상: 부모로부터 전달된 스케줄 정보
-  (newSchedule) => { // 스케줄 정보가 변경되었을 때 실행되는 콜백 함수
-    if (newSchedule) { // 새로운 스케줄 정보가 존재하면
-      selectedDay.value = newSchedule.day || ''; // 선택된 요일을 업데이트
-      if (newSchedule.officialStart) { // 근무 시작 시간이 존재하면
-        const [startH, startM] = newSchedule.officialStart.split(':'); // 시와 분을 분리
-        startHour.value = startH; // 시작 시 업데이트
-        startMinute.value = startM; // 시작 분 업데이트
-      }
-      if (newSchedule.officialEnd) { // 근무 종료 시간이 존재하면
-        const [endH, endM] = newSchedule.officialEnd.split(':'); // 시와 분을 분리
-        endHour.value = endH; // 종료 시 업데이트
-        endMinute.value = endM; // 종료 분 업데이트
-      }
-      const breakTime = newSchedule.breakMinute ?? 0; // 휴식 시간이 null 또는 undefined이면 0으로 설정
-      breakHour.value = Math.floor(breakTime / 60); // 휴식 시간을 시간 단위로 변환
-      breakMinute.value = breakTime % 60; // 휴식 시간을 분 단위로 변환
-    } else { // 새로운 스케줄 정보가 없으면 (초기화)
-      selectedDay.value = ''; // 선택된 요일 초기화
-      startHour.value = ''; // 시작 시 초기화
-      startMinute.value = ''; // 시작 분 초기화
-      endHour.value = ''; // 종료 시 초기화
-      endMinute.value = ''; // 종료 분 초기화
-      breakHour.value = 0; // 휴식 시간 (시간) 초기화
-      breakMinute.value = 0; // 휴식 시간 (분) 초기화
+  () => props.schedule,
+  (newSchedule) => {
+    console.log('ScheduleModal - Received schedule:', newSchedule);
+
+    if (newSchedule) {
+      selectedDay.value = newSchedule.day || '';
+      const [startH, startM] = newSchedule.officialStart?.split(':') || ['', ''];
+      startHour.value = startH;
+      startMinute.value = startM;
+
+      const [endH, endM] = newSchedule.officialEnd?.split(':') || ['', ''];
+      endHour.value = endH;
+      endMinute.value = endM;
+
+      const breakTime = newSchedule.breakMinute ?? 0;
+      breakTimeHour.value = Math.floor(breakTime / 60);
+      breakTimeMinute.value = breakTime % 60;
     }
   },
-  { immediate: true } // 컴포넌트가 처음 로드될 때도 실행
-)
+  { immediate: true }
+);
+
 
 // 모달을 닫는 함수: 부모 컴포넌트로 'close' 이벤트를 보냄
 const closeModal = () => {
@@ -192,15 +188,16 @@ const closeModal = () => {
 // 확인 버튼을 클릭했을 때 실행되는 함수: 입력된 스케줄 정보를 부모 컴포넌트로 전달
 const handleConfirm = () => {
   // 휴식 시간을 총 분으로 계산
-  const totalBreakMinutes = (breakHour.value || 0) * 60 + (breakMinute.value || 0)
+  const totalBreakTimeMinutes = (breakTimeHour.value || 0) * 60 + (breakTimeMinute.value || 0)
 
   // 입력된 스케줄 데이터를 객체로 생성
   const scheduleData = {
-    scheduleId: props.schedule.scheduleId || null, // 기존 스케줄 ID가 있으면 포함, 없으면 null
+    ...props.schedule, // 기존 데이터 유지 (temporaryId 포함)
+    // scheduleId: props.schedule.scheduleId || null, // 기존 스케줄 ID가 있으면 포함, 없으면 null
     day: selectedDay.value, // 선택된 요일
-    officialStart: startHour.value && startMinute.value ? `${startHour.value}:${startMinute.value}` : '', // 근무 시작 시간
-    officialEnd: endHour.value && endMinute.value ? `${endHour.value}:${endMinute.value}` : '', // 근무 종료 시간
-    breakMinute: totalBreakMinutes // 휴식 시간 (총 분)
+    officialStart: `${startHour.value || '00'}:${startMinute.value || '00'}`,
+    officialEnd: `${endHour.value || '00'}:${endMinute.value || '00'}`,
+    breakMinute: totalBreakTimeMinutes,
   }
 
   // 부모 컴포넌트로 'confirm' 이벤트와 스케줄 데이터를 전달
