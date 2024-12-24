@@ -57,30 +57,40 @@ public class ScheduleService {
                         (end == null || !currentDate.isAfter(end))) {
 
                     if (schedule.getDay() == currentDate.getDayOfWeek().getValue()) {
-                        // WorkChange 데이터 조회
-                        Optional<WorkChange> workChange = workChangeRepository
-                                .findFirstByScheduleAndInOutOrderByWorkChangeIdDesc(schedule, "IN");
 
-                        // WorkChange 데이터가 존재하면 해당 데이터를 적용
-                        LocalDateTime workStart = workChange.map(WorkChange::getChangeStartTime)
-                                .orElse(currentDate.atTime(schedule.getOfficialStart()));
-                        LocalDateTime workEnd = workChange.map(WorkChange::getChangeEndTime)
-                                .orElse(currentDate.atTime(schedule.getOfficialEnd()));
+                        // WorkChange에서 변경된 데이터 확인
+                        Optional<WorkChange> workChangeOptional = workChangeRepository.findLatestWorkChange(
+                                schedule.getScheduleId(), currentDate);
 
-                        // 근무 시간 계산 (분 단위)
-                        long workDuration = ChronoUnit.MINUTES.between(workStart, workEnd);
+                        if (workChangeOptional.isPresent()) {
+                            WorkChange workChange = workChangeOptional.get();
+                            System.out.println("WorkChange 데이터: " + workChange);
+                            System.out.println("WorkChange 확인: " + workChange);
+                            System.out.println("WorkChange의 inOut 값: [" + workChange.getInOut() + "]");
 
-                        // 휴게 시간 계산
-                        long breakTime = calculateBreakTime(workDuration);
+                            String inOut = workChange.getInOut().trim().toUpperCase();
 
-                        // 스케줄 데이터 생성
-                        Map<String, Object> scheduleMap = createScheduleMap(schedule, workStart, workEnd,
-                                workChange.isPresent() ? "변경된 근무 일정" : "기존 근무 일정");
+                            if ("OUT".equals(inOut)) {
+                                System.out.println("OUT 상태로 제외: " + currentDate);
+                                currentDate = currentDate.plusDays(1);
+                                continue;
+                            }
 
-                        // 근무 시간 및 휴게 시간 추가
-                        scheduleMap.put("workDuration", workDuration - breakTime); // 총 근무 시간 (분)
-                        scheduleMap.put("breakTime", breakTime);       // 휴게 시간 (분)
+                            if ("IN".equals(inOut)) {
+                                System.out.println("IN 상태 확인, 스케줄 추가 준비");
+                                Map<String, Object> scheduleMap = createScheduleMap(schedule, workChange.getChangeStartTime(), workChange.getChangeEndTime(), "변경된 근무 일정");
+                                System.out.println("스케줄 맵 생성: " + scheduleMap);
+                                scheduleList.add(scheduleMap);
+                                currentDate = currentDate.plusDays(1);
+                                continue;
+                            }
+                        }
 
+                        // WorkChange 데이터가 없으면 기존 Schedule 데이터 사용
+                        Map<String, Object> scheduleMap = createScheduleMap(schedule,
+                                currentDate.atTime(schedule.getOfficialStart()),
+                                currentDate.atTime(schedule.getOfficialEnd()),
+                                "기존 근무 일정");
                         scheduleList.add(scheduleMap);
                     }
                 }
@@ -88,17 +98,6 @@ public class ScheduleService {
             }
         }
         return scheduleList;
-    }
-
-    // 휴게 시간을 계산하는 메서드
-    private long calculateBreakTime(long workDurationMinutes) {
-        if (workDurationMinutes > 480) { // 8시간 초과
-            return 60; // 휴게 시간: 60분
-        } else if (workDurationMinutes > 240) { // 4시간 초과
-            return 30; // 휴게 시간: 30분
-        } else { // 4시간 이하
-            return 0; // 휴게 시간 없음
-        }
     }
 
     // 스케줄 맵 생성 메서드
@@ -109,6 +108,23 @@ public class ScheduleService {
         scheduleMap.put("start", start.toString());
         scheduleMap.put("end", end.toString());
         scheduleMap.put("description", description);
+
+        // 휴게시간 계산 로직
+        long totalMinutes = ChronoUnit.MINUTES.between(start, end);
+        long breakTime = 0;
+
+        if (totalMinutes > 8 * 60) {
+            breakTime = 60; // 8시간 초과
+        } else if (totalMinutes > 4 * 60) {
+            breakTime = 30; // 4시간 초과
+        }
+
+        long totalWorkMinutes = totalMinutes - breakTime; // 총 근무시간
+
+        // 추가 데이터 삽입
+        scheduleMap.put("breakTime", breakTime); // 휴게시간 (분)
+        scheduleMap.put("totalWorkMinutes", totalWorkMinutes); // 총 근무시간 (분)
+
         return scheduleMap;
     }
 

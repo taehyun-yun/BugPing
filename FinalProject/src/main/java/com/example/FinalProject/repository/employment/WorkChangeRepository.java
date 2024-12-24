@@ -3,21 +3,40 @@ package com.example.FinalProject.repository.employment;
 import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.entity.employment.WorkChange;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 
 public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
-    // 특정 스케줄과 IN 상태로 가장 최근 WorkChange 조회
-    Optional<WorkChange> findFirstByScheduleAndInOutOrderByWorkChangeIdDesc(Schedule schedule, String inOut);
+     @Query("SELECT wc FROM WorkChange wc " +
+             "WHERE wc.schedule.scheduleId = :scheduleId " +
+             "AND wc.changeDate <= :currentDate " +
+             "ORDER BY wc.changeDate DESC, wc.changeStartTime DESC")
+     List<WorkChange> findLatestWorkChangesByScheduleIdAndDate(@Param("scheduleId") Integer scheduleId,
+                                                               @Param("currentDate") LocalDate currentDate);
 
-    // 특정 스케줄 ID로 모든 WorkChange 조회
-    List<WorkChange> findBySchedule(Schedule schedule);
+     /*@Query(value = "SELECT * FROM work_change " +
+             "WHERE schedule_id = :scheduleId " +
+             "AND change_date BETWEEN :startDate AND :endDate " +
+             "ORDER BY change_start_time DESC LIMIT 1", nativeQuery = true)
+     WorkChange findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
+                                     @Param("startDate") LocalDate startDate,
+                                     @Param("endDate") LocalDate endDate);
+*/
+     @Query("SELECT wc FROM WorkChange wc " +
+             "WHERE wc.schedule.scheduleId = :scheduleId " +
+             "AND wc.changeDate = :changeDate " +
+             "ORDER BY wc.workChangeId DESC")
+     Optional<WorkChange> findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
+                                                    @Param("changeDate") LocalDate changeDate);
 
-    // 특정 스케줄과 IN 상태의 모든 WorkChange 조회
-    List<WorkChange> findByScheduleAndInOut(Schedule schedule, String inOut);
+
+
+     Optional<WorkChange> findTopByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
 }
-
 
 

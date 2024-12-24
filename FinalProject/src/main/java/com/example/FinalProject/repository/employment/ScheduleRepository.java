@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
@@ -57,6 +56,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
+
+    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
+        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
+    }
 // ====================================== TH =============================================================
 //    // 금일 출근자 카운트
 //    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.day = :dayOfWeek AND s.status = 'active'")
@@ -67,9 +70,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "WHERE s.day = :dayOfWeek")
     List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
 
-    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
-        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
-    }
 
 }
 
