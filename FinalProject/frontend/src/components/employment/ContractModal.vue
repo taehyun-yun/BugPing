@@ -345,12 +345,12 @@ const saveContract = async () => {
 
     // 수정된 스케줄 업데이트
     for (const schedule of editedSchedules.value) {
-      await contractsStore.updateSchedule(schedule.scheduleId, schedule);
+      await contractsStore.editSchedule(contractId, schedule.scheduleId, schedule);
     }
 
     // 삭제된 스케줄 제거
     for (const schedule of deletedSchedules.value) {
-      await contractsStore.deleteSchedule(schedule.scheduleId);
+      await contractsStore.deleteSchedule(contractId, schedule.scheduleId); // contractId 추가 필요 여부 검토!!!!피니아에서!!
     }
 
     message.value = '계약과 스케줄이 성공적으로 저장되었습니다.';
