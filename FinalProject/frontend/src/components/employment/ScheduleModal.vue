@@ -199,7 +199,7 @@ const handleConfirm = () => {
 
   // 입력된 스케줄 데이터를 객체로 생성
   const scheduleData = {
-    ...props.schedule, // 기존 데이터 유지 (temporaryId 포함)
+    ...props.schedule, // 기존 데이터 유지 (temporaryId 포함) // temporaryId 포함아님 현재 코드 수정함
     // scheduleId: props.schedule.scheduleId || null, // 기존 스케줄 ID가 있으면 포함, 없으면 null
     day: selectedDay.value, // 선택된 요일
     officialStart: `${startHour.value || '00'}:${startMinute.value || '00'}`,

@@ -153,6 +153,7 @@ const messageType = ref('');
 watch(
   () => props.contract,
   (newContract) => {
+    console.log('contractModal - props.contract:', props.contract);
     if (newContract) {
       const { contractStart, contractEnd, hourlyWage, work, schedules = [] } = newContract;
       editedContract.value = {
@@ -215,7 +216,7 @@ const closeUserModal = () => {
 
 const addSchedule = () => {
   const newSchedule = {
-    temporaryId: Date.now(), // 🔵 새로운 스케줄에만 temporaryId 생성
+    temporaryId: '',
     day: '',
     officialStart: '',
     officialEnd: '',
@@ -253,6 +254,7 @@ const handleScheduleConfirm = (schedule) => {
   console.log('ContractModal - Schedule Confirmed:', schedule); // 반환된 데이터 확인
 
   if (schedule.scheduleId) {
+    console.log('기존 스케줄 수정할거야!');
     const index = contractSchedules.value.findIndex((s) => s.scheduleId === schedule.scheduleId);
     if (index !== -1) {
       contractSchedules.value[index] = { ...schedule };
@@ -262,6 +264,7 @@ const handleScheduleConfirm = (schedule) => {
       message.value = '스케줄이 수정되었습니다.';
     }
   } else if (schedule.temporaryId) {
+    console.log('새로운 스케줄 수정할거야!');
     const index = contractSchedules.value.findIndex((s) => s.temporaryId === schedule.temporaryId);
     if (index !== -1) {
       contractSchedules.value[index] = { ...schedule };
@@ -275,6 +278,8 @@ const handleScheduleConfirm = (schedule) => {
       message.value = '새로 추가된 스케줄이 수정되었습니다.';
     }
   } else {
+
+    console.log('새로운 스케줄 추가할거야!');
     const newSchedule = { ...schedule, temporaryId: Date.now() };
     contractSchedules.value.push(newSchedule);
     addedSchedules.value.push(newSchedule);
