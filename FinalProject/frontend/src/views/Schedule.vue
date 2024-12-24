@@ -12,7 +12,6 @@
                 </li>
             </ul>
         </div>
-
         <!-- 모달 -->
         <div v-if="isModalVisible" class="modal-overlay" @click="closeModal">
             <div class="modal-content" @click.stop>
