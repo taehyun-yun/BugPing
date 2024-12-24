@@ -29,8 +29,4 @@ public class Work {
 
     private LocalDate hireDate;
     private LocalDate resignDate;//null일 땐 아직 일하고 있다는 뜻
-
-
-    // 형 마라탕 싫어요, QR, 춘리
-
 }

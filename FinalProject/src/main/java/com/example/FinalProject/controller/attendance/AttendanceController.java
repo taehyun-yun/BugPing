@@ -6,13 +6,14 @@ import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.service.employment.AttendanceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class AttendanceController {
@@ -93,15 +94,16 @@ public class AttendanceController {
     // ==============================================================TH=========================================
     // 금일 출근자 리스트 조회
     @GetMapping("/attendances/attendancesList")
-    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList() {
-        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances();
+    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList(@RequestParam(required = false) Integer companyId) {
+        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances(companyId);
+        log.info("금일 출근자 리스트 출력 : {}", attendanceList);
         return ResponseEntity.ok(attendanceList);
     }
 
     // 출결 확인
     @GetMapping("/today/attendance-statistics")
-    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics() {
-        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics();
+    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics(@RequestParam(required = false) Integer companyId) {
+        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics(companyId);
         return ResponseEntity.ok(statistics);
     }
 

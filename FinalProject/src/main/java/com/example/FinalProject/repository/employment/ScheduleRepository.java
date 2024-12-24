@@ -60,10 +60,21 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 // ====================================== TH =============================================================
 
-    @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
-            "WHERE s.day = :dayOfWeek " +
-            "OR s.day != :dayOfWeek")
+//    @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.day = :dayOfWeek " +
+//            "OR s.day != :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("dayOfWeek") int dayOfWeek,
+//            @Param("startOfDay") LocalDateTime startOfDay,
+//            @Param("endOfDay") LocalDateTime endOfDay
+//    );
+    @Query("SELECT s, a FROM Schedule s " +
+            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+            "WHERE s.contract.work.company.companyId = :companyId " + // 회사 필터 추가
+            "AND (s.day = :dayOfWeek " +                              // 금일 스케줄
+            "OR s.day != :dayOfWeek)")                                // 휴무 스케줄 포함
     List<Object[]> findSchedulesWithAttendances(
+            @Param("companyId") Integer companyId,                  // 회사 ID 추가
             @Param("dayOfWeek") int dayOfWeek,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay

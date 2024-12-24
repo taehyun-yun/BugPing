@@ -83,6 +83,10 @@
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { axiosAddress } from '@/stores/axiosAddress';
+import { useUserStore } from '@/stores/userStore';
+
+const userStore = useUserStore();
+const companyId = userStore.company.companyId;
 
 // 반응형 변수 정의
 const attendanceRate = ref(0); // 출근율
@@ -109,7 +113,9 @@ const extraWorkPercentage = computed(() =>
 // 데이터 로드 함수
 async function fetchAttendanceStatistics() {
   try {
-    const response = await axios.get(`${axiosAddress}/api/today/attendance-statistics`);
+    const response = await axios.get(`${axiosAddress}/api/today/attendance-statistics`, {
+      params: {companyId},
+    });
     const data = response.data;
 
     // 상태 업데이트

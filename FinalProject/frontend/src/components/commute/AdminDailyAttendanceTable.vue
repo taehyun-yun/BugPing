@@ -32,13 +32,20 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from '@/stores/userStore';
+
+
+const userStore = useUserStore();
+const companyId = userStore.company.companyId; // userStore에서 companyId 가져오기
 
 const employees = ref([]);
 
 onMounted(async () => {
   try {
     const response = await axios.get(
-      `${axiosAddress}/api/attendances/attendancesList`
+      `${axiosAddress}/api/attendances/attendancesList`, {
+        params: {companyId},
+      }
     );
     console.log("API Response:", response.data);
     employees.value = response.data;
@@ -82,7 +89,6 @@ function determineAttendanceStatus(actualStart) {
 //   const diffMinutes = Math.floor(diffMilliseconds / 60000);
 //   return `${diffMinutes} 분`;
 // }
-
 
 function handleClick(emp) {
   console.log("Clicked on:", emp);

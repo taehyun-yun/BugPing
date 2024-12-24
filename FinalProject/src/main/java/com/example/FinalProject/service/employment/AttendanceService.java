@@ -45,12 +45,12 @@ public class AttendanceService {
 // =============================================TH=====================================================
 
     // 금일 근무자 리스트 조회
-    public List<AdminAttendanceDTO> getTodayAttendances() {
+    public List<AdminAttendanceDTO> getTodayAttendances(Integer companyId) {
         int todayDayOfWeek = LocalDate.now().getDayOfWeek().getValue(); // 월요일: 1 ~ 일요일: 7
         LocalDate todayDate = LocalDate.now(); // 오늘 날짜
 
         // 오늘 날짜와 요일을 기준으로 스케쥴 및 출근 데이터를 조회
-        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(todayDayOfWeek, todayDate);
+        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(companyId, todayDayOfWeek, todayDate);
 
         List<AdminAttendanceDTO> dtoList = new ArrayList<>();
         for (Object[] result : results) {
@@ -73,14 +73,14 @@ public class AttendanceService {
         return dtoList;
     }
 
-    public AttendanceDetailsDTO getTodayScheduleBasedStatistics() {
+    public AttendanceDetailsDTO getTodayScheduleBasedStatistics(Integer companyId) {
         LocalDate today = LocalDate.now(); // 오늘 날짜
         int dayOfWeek = today.getDayOfWeek().getValue(); // 요일 (월요일: 1, 일요일: 7)
         LocalDateTime startOfDay = today.atStartOfDay(); // 오늘 00:00:00
         LocalDateTime endOfDay = today.atTime(23, 59, 59); // 오늘 23:59:59
 
         // Schedule과 Attendance를 LEFT JOIN한 결과 가져오기
-        List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(dayOfWeek, startOfDay, endOfDay);
+        List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(companyId, dayOfWeek, startOfDay, endOfDay);
 
 
         long totalScheduled = 0; // 전체 스케줄 수
@@ -109,6 +109,7 @@ public class AttendanceService {
             }
         }
         System.out.println("휴무자 : " + onLeave);
+
         // 출근율 계산
         double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
 

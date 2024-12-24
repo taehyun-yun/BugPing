@@ -73,12 +73,6 @@ public class PayRollController {
             @RequestParam(required = false) Integer companyId) {
 
 
-//        // 로그인된 사용자 ID 가져오기
-//        String loggedInUserId = jwtService.getLoggedInUserId();
-//        if (loggedInUserId.equals("anonymousUser")) {
-//            log.error("로그인된 사용자 정보를 가져올 수 없습니다.");
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
         if (companyId == null) {
             log.error("회사 ID가 전달되지 않았습니다.");
             return ResponseEntity.badRequest().body(Map.of("error", "회사 ID가 필요합니다."));
