@@ -264,11 +264,12 @@ onMounted(fetchAttendanceStatistics);
     height: 100%;
     background: #2196f3;
     width: 0;
-    transition: width 0.3s ease;
+    transition: width 0.5s ease-in-out; /* 변경 */
   }
 
   .bar-progress.red {
     background: #ff5252;
+    transition: width 0.5s ease-in-out; /* 변경 */
   }
 
   .stat-value {

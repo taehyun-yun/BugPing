@@ -2,6 +2,8 @@ package com.example.FinalProject.repository.work;
 
 import com.example.FinalProject.entity.work.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +26,26 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
     Optional<List<Work>> findByUser_userIdOrderByHireDateDesc(String userId);
     //역할에 따른 회사 목록.
     Optional<List<Work>> findByUser_userIdAndUser_Role(String userId, String role);
+
+// =========================== TH =============================
+    long countByCompanyCompanyId(Integer companyId);
+
+//    @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.contract.work.company.companyId = :companyId AND s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek
+//    );
+
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON s.schedule.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.contract.work.company.companyId = :companyId " +
+//            "AND s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek
+//    );
+
+    @Query("SELECT w.user.userId FROM Work w WHERE w.company.companyId = :companyId")
+    List<String> findAllUserIdsByCompanyId(@Param("companyId") Integer companyId);
 }

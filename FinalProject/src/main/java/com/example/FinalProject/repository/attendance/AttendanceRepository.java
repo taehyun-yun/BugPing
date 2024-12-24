@@ -109,11 +109,9 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
     @Query("SELECT s, a FROM Schedule s " +
             "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
             "WHERE s.contract.work.company.companyId = :companyId " +
-            "AND s.day = :dayOfWeek " +
-            "AND (a.actualStart IS NULL OR DATE(a.actualStart) = :todayDate)")
+            "AND s.day = :dayOfWeek")
     List<Object[]> findSchedulesWithAttendances(
             @Param("companyId") Integer companyId,
-            @Param("dayOfWeek") int dayOfWeek,
-            @Param("todayDate") LocalDate todayDate
+            @Param("dayOfWeek") int dayOfWeek
     );
 }
