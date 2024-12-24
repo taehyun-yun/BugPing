@@ -92,31 +92,36 @@ public class AttendanceService {
         List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(companyId, dayOfWeek);
 
         // 변수 초기화
+        Set<String> scheduledUserIds = new HashSet<>();
         long totalScheduled = 0;
         long attended = 0;
-        long onLeave = 0;
         long notYetStarted = 0;
 
-        Set<String > scheduledUserIds = new HashSet<>();
-        List<String > allUserIds = workRepository.findAllUserIdsByCompanyId(companyId);
-
+        // 스케줄된 사용자 계산
         for (Object[] result : results) {
             Schedule schedule = (Schedule) result[0];
             Attendance attendance = (Attendance) result[1];
+            String userId = schedule.getContract().getWork().getUser().getUserId();
 
-            String  userId = schedule.getContract().getWork().getUser().getUserId();
-            scheduledUserIds.add(userId);
-
-            totalScheduled++;
-            if (attendance == null || attendance.getActualStart() == null) {
-                notYetStarted++;
-            } else {
-                attended++;
+            // 중복 제거
+            if (scheduledUserIds.add(userId)) {
+                totalScheduled++;
+                if (attendance == null || attendance.getActualStart() == null) {
+                    notYetStarted++;
+                } else {
+                    attended++;
+                }
             }
         }
 
-        // 휴무자는 출근 대상자에서 스케줄에 포함되지 않은 인원으로 계산
-        onLeave = allUserIds.size() - scheduledUserIds.size();
+        // 전체 사용자 ID 목록 가져오기
+        List<String> allUserIds = workRepository.findAllUserIdsByCompanyId(companyId);
+
+        // 관리자 제외
+        allUserIds.remove("master");
+
+        // 휴무 계산
+        long onLeave = allUserIds.size() - scheduledUserIds.size();
 
         // 출근율 계산
         double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
