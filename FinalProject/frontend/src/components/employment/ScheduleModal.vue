@@ -28,7 +28,7 @@
 
         <!-- 근무시간 입력 섹션 -->
         <section class="work-time-section">
-          <h3>근무시간 <span class="required">*</span></h3>
+          <h3>근무시간 <span class="required"></span></h3>
           <!-- 근무 시작과 끝 시간을 선택하는 입력 그룹 -->
           <div class="time-inputs">
             <!-- 근무 시작 시간 그룹 -->
@@ -61,7 +61,7 @@
                 <select v-model="endHour">
                   <option value="">선택</option>
                   <!-- 0시부터 23시까지 선택할 수 있는 옵션 -->
-                  <option v-for="h in 24" :key="`end-${h}`">
+                  <option v-for="h in 24" :key="`end-hour-${h}`">
                     {{ String(h - 1).padStart(2, '0') }}
                   </option>
                 </select>
@@ -89,9 +89,9 @@
             <div class="select-wrapper">
               <select v-model="breakTimeHour">
                 <option value="">선택</option>
-                <!-- 1시간부터 24시간까지 선택할 수 있는 옵션 -->
-                <option v-for="h in 24" :key="`break-hour-${h}`" :value="h">
-                  {{ String(h-1).padStart(2, '0') }}
+                <!-- 0시간부터 23시간까지 선택할 수 있는 옵션 -->
+                <option v-for="h in 24" :key="`break-hour-${h}`" :value="h - 1">
+                  {{ String(h - 1).padStart(2, '0') }}
                 </option>
               </select>
             </div>
@@ -99,9 +99,9 @@
             <div class="select-wrapper">
               <select v-model="breakTimeMinute">
                 <option value="">선택</option>
-                <!-- 1분부터 60분까지 선택할 수 있는 옵션 -->
-                <option v-for="m in 60" :key="`break-minute-${m}`" :value="m">
-                  {{ String(m-1).padStart(2, '0') }}
+                <!-- 0분부터 59분까지 선택할 수 있는 옵션 -->
+                <option v-for="m in 60" :key="`break-minute-${m}`" :value="m - 1">
+                  {{ String(m - 1).padStart(2, '0') }}
                 </option>
               </select>
             </div>
@@ -152,8 +152,8 @@ const startHour = ref('') // 근무 시작 시간 (시)
 const startMinute = ref('') // 근무 시작 시간 (분)
 const endHour = ref('') // 근무 종료 시간 (시)
 const endMinute = ref('') // 근무 종료 시간 (분)
-const breakTimeHour = ref(0) // 휴식 시간 (시간, 기본값: 0)
-const breakTimeMinute = ref(0) // 휴식 시간 (분, 기본값: 0)
+const breakTimeHour = ref('') // 휴식 시간 (시간)
+const breakTimeMinute = ref('') // 휴식 시간 (분)
 
 // 스케줄 정보가 변경될 때마다 모달 내부 상태를 업데이트
 watch(
@@ -174,6 +174,13 @@ watch(
       const breakTime = newSchedule.breakMinute ?? 0;
       breakTimeHour.value = Math.floor(breakTime / 60);
       breakTimeMinute.value = breakTime % 60;
+
+      // 디버깅용 로그 추가
+      console.log('Calculated Break Time:', {
+        breakMinute: breakTime,
+        breakTimeHour: breakTimeHour.value,
+        breakTimeMinute: breakTimeMinute.value,
+      });   
     }
   },
   { immediate: true }
