@@ -196,6 +196,10 @@ export const useContractsStore = defineStore("contracts", {
     async addSchedule(contractId, newSchedule) {
       this.loading = true; // 스케줄을 추가하는 중임을 나타냅니다.
       this.error = null; // 이전 오류 메시지를 초기화합니다.
+      
+      // contracts.js
+      console.log('addSchedule - Data to Save:', JSON.stringify(newSchedule, null, 2));
+
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
 

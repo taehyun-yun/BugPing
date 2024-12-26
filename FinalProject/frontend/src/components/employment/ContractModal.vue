@@ -216,7 +216,7 @@ const closeUserModal = () => {
 
 const addSchedule = () => {
   const newSchedule = {
-    temporaryId: '',
+    temporaryId: '', //없어도 될것같긴함
     day: '',
     officialStart: '',
     officialEnd: '',
@@ -344,13 +344,28 @@ const saveContract = async () => {
     const contractId = savedContract?.contractId || props.contract.contractId;
 
     // 추가된 스케줄 저장
-    for (const schedule of addedSchedules.value) {
-      await contractsStore.addSchedule(contractId, schedule); // contractId와 함께 저장
+    // for (const schedule of addedSchedules.value) {
+    //   await contractsStore.addSchedule(contractId, schedule); // contractId와 함께 저장
+    // }
+
+    // 스케줄 데이터에서 `temporaryId` 제거 & contractId 추가
+    // const schedulesToSave = addedSchedules.value.map(({ temporaryId, ...schedule }) => schedule);
+    const schedulesToSave = addedSchedules.value.map(({ temporaryId, ...schedule }) => ({
+      ...schedule,
+      contract: { // contractId를 포함한 contract 객체 추가
+        contractId,
+      },
+    }));
+    console.log('saveContract - Schedules to Save:', schedulesToSave);
+
+    // 추가된 스케줄 저장
+    for (const schedule of schedulesToSave) {
+      await contractsStore.addSchedule(contractId, schedule);//savedContract.contractId //여기는 contractId 필요! 만약 스케쥴안에있다면 매개변수로는 안줘도됨!!!
     }
 
     // 수정된 스케줄 업데이트
     for (const schedule of editedSchedules.value) {
-      await contractsStore.editSchedule(contractId, schedule.scheduleId, schedule);
+      await contractsStore.editSchedule(contractId, schedule.scheduleId, schedule); // contractId 추가 필요 여부 검토!!!!피니아에서!!
     }
 
     // 삭제된 스케줄 제거
