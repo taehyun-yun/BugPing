@@ -196,7 +196,7 @@ export const useContractsStore = defineStore("contracts", {
     async addSchedule(contractId, newSchedule) {
       this.loading = true; // 스케줄을 추가하는 중임을 나타냅니다.
       this.error = null; // 이전 오류 메시지를 초기화합니다.
-      
+
       // contracts.js
       console.log('addSchedule - Data to Save:', JSON.stringify(newSchedule, null, 2));
 
@@ -287,23 +287,33 @@ export const useContractsStore = defineStore("contracts", {
         const baseUrl = import.meta.env.VITE_API_URL;
 
         // 서버에 DELETE 요청을 보내서 스케줄을 삭제합니다.
-        await axios.delete(`${baseUrl}/api/schedules/${scheduleId}`);
+        const response = await axios.delete(`${baseUrl}/api/schedules/${scheduleId}`);
 
-        // 계약 목록에서 해당 계약을 찾습니다.
-        const contractIndex = this.contracts.findIndex(
-          (contract) => contract.contractId === contractId
-        );
-        if (contractIndex !== -1) {
-          // 해당 계약의 스케줄 목록에서 삭제할 스케줄을 찾습니다.
-          const scheduleIndex = this.contracts[
-            contractIndex
-          ].schedules.findIndex(
-            (schedule) => schedule.scheduleId === scheduleId
+        if (response.status === 204 || response.status === 200) {
+          console.log("deleteSchedule - response.status: " + response.status);
+
+          // 삭제된 경우, 클라이언트에서 해당 스케줄 제거
+          const contractIndex = this.contracts.findIndex(
+            (contract) => contract.contractId === contractId
           );
-          if (scheduleIndex !== -1) {
-            // 스케줄을 목록에서 제거합니다.
-            this.contracts[contractIndex].schedules.splice(scheduleIndex, 1);
+          if (contractIndex !== -1) {
+            this.contracts[contractIndex].schedules = this.contracts[
+              contractIndex
+            ].schedules.filter((schedule) => schedule.scheduleId !== scheduleId);
           }
+        // } else if (response.status === 200) {
+        //   // 비활성화된 경우, 상태를 INACTIVE로 업데이트
+        //   const contractIndex = this.contracts.findIndex(
+        //     (contract) => contract.contractId === contractId
+        //   );
+        //   if (contractIndex !== -1) {
+        //     const schedule = this.contracts[contractIndex].schedules.find(
+        //       (schedule) => schedule.scheduleId === scheduleId
+        //     );
+        //     if (schedule) {
+        //       schedule.status = "T"; // UI 상태 업데이트
+        //     }
+        //   }
         }
       } catch (err) {
         // 스케줄 삭제에 실패했을 때의 처리입니다.

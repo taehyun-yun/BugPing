@@ -37,6 +37,11 @@ public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer>
 
 
      Optional<WorkChange> findTopByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
+
+
+     //----------------------------------------ES------------------------------------------------
+     // 특정 스케줄에 대한 WorkChange 데이터가 존재하는지 확인
+     boolean existsBySchedule_ScheduleId(Integer scheduleId);
 }
 
 

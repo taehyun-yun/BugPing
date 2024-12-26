@@ -51,6 +51,11 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
 
 
     //-------------------------------------------------------------- ES --------------------------------------------------------------
+
+    //스케쥴 삭제 시 관련 출결데이터가 있는지 확인할 떄 사용
+    boolean existsBySchedule_ScheduleId(Integer scheduleId);
+
+
     // 특정 스케줄 ID에 따른 출석 정보를 조회
     List<Attendance> findByScheduleScheduleId(Integer scheduleId);
 
