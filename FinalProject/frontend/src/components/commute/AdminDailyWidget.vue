@@ -106,6 +106,7 @@ import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();
 const companyId = userStore.company.companyId;
+const attendanceList = ref([]); // 데이터를 담을 배열
 
 const attendanceRate = ref(0);
 const totalScheduled = ref(0);
@@ -154,6 +155,19 @@ async function fetchAttendanceStatistics() {
     console.error('Error fetching attendance statistics:', error);
   }
 }
+
+// 추가된 onMounted 부분
+onMounted(async () => {
+  try {
+    const response = await axios.get(`${axiosAddress}/api/today`, {
+      params: { companyId }, // 회사 ID 전달
+    });
+    attendanceList.value = response.data;
+    console.log('오늘의 출퇴근 데이터:', attendanceList.value); // 데이터를 콘솔에 출력
+  } catch (error) {
+    console.error('출퇴근 데이터 가져오기 실패:', error); // 에러 로그
+  }
+});
 
 onMounted(fetchAttendanceStatistics);
 </script>

@@ -17,7 +17,7 @@
           <td>{{ emp.userId }}</td>
           <td>{{ formatTime(emp.officialStart) }}</td>
           <td>{{ formatTime(emp.officialEnd) }}</td>
-          <td>{{ determineAttendanceStatus(emp.officialStart, emp.officialEnd) }}</td>
+          <td>{{ emp.commuteStatus }}</td> <!-- 근무 여부 -->
           <td>{{ calculateTotalWorkMinutes(emp.actualStart, emp.actualEnd, emp.totalMinute) }}</td>
           <td>
             <button class="edit-button" @click="handleClick(emp)">버튼</button>
@@ -34,57 +34,92 @@ import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
 import { useUserStore } from '@/stores/userStore';
 
-
+// 회사 ID 가져오기
 const userStore = useUserStore();
-const companyId = userStore.company.companyId; // userStore에서 companyId 가져오기
+const companyId = userStore.company.companyId;
 
-const employees = ref([]);
+// 스케줄과 출근 데이터 저장
+const employees = ref([]); // 병합된 데이터
+const schedules = ref([]); // 스케줄 데이터
+const attendances = ref([]); // 출근 데이터
 
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      `${axiosAddress}/api/attendances/schedulesList`, {
-        params: {companyId},
-      }
-    );
-    console.log("API Response:", response.data);
-    employees.value = response.data;
+    // 스케줄 데이터 가져오기
+    const scheduleResponse = await axios.get(`${axiosAddress}/api/attendances/schedulesList`, {
+      params: { companyId },
+    });
+    console.log("스케줄 데이터:", scheduleResponse.data);
+    schedules.value = scheduleResponse.data;
+
+    // 출근 데이터 가져오기
+    const attendanceResponse = await axios.get(`${axiosAddress}/api/today`, {
+      params: { companyId },
+    });
+    console.log("출근 데이터:", attendanceResponse.data);
+    attendances.value = attendanceResponse.data;
+
+    // 데이터 병합
+    mergeScheduleAndAttendance();
   } catch (error) {
-    console.error(error);
+    console.error("데이터 가져오기 실패:", error);
   }
 });
+
+// 스케줄과 출근 데이터 병합
+function mergeScheduleAndAttendance() {
+  const mergedData = schedules.value.map(schedule => {
+    // 스케줄 ID 기준으로 출근 데이터 찾기
+    const matchedAttendance = attendances.value.find(
+      attendance => attendance.scheduleId === schedule.scheduleId
+    );
+
+    // 상태 계산
+    const attendanceStatus = determineAttendanceStatus(matchedAttendance, schedule);
+
+    return {
+      userId: schedule.userId,
+      userName: schedule.userName,
+      officialStart: schedule.officialStart,
+      officialEnd: schedule.officialEnd,
+      actualStart: matchedAttendance?.actualStart || null,
+      actualEnd: matchedAttendance?.actualEnd || null,
+      commuteStatus: attendanceStatus,
+      totalMinute: matchedAttendance?.totalMinute || 0,
+    };
+  });
+
+  employees.value = mergedData;
+}
+
+// 근무 상태 계산
+function determineAttendanceStatus(attendance, schedule) {
+  if (!attendance) {
+    const now = new Date();
+    const officialStart = new Date(`1970-01-01T${schedule.officialStart}`);
+    if (now < officialStart) return "출근 전";
+    return "미출근";
+  }
+
+  if (attendance.actualEnd) return "퇴근 완료";
+  if (attendance.actualStart) return "근무중";
+  return "미출근";
+}
 
 // 시간 포맷 함수
 function formatTime(timeString) {
   if (!timeString) return "미출근";
-  const date = new Date(`1970-01-01T${timeString}`); // 시간만 있는 경우 처리
+  const date = new Date(`1970-01-01T${timeString}`);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-// 근무 여부 계산
-function determineAttendanceStatus(officialStart, officialEnd) {
-  const now = new Date();
-  const start = new Date(`1970-01-01T${officialStart}`);
-  const end = new Date(`1970-01-01T${officialEnd}`);
-
-  if (now < start) return "출근 전";
-  if (now > end) return "퇴근 완료";
-  return "근무중";
 }
 
 // 총 근무 시간 계산
 function calculateTotalWorkMinutes(actualStart, actualEnd, dbTotalMinutes) {
-  // DB에서 가져온 값이 존재하고 0이 아닌 경우
-  if (dbTotalMinutes !== undefined && dbTotalMinutes > 0) {
-    return `${dbTotalMinutes} 분`;
-  }
-
-  // DB 값이 없거나 0일 경우 계산
+  if (dbTotalMinutes && dbTotalMinutes > 0) return `${dbTotalMinutes} 분`;
   if (!actualStart) return "계산 불가";
 
   const start = new Date(actualStart).getTime();
   const end = actualEnd ? new Date(actualEnd).getTime() : new Date().getTime();
-
   const diffMilliseconds = end - start;
   if (diffMilliseconds < 0) return "시간 오류";
 
@@ -94,11 +129,9 @@ function calculateTotalWorkMinutes(actualStart, actualEnd, dbTotalMinutes) {
 
 function handleClick(emp) {
   console.log("Clicked on:", emp);
-  // 추가 로직 작성
 }
 </script>
 
-  
   <style scoped>
   .table-container {
     padding: 1rem;

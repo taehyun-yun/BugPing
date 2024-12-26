@@ -2,6 +2,7 @@ package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.dto.AttendanceDetailsDTO;
+import com.example.FinalProject.dto.DailyAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
@@ -104,6 +105,14 @@ public class AttendanceController {
 
         // 결과 반환
         return ResponseEntity.ok(scheduleList);
+    }
+
+    // 오늘 날짜의 attendance 데이터 조회
+    @GetMapping("/today")
+    public ResponseEntity<List<DailyAttendanceDTO>> getTodayAttendanceData(@RequestParam Integer companyId) {
+        List<DailyAttendanceDTO> attendanceList = attendanceService.getTodayAttendanceData(companyId);
+        System.out.println(" attendance 데이터 출력 확인 : " + attendanceList);
+        return ResponseEntity.ok(attendanceList);
     }
 
     // 출결 확인

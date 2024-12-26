@@ -31,7 +31,7 @@ public class Attendance {
     private LocalDateTime actualEnd; //퇴근찍은시간
     private String commuteStatus; //근무상태(지각 조퇴 결근)
     @Column(length = 5000)
-    private String remark; //특이사항
+    private String remark; //특이사항 (결근 사유 뭐 이런거 ㅇㅇ..)
 
     private String isNormalAttendance; //정상출근여부 (지각했지만 출근인정 시 사용)
     private LocalDateTime recognizedWorkStart; //인정근무시작시간
@@ -47,5 +47,5 @@ public class Attendance {
 
 
     private int totalMinute; //총근무시간(인정근무시간 + 추가근무시간)
-    private String status; // 비-활성화
+    private String status; // 비-활성화 (삭제 관련)
 }
