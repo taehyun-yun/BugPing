@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 @Slf4j
@@ -93,11 +94,16 @@ public class AttendanceController {
 
     // ==============================================================TH=========================================
     // 금일 출근자 리스트 조회
-    @GetMapping("/attendances/attendancesList")
-    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList(@RequestParam(required = false) Integer companyId) {
-        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances(companyId);
-        log.info("금일 출근자 리스트 출력 : {}", attendanceList.toString());
-        return ResponseEntity.ok(attendanceList);
+    @GetMapping("/attendances/schedulesList")
+    public ResponseEntity<List<AdminAttendanceDTO>> getTodayScheduleList(@RequestParam(required = false) Integer companyId) {
+        // 스케줄 기반 데이터 가져오기
+        List<AdminAttendanceDTO> scheduleList = attendanceService.getTodaySchedules(companyId);
+
+        // 로그 출력
+        log.info("금일 스케줄 기반 근무자 리스트 출력: {}", scheduleList);
+
+        // 결과 반환
+        return ResponseEntity.ok(scheduleList);
     }
 
     // 출결 확인

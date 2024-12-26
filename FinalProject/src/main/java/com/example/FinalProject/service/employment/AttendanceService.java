@@ -4,7 +4,6 @@ import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.entity.employment.Schedule;
-import com.example.FinalProject.entity.work.Work;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ScheduleRepository;
@@ -14,15 +13,20 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
+@Slf4j
 @Service
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
@@ -47,43 +51,41 @@ public class AttendanceService {
 
 // =============================================TH=====================================================
 
-    // 금일 근무자 리스트 조회
-    public List<AdminAttendanceDTO> getTodayAttendances(Integer companyId) {
-        int todayDayOfWeek = LocalDate.now().getDayOfWeek().getValue(); // 월요일: 1 ~ 일요일: 7
-        //LocalDate todayDate = LocalDate.now(); // 오늘 날짜
+//    // 주간 시작일과 종료일 계산 메서드
+//    private LocalDate[] getWeekStartAndEnd(LocalDate today) {
+//        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+//        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+//        return new LocalDate[] { startOfWeek, endOfWeek };
+//    }
 
-        // 오늘 날짜와 요일을 기준으로 스케쥴 및 출근 데이터를 조회
-        List<Object[]> results = attendanceRepository.findSchedulesWithAttendances(companyId, todayDayOfWeek);
+    public List<AdminAttendanceDTO> getTodaySchedules(Integer companyId) {
+        // 현재 날짜와 요일
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        int todayDayOfWeek = currentDateTime.getDayOfWeek().getValue();
 
-        // 중복 제거를 위한 Map 사용 (Key: userId, Value: DTO)
-        Map<String, AdminAttendanceDTO> dtoMap = new LinkedHashMap<>();
+        log.info("Today DateTime: {}, Day of Week: {}", currentDateTime, todayDayOfWeek);
 
-        for (Object[] result : results) {
-            Schedule schedule = (Schedule) result[0];
-            Attendance attendance = (Attendance) result[1]; // LEFT JOIN 결과가 없을 경우 null
-            String userId = schedule.getContract().getWork().getUser().getUserId();
+        // 스케줄 데이터 조회
+        List<Schedule> schedules = scheduleRepository.findSchedulesByCompanyAndDay(companyId, todayDayOfWeek);
 
-            // 중복된 사용자 제거
-            if (!dtoMap.containsKey(userId)) {
-                AdminAttendanceDTO dto = new AdminAttendanceDTO(
-                        userId,
-                        schedule.getContract().getWork().getUser().getName(),
-                        attendance != null ? attendance.getAttendanceId() : null,
-                        attendance != null ? attendance.getActualStart() : null,
-                        attendance != null ? attendance.getActualEnd() : null,
-                        attendance != null ? attendance.getCommuteStatus() : "미출근",
-                        attendance != null ? attendance.getRemark() : null,
-                        attendance != null ? attendance.getIsNormalAttendance() : "N",
-                        attendance != null ? attendance.getTotalMinute() : 0
-                );
-                dtoMap.put(userId, dto);
-            }
+        // DTO 생성
+        List<AdminAttendanceDTO> scheduleList = new ArrayList<>();
+        for (Schedule schedule : schedules) {
+            AdminAttendanceDTO dto = new AdminAttendanceDTO(
+                    schedule.getContract().getWork().getUser().getUserId(),
+                    schedule.getContract().getWork().getUser().getName(),
+                    schedule.getOfficialStart(),
+                    schedule.getOfficialEnd()
+            );
+
+            scheduleList.add(dto);
         }
 
-        // Map의 값들을 리스트로 변환하여 반환
-        return new ArrayList<>(dtoMap.values());
+        log.info("Schedules found: {}", scheduleList);
+        return scheduleList;
     }
 
+    // 출퇴근 현황 출력.
     public AttendanceDetailsDTO getTodayScheduleBasedStatistics(Integer companyId) {
         LocalDate today = LocalDate.now();
         int dayOfWeek = today.getDayOfWeek().getValue();

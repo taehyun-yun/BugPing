@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -106,12 +107,41 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
 // ========================================== TH ====================================================
 
     // 금일 출근자 조회
-    @Query("SELECT s, a FROM Schedule s " +
-            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
-            "WHERE s.contract.work.company.companyId = :companyId " +
-            "AND s.day = :dayOfWeek")
-    List<Object[]> findSchedulesWithAttendances(
-            @Param("companyId") Integer companyId,
-            @Param("dayOfWeek") int dayOfWeek
-    );
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.contract.work.company.companyId = :companyId " +
+//            "AND s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek
+//    );
+
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.contract.work.company.companyId = :companyId " +
+//            "AND s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek
+//    );
+
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+//            "WHERE s.contract.work.company.companyId = :companyId " +
+//            "AND s.day = :dayOfWeek " +
+//            "AND CAST(s.officialStart AS TIME) <= :currentTime " +
+//            "AND CAST(s.officialEnd AS TIME) >= :currentTime")
+//    List<Object[]> findSchedulesWithAttendances(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek,
+//            @Param("currentTime") LocalTime currentTime
+//    );
+@Query("SELECT s, a FROM Schedule s " +
+        "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
+        "WHERE s.contract.work.company.companyId = :companyId " +
+        "AND s.day = :dayOfWeek " +
+        "AND (a.attendanceId IS NULL OR DATE(a.actualStart) = CURRENT_DATE)")
+List<Object[]> findSchedulesWithAttendances(
+        @Param("companyId") Integer companyId,
+        @Param("dayOfWeek") int dayOfWeek);
 }

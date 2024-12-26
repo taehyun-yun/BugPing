@@ -97,4 +97,17 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             @Param("companyId") Integer companyId,
             @Param("dayOfWeek") int dayOfWeek
     );
+
+//    @Query("SELECT s FROM Schedule s " +
+//            "JOIN s.contract c " +
+//            "JOIN c.work w " +
+//            "WHERE w.company.companyId = :companyId " +
+//            "AND s.day = :dayOfWeek")
+//    List<Schedule> findSchedulesByDayAndCompany(
+//            @Param("companyId") Integer companyId,
+//            @Param("dayOfWeek") int dayOfWeek);
+
+    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId AND s.day = :dayOfWeek")
+    List<Schedule> findSchedulesByCompanyAndDay(@Param("companyId") Integer companyId, @Param("dayOfWeek") int dayOfWeek);
+
 }

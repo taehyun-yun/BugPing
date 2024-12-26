@@ -81,7 +81,6 @@ public class PayRollController {
         log.info("정렬 요청 - Field: {}, Direction: {}", sortField, sortDirection);
         log.info("회사 아이디==========================: {}", companyId);
 
-
         // 근무자 리스트 조회
         List<EmployeeDTO> employeeList = payrollService.getEmployeeListWithPayroll(companyId, searchQuery, sortField, sortDirection);
 
