@@ -77,11 +77,18 @@ function mergeScheduleAndAttendance() {
     // 상태 계산
     const attendanceStatus = determineAttendanceStatus(matchedAttendance, schedule);
 
+    const officialStart = matchedAttendance?.actualStart || schedule.officialStart; // 출근 시간 변경
+    const officialEnd = matchedAttendance?.actualEnd || schedule.officialEnd; // 퇴근 시간 변경
+
+    // 로그 출력
+    console.log("출근 찍은 시간:", officialStart);
+    console.log("퇴근 찍은 시간:", officialEnd);
+
     return {
       userId: schedule.userId,
       userName: schedule.userName,
-      officialStart: schedule.officialStart,
-      officialEnd: schedule.officialEnd,
+      officialStart,
+      officialEnd,
       actualStart: matchedAttendance?.actualStart || null,
       actualEnd: matchedAttendance?.actualEnd || null,
       commuteStatus: attendanceStatus,
@@ -108,10 +115,23 @@ function determineAttendanceStatus(attendance, schedule) {
 
 // 시간 포맷 함수
 function formatTime(timeString) {
-  if (!timeString) return "미출근";
-  const date = new Date(`1970-01-01T${timeString}`);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (!timeString || timeString.trim() === "") return "미출근";
+
+  try {
+    // 시간 문자열이 ISO 형식인 경우 직접 변환
+    const date = new Date(timeString);
+    if (isNaN(date)) {
+      throw new Error("Invalid Date");
+    }
+
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (error) {
+    console.error("시간 포맷 오류:", error, timeString);
+    return "Invalid Date";
+  }
 }
+
+
 
 // 총 근무 시간 계산
 function calculateTotalWorkMinutes(actualStart, actualEnd, dbTotalMinutes) {
