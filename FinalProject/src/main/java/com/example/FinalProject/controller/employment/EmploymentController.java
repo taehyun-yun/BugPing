@@ -120,6 +120,16 @@ public class EmploymentController {
     // 새로운 스케줄을 생성합니다
     @PostMapping("/schedules")
     public Schedule createSchedule(@RequestBody Schedule schedule) {
+
+        if (schedule.getContract() != null && schedule.getContract().getContractId() != null) {
+
+            Contract contract = contractRepository.findById(schedule.getContract().getContractId())
+                    .orElseThrow(() -> new IllegalArgumentException("EmploymentController createSchedule - Invalid contractId: " + schedule.getContract().getContractId()));
+            //contractId로 데이터베이스에서 Contract를 찾지 못했을 경우 예외를 발생
+
+            schedule.setContract(contract); // Contract 객체 설정
+        }
+
         return scheduleRepository.save(schedule);
     }
 
