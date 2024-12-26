@@ -39,7 +39,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "WHERE c.id = :contractId")
+            "WHERE c.id = :contractId AND s.status = 'T'")
     List<Schedule> findSchedulesByContractIdWithContractWorkAndUser(@Param("contractId") Integer contractId);
 
 
@@ -48,14 +48,15 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "WHERE s.id = :scheduleId")
+            "WHERE s.id = :scheduleId AND s.status = 'T'")
     Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Integer scheduleId);
 
     @Query("SELECT DISTINCT s FROM Schedule s " +
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
-            "JOIN FETCH w.company cp ")
+            "JOIN FETCH w.company cp " +
+            "WHERE s.status = 'T'")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 // ====================================== TH =============================================================
 //    // 금일 출근자 카운트
