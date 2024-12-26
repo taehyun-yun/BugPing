@@ -12,31 +12,32 @@ import java.util.Optional;
 
 
 public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
-     @Query("SELECT wc FROM WorkChange wc " +
-             "WHERE wc.schedule.scheduleId = :scheduleId " +
-             "AND wc.changeDate <= :currentDate " +
-             "ORDER BY wc.changeDate DESC, wc.changeStartTime DESC")
-     List<WorkChange> findLatestWorkChangesByScheduleIdAndDate(@Param("scheduleId") Integer scheduleId,
-                                                               @Param("currentDate") LocalDate currentDate);
 
-     /*@Query(value = "SELECT * FROM work_change " +
-             "WHERE schedule_id = :scheduleId " +
-             "AND change_date BETWEEN :startDate AND :endDate " +
-             "ORDER BY change_start_time DESC LIMIT 1", nativeQuery = true)
-     WorkChange findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
-                                     @Param("startDate") LocalDate startDate,
-                                     @Param("endDate") LocalDate endDate);
-*/
-     @Query("SELECT wc FROM WorkChange wc " +
-             "WHERE wc.schedule.scheduleId = :scheduleId " +
+
+     //특정 스케줄, 날짜, IN/OUT 상태의 WorkChange 조회
+     @Query("SELECT wc FROM WorkChange wc WHERE wc.schedule.scheduleId = :scheduleId AND wc.changeDate = :changeDate AND wc.inOut = :inOut")
+     Optional<WorkChange> findBySchedule_ScheduleIdAndChangeDateAndInOut(
+             Integer scheduleId, LocalDate changeDate, String inOut);
+
+
+
+     //특정 스케줄과 날짜의 모든 WorkChange 조회
+     @Query("SELECT wc FROM WorkChange wc WHERE wc.schedule.scheduleId = :scheduleId AND wc.changeDate = :changeDate")
+     List<WorkChange> findByScheduleIdAndChangeDate(@Param("scheduleId") Integer scheduleId, @Param("changeDate") LocalDate changeDate);
+
+     //최신 WorkChange 조회 - 필요 시 활용
+     @Query("SELECT wc FROM WorkChange wc WHERE wc.schedule.scheduleId = :scheduleId " +
              "AND wc.changeDate = :changeDate " +
              "ORDER BY wc.workChangeId DESC")
      Optional<WorkChange> findLatestWorkChange(@Param("scheduleId") Integer scheduleId,
-                                                    @Param("changeDate") LocalDate changeDate);
+                                               @Param("changeDate") LocalDate changeDate);
 
+     @Query("SELECT wc FROM WorkChange wc WHERE wc.schedule.scheduleId IN :scheduleIds AND wc.changeDate BETWEEN :start AND :end")
+     List<WorkChange> findAllByScheduleIdsAndDateRange(
+             @Param("scheduleIds") List<Integer> scheduleIds,
+             @Param("start") LocalDate start,
+             @Param("end") LocalDate end);
 
-
-     Optional<WorkChange> findTopByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
 }
 
 

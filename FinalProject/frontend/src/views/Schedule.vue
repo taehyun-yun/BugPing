@@ -208,8 +208,9 @@ const calendarOptions = ref({
                     end: endFormatted,
                     viewCompanySchedule: !isUserView.value,
                 },
-                withCredentials: true,
             });
+
+            console.log("서버 응답 데이터:", serverResponse.data);
 
             const holidaysResponse = axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
                 params: {
@@ -274,8 +275,6 @@ const calendarOptions = ref({
     eventClick: (info) => openModal(info.event),
 
 
-
-    // 드래그 앤 드롭 이벤트 추가
     // 드래그 앤 드롭 이벤트 추가
     eventDrop: async (info) => {
         try {
