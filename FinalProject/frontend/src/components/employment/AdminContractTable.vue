@@ -7,7 +7,19 @@
       <h1 class="title">계약 목록</h1>
       <div class="date-filter">
         <!-- 날짜 필터: 사용자가 날짜를 선택하면 계약 목록을 필터링 -->
-        <input type="date" v-model="filterDate" @change="filterContracts" />
+        <!-- <input type="date" v-model="filterDate" @change="filterContracts" /> -->
+
+        <!-- 연도 선택 드롭다운 -->
+        <select v-model="selectedYear" @change="handleYearChange">
+        <option value="">전체 연도</option>
+        <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+      </select>
+
+      <select v-model="selectedMonth" :disabled="!selectedYear" @change="filterContracts">
+        <option value="">전체 월</option>
+        <option v-for="month in availableMonths" :key="month" :value="month">{{ month }}</option>
+      </select>
+
       </div>
       <button @click="openCreateModal" class="create-button">
         <i class="fas fa-plus"></i>
@@ -122,11 +134,6 @@ const selectedContract = ref(null);
 */
 const expandedContracts = ref([]);
 
-/* 
-  날짜 필터링에 사용되는 날짜 값을 저장하는 반응형 변수.
-  기본값은 오늘 날짜로 설정됩니다.
-*/
-const filterDate = ref(new Date().toISOString().split('T')[0]);
 
 /* 
   컴포넌트가 마운트될 때 계약 데이터를 가져옵니다.
@@ -137,26 +144,72 @@ onMounted(() => {
 });
 
 /* 
-  필터링된 계약 목록을 계산하는 계산된 속성.
-  filterDate 값에 따라 계약 목록을 필터링합니다.
+  날짜 필터링에 사용되는 날짜 값을 저장하는 반응형 변수.
+  기본값은 오늘 날짜로 설정됩니다.
 */
-const filteredContracts = computed(() => {
-  if (!filterDate.value) return contractsStore.contracts; // 필터 날짜가 없으면 모든 계약 반환
-  return contractsStore.contracts.filter(contract =>
-    new Date(contract.contractStart) <= new Date(filterDate.value) &&
-    new Date(contract.contractEnd) >= new Date(filterDate.value)
-  );
+// const filterDate = ref(new Date().toISOString().split('T')[0]);
+
+// 선택된 연도와 월
+const selectedYear = ref(''); // 초기값: 전체 연도
+const selectedMonth = ref(''); // 초기값: 전체 월
+
+// 필터링 가능한 연도와 월
+const availableYears = computed(() => {
+  if (!contractsStore.contracts.length) return [];
+  
+  // 가장 오래된 시작 연도와 가장 최신 종료 연도 계산
+  const earliestYear = Math.min(...contractsStore.contracts.map(contract =>
+    new Date(contract.contractStart).getFullYear()
+  ));
+  const latestYear = Math.max(...contractsStore.contracts.map(contract =>
+    new Date(contract.contractEnd).getFullYear()
+  ));
+
+  return Array.from({ length: latestYear - earliestYear + 1 }, (_, i) => (earliestYear + i).toString());
 });
 
-/* 
-  날짜 필터가 변경되었을 때 호출되는 함수.
-  현재는 계산된 속성 filteredContracts가 자동으로 필터링을 처리하므로, 
-  별도의 로직은 필요하지 않습니다.
-*/
-const filterContracts = () => {
-  // 이 함수는 날짜 필터가 변경될 때 호출됩니다.
-  // 필터링 로직은 계산된 속성 'filteredContracts'에서 자동으로 처리됩니다.
+const availableMonths = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+
+// 필터링된 계약 목록 계산
+const filteredContracts = computed(() => {
+  // 전체 조회
+  if (!selectedYear.value) return contractsStore.contracts;
+
+  // 특정 연도 조회
+  if (selectedYear.value && !selectedMonth.value) {
+    return contractsStore.contracts.filter(contract =>
+      new Date(contract.contractStart).getFullYear() <= parseInt(selectedYear.value) &&
+      new Date(contract.contractEnd).getFullYear() >= parseInt(selectedYear.value)
+    );
+  }
+
+  // 특정 연월 조회
+  if (selectedYear.value && selectedMonth.value) {
+    const startDate = new Date(`${selectedYear.value}-${selectedMonth.value}-01`);
+    const endDate = new Date(
+      new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).toISOString()
+    );
+
+    return contractsStore.contracts.filter(contract =>
+      new Date(contract.contractStart) <= endDate &&
+      new Date(contract.contractEnd) >= startDate
+    );
+  }
+
+  return contractsStore.contracts;
+});
+
+// 연도 변경 시 월 초기화 및 필터링
+const handleYearChange = () => {
+  selectedMonth.value = ''; // 연도 변경 시 월 초기화
+  filterContracts();
 };
+
+// 필터 변경 시 호출
+const filterContracts = () => {
+  console.log("필터링: ", selectedYear.value, selectedMonth.value);
+};
+
 
 /* 
   계약 행의 확장 상태를 토글하는 함수.
@@ -475,4 +528,43 @@ const deleteContract = async (contract) => {
 .error {
   color: #e74c3c; /* 빨간색 */
 }
+.date-filter {
+  display: flex;
+  gap: 1rem;
+}
+/* 드롭다운 기본 스타일 */
+select {
+  padding: 10px 14px; /* 내부 여백 */
+  font-size: 1rem; /* 글자 크기 */
+  border: 1px solid #ccc; /* 기본 테두리 */
+  border-radius: 6px; /* 모서리 둥글게 */
+  background-color: #f8f9fa; /* 배경 색상 */
+  color: #333; /* 글자 색상 */
+  cursor: pointer; /* 커서 변경 */
+  transition: all 0.2s ease-in-out; /* 전환 효과 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+/* 드롭다운 호버 상태 */
+select:hover {
+  border-color: #007bff; /* 테두리 파란색으로 변경 */
+  background-color: #ffffff; /* 배경 흰색으로 변경 */
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* 더 강한 그림자 효과 */
+}
+
+/* 드롭다운 포커스 상태 */
+select:focus {
+  outline: none; /* 기본 아웃라인 제거 */
+  border-color: #0056b3; /* 포커스 시 테두리 어두운 파란색 */
+  box-shadow: 0 0 6px rgba(0, 86, 179, 0.5); /* 포커스 그림자 */
+}
+
+/* 드롭다운 비활성화 상태 */
+select:disabled {
+  background-color: #e9ecef; /* 비활성화 배경 */
+  color: #6c757d; /* 비활성화 글자 색상 */
+  cursor: not-allowed; /* 커서 변경 */
+}
+
+
 </style>
