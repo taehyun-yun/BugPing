@@ -310,9 +310,34 @@ const saveContract = async () => {
     console.log('saveContract - Selected Employee:', selectedEmployee.value);
     console.log('saveContract - Selected Work ID:', selectedWorkId.value);
 
-    // 유효성 검사: 구성원이 선택되었는지 확인
+    // 유효성 검사: 근로자, 시급, 계약 시작일, 계약 종료일 확인
     if (!selectedEmployee.value) {
-      throw new Error('구성원이 선택되지 않았습니다.');
+      message.value = '구성원을 선택해주세요.'; // 메시지 설정
+      messageType.value = 'error'; // 메시지 타입 설정
+      return; // 저장 중단
+    }
+    if (!editedContract.value.hourlyWage || editedContract.value.hourlyWage <= 0) {
+      message.value = '시급을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    if (!editedContract.value.contractStart) {
+      message.value = '계약 시작일을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    if (!editedContract.value.contractEnd) {
+      message.value = '계약 종료일을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    const startDate = new Date(editedContract.value.contractStart);
+    const endDate = new Date(editedContract.value.contractEnd);
+
+    if (endDate < startDate) {
+      message.value = '계약 종료일은 계약 시작일 이후여야 합니다.';
+      messageType.value = 'error';
+      return;
     }
 
     const contractData = {
