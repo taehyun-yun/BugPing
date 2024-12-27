@@ -56,4 +56,5 @@ public class JoinController {
         }
         return new ResponseEntity<>("이메일 등록에 성공하였습니다.", HttpStatus.OK);
     }
+
 }

@@ -58,7 +58,6 @@ public class JwtController {
             setTokenAsHttpOnlyCookies(token,response);
             //return 역할. axios에서 이 값을 가지고 어떤 페이지로 이동할지 정하면 됨.
             map.put("userId", userId);
-            map.put("password", password);
             map.put("email",user.getEmail());
             map.put("roles",user.getRole());
             return new ResponseEntity<>(map,HttpStatus.OK);

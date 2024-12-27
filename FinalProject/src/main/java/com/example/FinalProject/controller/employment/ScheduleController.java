@@ -43,16 +43,11 @@ public class ScheduleController {
             List<Map<String, Object>> schedules;
             if (isEmployer) {
                 schedules = scheduleService.getCompanySchedule(companyId, start, end);
-                //System.out.println("사장입니다.");
-                //System.out.println(schedules.size());
-                schedules.forEach(s->System.out.println("제목"+s.get("title")));
             } else {
                 if (viewCompanySchedule) {
                     schedules = scheduleService.getCompanySchedule(companyId, start, end);
-                    //System.out.println("개인입니다.");
                 } else {
                     schedules = scheduleService.getUserSchedule(userId, start, end);
-                    //System.out.println("개인이지만 전체보기할래요.");
                 }
             }
 

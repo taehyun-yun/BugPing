@@ -41,6 +41,7 @@ public class WorkChangeController {
             Integer newScheduleId = Integer.parseInt(updatedEvent.get("newScheduleId").toString());
             String newDate = updatedEvent.get("newDate").toString();
 
+
             // UTC 시간 형식 파싱
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
             LocalDateTime startTime = LocalDateTime.parse(updatedEvent.get("startTime").toString(), formatter);
@@ -54,8 +55,8 @@ public class WorkChangeController {
             WorkChange outChange = new WorkChange();
             outChange.setSchedule(originalSchedule);
             outChange.setChangeDate(LocalDate.parse(originalDate));
-            outChange.setChangeStartTime(startTime);
-            outChange.setChangeEndTime(endTime);
+            outChange.setChangeStartTime(LocalDateTime.of(LocalDate.parse(originalDate), startTime.toLocalTime()));
+            outChange.setChangeEndTime(LocalDateTime.of(LocalDate.parse(originalDate), endTime.toLocalTime()));
             outChange.setInOut("OUT");
             workChangeRepository.save(outChange);
 
@@ -67,8 +68,8 @@ public class WorkChangeController {
             WorkChange inChange = new WorkChange();
             inChange.setSchedule(newSchedule);
             inChange.setChangeDate(LocalDate.parse(newDate));
-            inChange.setChangeStartTime(startTime);
-            inChange.setChangeEndTime(endTime);
+            inChange.setChangeStartTime(LocalDateTime.of(LocalDate.parse(newDate), startTime.toLocalTime()));
+            inChange.setChangeEndTime(LocalDateTime.of(LocalDate.parse(newDate), endTime.toLocalTime()));
             inChange.setInOut("IN");
             workChangeRepository.save(inChange);
 

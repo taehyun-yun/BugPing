@@ -19,5 +19,4 @@ public interface PayrollRepository extends JpaRepository<PayRoll, Integer> {
                 "JOIN FETCH w.user u " +
                 "WHERE w.company.companyId = :companyId")
     List<PayRoll> findPayRollsByCompanyId(@Param("companyId") Integer companyId);
-
 }
