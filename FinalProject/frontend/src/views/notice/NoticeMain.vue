@@ -4,9 +4,6 @@
       <div class="notice-main">
         <!-- 탭 섹션 -->
         <div class="tabs">
-          <!-- 전체 게시물 탭 -->
-          <!-- activeTab이 'all'일 경우 active 클래스 추가 -->
-          <!-- 클릭 시 setActiveTab 메소드 호출 -->
           <button
             class="tab"
             :class="{ active: activeTab === 'all' }"
@@ -14,9 +11,6 @@
           >
             전체 게시물
           </button>
-          <!-- 내 게시물 탭 -->
-          <!-- activeTab이 'my'일 경우 active 클래스 추가 -->
-          <!-- 클릭 시 setActiveTab 메소드 호출 -->
           <button
             class="tab"
             :class="{ active: activeTab === 'my' }"
@@ -28,11 +22,7 @@
 
         <!-- 카테고리 및 공지 작성 버튼 섹션 -->
         <div class="categories-container">
-          <!-- 카테고리 버튼들 -->
           <div class="categories">
-            <!-- 공지 카테고리 버튼 -->
-            <!-- activeCategory이 '공지'일 경우 active 클래스 추가 -->
-            <!-- 클릭 시 setActiveCategory 메소드 호출 -->
             <button
               class="category"
               :class="{ active: activeCategory === '공지' }"
@@ -45,9 +35,6 @@
               />
               공지
             </button>
-            <!-- 매뉴얼 카테고리 버튼 -->
-            <!-- activeCategory이 '매뉴얼'일 경우 active 클래스 추가 -->
-            <!-- 클릭 시 setActiveCategory 메소드 호출 -->
             <button
               class="category"
               :class="{ active: activeCategory === '매뉴얼' }"
@@ -60,9 +47,6 @@
               />
               매뉴얼
             </button>
-            <!-- 특이사항 카테고리 버튼 -->
-            <!-- activeCategory이 '특이사항'일 경우 active 클래스 추가 -->
-            <!-- 클릭 시 setActiveCategory 메소드 호출 -->
             <button
               class="category"
               :class="{ active: activeCategory === '특이사항' }"
@@ -76,7 +60,6 @@
               특이사항
             </button>
           </div>
-          <!-- 공지 작성하기 버튼 (Employer만 보이도록 설정) -->
           <button
             v-if="forEmployer"
             class="create-notice-button"
@@ -92,11 +75,9 @@
             <tr>
               <th>
                 <div class="checkbox-action">
-                  <!-- 삭제 버튼 -->
                   <button @click="deleteSelected" class="delete-button">
                     삭제
                   </button>
-                  <!-- 전체 선택 체크박스 -->
                   <input type="checkbox" @click="toggleAll" />
                 </div>
               </th>
@@ -109,7 +90,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- 공지사항 목록을 반복하여 표시 -->
             <tr
               v-for="(item, index) in filteredItems"
               :key="item.noticeId"
@@ -124,20 +104,13 @@
                   @click.stop
                 />
               </td>
-              <!-- 공지사항 번호 (페이지에 따라 계산) -->
               <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-              <!-- 공지사항 제목 -->
               <td>{{ item.title }}</td>
-              <!-- 작성자 이름 (work.user.name) -->
               <td>{{ item.work?.userName || "작성자 없음" }}</td>
-              <!-- 보기 권한 -->
               <td>{{ item.viewers }}</td>
-              <!-- 작성 날짜 형식 변경 후 표시 -->
               <td>{{ formatDate(item.createdAt) }}</td>
-              <!-- 상태 레이블 표시 -->
               <td>{{ getStatusLabel(item.status) }}</td>
             </tr>
-            <!-- 공지사항이 없을 경우 표시 -->
             <tr v-if="filteredItems.length === 0">
               <td colspan="7">게시물이 없습니다.</td>
             </tr>
@@ -146,9 +119,7 @@
 
         <!-- 페이징 섹션 -->
         <div class="pagination">
-          <!-- 이전 페이지 버튼 -->
           <button @click="prevPage" :disabled="currentPage === 1">&lt;</button>
-          <!-- 페이지 번호 버튼 -->
           <span
             v-for="page in totalPages"
             :key="page"
@@ -157,7 +128,6 @@
           >
             {{ page }}
           </span>
-          <!-- 다음 페이지 버튼 -->
           <button @click="nextPage" :disabled="currentPage === totalPages">
             &gt;
           </button>
@@ -169,18 +139,19 @@
 
 <script setup>
 // Vue.js Composition API 사용
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Axios를 사용하여 API 호출
 import { useUserStore } from "@/stores/userStore";
 import { axiosAddress } from "@/stores/axiosAddress";
 
-const goToDetail = (noticeId) => {
-  console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
-  router.push({ name: "noticedetail", params: { id: noticeId } });
-};
-
 const router = useRouter();
+const userStore = useUserStore(); // Pinia 스토어 호출
+
+console.log("userStore 객체:", userStore); // userStore 전체 구조 확인
+console.log("현재 workId:", userStore.workId); // workId를 명시적으로 확인
+console.log("현재 userId:", userStore.userId); // userId가 있는지 확인
+console.log("현재 컴퍼니 아이디 ", userStore.company.companyId);
 
 // 활성화된 탭 상태 ('all' 또는 'my')
 const activeTab = ref("all");
@@ -202,52 +173,64 @@ const selectedItems = ref([]);
 
 /**
  * 공지사항을 백엔드에서 가져오는 함수입니다.
- * activeTab과 activeCategory에 따라 다른 엔드포인트를 호출합니다.
+ * activeTab과 activeCategory, 그리고 companyId에 따라 다른 엔드포인트를 호출합니다.
  */
 const fetchNotices = async () => {
   try {
+    const companyId = userStore.company.companyId; // 회사 ID 가져오기
+    if (!companyId) {
+      alert("회사 정보가 없습니다. 다시 로그인 해주세요.");
+      return;
+    }
+
     let response;
     if (activeTab.value === "all") {
       // '전체 게시물' 탭인 경우
       if (activeCategory.value === "전체") {
         // '전체' 카테고리 선택 시 모든 공지사항 조회
         response = await axios.get(`${axiosAddress}/notice/list`, {
+          params: { type: activeCategory.value, companyId },
           withCredentials: true,
         });
       } else {
         // 특정 카테고리 선택 시 해당 타입의 공지사항 조회
-        // 카테고리 이름을 타입 값으로 매핑
         const typeMap = {
           공지: "NOTICE",
           매뉴얼: "MANUAL",
           특이사항: "SPECIAL",
         };
         response = await axios.get(`${axiosAddress}/notice/list/type`, {
-          params: { type: typeMap[activeCategory.value] },
+          params: {
+            type: typeMap[activeCategory.value],
+            companyId,
+          },
           withCredentials: true,
         });
       }
     } else if (activeTab.value === "my") {
       // '내 게시물' 탭인 경우
-      // 현재 예제에서는 모든 공지사항을 가져오지만,
-      // 실제로는 로그인된 사용자의 work_id를 사용하여 필터링해야 합니다.
-      const currentUserWorkId = 1; // 예시: 현재 사용자의 work_id (실제 로그인 로직에 따라 변경)
-      (response = await axios.get(`${axiosAddress}/notice/list`)),
-        { withCredentials: true };
-      // 모든 공지사항 중에서 작성자가 현재 사용자와 일치하는 것만 필터링
+      const currentUserWorkId = userStore.userId; // 현재 사용자 ID 가져오기
+
+      response = await axios.get(`${axiosAddress}/notice/list`, {
+        params: { companyId },
+        withCredentials: true,
+      });
+
+      // 작성자 필터링
       items.value = response.data.filter(
-        (notice) => notice.work.workId === currentUserWorkId
+        (notice) => notice.work.userId === currentUserWorkId
       );
-      // 페이지를 1로 초기화
-      currentPage.value = 1;
-      return; // 이후 items.value는 이미 설정되었으므로 함수 종료
+      currentPage.value = 1; // 페이지 초기화
+      return;
     }
-    // 받아온 데이터를 items 배열에 저장
+
+    // 받아온 데이터를 저장
     items.value = response.data;
-    // 페이지를 1로 초기화
-    currentPage.value = 1;
+    currentPage.value = 1; // 페이지 초기화
   } catch (error) {
+    alert(error);
     console.error("공지사항을 가져오는 중 오류 발생:", error);
+    alert("공지사항을 가져오는 중 오류가 발생했습니다.");
   }
 };
 
@@ -335,6 +318,8 @@ const deleteSelected = async () => {
     try {
       await axios.delete(`${axiosAddress}/notice/delete`, {
         data: selectedItems.value, // 삭제할 공지사항 ID 목록을 전송
+        params: { companyId: userStore.company.companyId }, // companyId 추가
+        withCredentials: true,
       });
       alert("선택한 공지사항이 삭제되었습니다.");
       // 공지사항 목록을 다시 가져옵니다.
@@ -349,19 +334,37 @@ const deleteSelected = async () => {
 /**
  * 공지사항 작성 페이지로 이동하는 함수
  */
-const createNotice = () => {
-  router.push({ path: "/noticecreate" });
+const createNotice = async () => {
+  const res = await axios.get(
+    `${axiosAddress}/notice/getWorkIdToGoCreateNotice?companyId=${userStore.company.companyId}`,
+    { withCredentials: true }
+  );
+  console.log("workId : " + res.data.workId);
+  //alert(res.data.workId);
+
+  const workId = res.data.workId;
+  // 여기서 workId 찍히는거 확인.
+  console.log("workId : " + res.data.workId);
+
+  if (!workId) {
+    alert("회사 정보가 없습니다. 다시 로그인해주세요.");
+    return;
+  }
+  router.push({ name: "noticeCreate", params: { workId } });
 };
+// const createNotice = () => {
+//   const companyId = userStore.company.companyId; // 실제 workId를 가져오는 로직
+//   if (!companyId) {
+//     alert("회사 정보가 없습니다. 다시 로그인해주세요.");
+//     return;
+//   }
+//   router.push({ name: "noticeCreate", params: { companyId } });
+// };
 
-const userStore = useUserStore(); // Pinia 스토어 호출
+// 공지 작성 권한 확인
 const forEmployer = userStore.roles.includes("employer");
-const isRolesLoaded = ref(false); // 로드 여부 상태 추가
-// Pinia 상태 디버깅 로그 추가
-console.log("현재 roles 상태:", userStore.roles);
 
-/**
- * 컴포넌트가 마운트될 때 공지사항을 가져옵니다.
- */
+// 컴포넌트가 마운트될 때 공지사항을 가져옵니다.
 onMounted(() => {
   fetchNotices();
 });
@@ -389,6 +392,7 @@ const formatDate = (dateString) => {
 
   return `${year}-${month}-${day} ${period} ${formattedHours}:${minutes}`;
 };
+
 /**
  * 상태 코드를 한글 레이블로 변환하는 함수
  * @param status 상태 코드 (VISIBLE, DRAFT, WITHDRAWN)
@@ -402,6 +406,27 @@ const getStatusLabel = (status) => {
   };
   return statusMap[status] || status;
 };
+
+/**
+ * 공지사항 상세 페이지로 이동하는 함수
+ * @param noticeId 이동할 공지사항의 ID
+ */
+const goToDetail = (noticeId) => {
+  console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
+  router.push({ name: "noticedetail", params: { id: noticeId } });
+};
+
+/**
+ * `userStore.company.companyId`가 변경될 때마다 공지사항을 다시 가져옵니다.
+ */
+watch(
+  () => userStore.company.companyId,
+  (newCompanyId, oldCompanyId) => {
+    if (newCompanyId !== oldCompanyId) {
+      fetchNotices();
+    }
+  }
+);
 </script>
 
 <style scoped>

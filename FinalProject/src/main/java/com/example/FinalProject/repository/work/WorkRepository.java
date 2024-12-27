@@ -24,4 +24,9 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
     Optional<List<Work>> findByUser_userIdOrderByHireDateDesc(String userId);
     //역할에 따른 회사 목록.
     Optional<List<Work>> findByUser_userIdAndUser_Role(String userId, String role);
+
+//--------------------------JJang----------------------------
+
+  Optional<Work> findTopByUser_userIdAndCompany_CompanyIdOrderByHireDateDesc(String userId, Integer companyId);
+
 }

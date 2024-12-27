@@ -16,4 +16,5 @@ public class NoticeDTO {
     private LocalDateTime updatedAt;
     private WorkDTO work;
     private List<FileDTO> files;
+    private Integer companyId; // 추가: companyId
 }
