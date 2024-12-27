@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.Cipher;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -117,4 +119,30 @@ public class JoinService {
         userRepository.save(user.get());
         return true;
     }
+    //회원탈퇴(user table을 아이디를 PK로 해버려서, 사장님이 탈퇴유저를 조회하거나, 유저가 탈퇴한 근무처의 조회를 위해선, 아이디를 삭제할 수가 없다... 대신 개인정보를 암호화하자)
+    private static final String quitRestoreKey = "restore";
+    private static final byte[] key = quitRestoreKey.getBytes(StandardCharsets.UTF_8);
+    private static final String algorithm = "AES";//암호화 알고리즘 방식 중 하나
+
+    //암호화
+//    public static String encrypt(String data) throws Exception {
+//        Cipher cipher = Cipher.getInstance();
+//    }
+
+
+    public boolean setPersonInformatinNUll(String userId){
+        Optional<User>isUser = userRepository.findById(userId);
+        if(isUser.isEmpty()){
+            return false;
+        }
+        User user = isUser.get();
+        user.setBirth(null);
+        user.setEmail(null);
+        user.setGender(null);
+        user.setRegDate(null);
+        user.setTel(null);
+        userRepository.save(user);
+        return true;
+    }
+
 }

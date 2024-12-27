@@ -109,7 +109,7 @@ onMounted(() => {
 // watch로 상태 동기화
 watch(selectedCompany, (newValue) => {
   userStore.setCompany(newValue);
-  window.location.reload;
+  //window.location.reload;
 });
 // 마이페이지-----------------------------------------------
 const showModal = ref(false);
@@ -141,7 +141,7 @@ const setNewPassword = () =>{
   }
 }
 
-const registered = computed(() => userStore.email !== '');
+const registered = computed(() => userStore.email && userStore.email !== '');
 const inputEmail = ref('');
 const inputEmailSaved = ref('');
 const isCooltime = ref(false);

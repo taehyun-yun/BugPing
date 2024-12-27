@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +71,18 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
         List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
     }
-
+//=====================================Joonho============================================================
+    //출첵용. 유저 아이디로 종료 안된 스케쥴들 불러오기 -> 계약 종료일이 내일보다 작으면 됨. 최신 근무지순, 최신 계약 순, 요일 순 정렬
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.contract.work.user.userId = :userId" +
+            " And s.contract.work.company.companyId = :companyId" +
+            " AND s.contract.work.resignDate IS NULL" +
+            " AND s.contract.status = 'T'" +
+            " AND s.status = 'T'" +
+            " AND s.contract.contractEnd > :tomorrow" +
+            " AND s.contract.contractStart <= :today" +
+            " ORDER BY s.contract.work.workId DESC, s.contract.contractId DESC, s.day ASC")
+    List<Schedule> findOneSchedules(String userId, Integer companyId,LocalDateTime tomorrow, LocalDateTime today);
 }
 
 
