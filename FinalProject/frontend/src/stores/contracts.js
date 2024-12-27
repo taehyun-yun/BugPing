@@ -118,16 +118,60 @@ export const useContractsStore = defineStore("contracts", {
         const baseUrl = import.meta.env.VITE_API_URL;
 
         // 서버에 DELETE 요청을 보내서 계약을 삭제합니다.
-        await axios.delete(`${baseUrl}/api/contracts/${contractId}`);
-
-        // 계약 목록에서 해당 계약의 인덱스를 찾습니다.
-        const contractIndex = this.contracts.findIndex(
-          (contract) => contract.contractId === contractId
-        );
-        if (contractIndex !== -1) {
-          // 계약을 목록에서 제거합니다.
-          this.contracts.splice(contractIndex, 1);
+        const response = await axios.delete(`${baseUrl}/api/contracts/${contractId}`);
+        console.log("Server Response:", response);
+      
+        // // 계약 목록에서 해당 계약의 인덱스를 찾습니다.
+        // const contractIndex = this.contracts.findIndex(
+        //   (contract) => contract.contractId === contractId
+        // );
+        // if (contractIndex !== -1) {
+        //   // 계약을 목록에서 제거합니다.
+        //   this.contracts.splice(contractIndex, 1);
+        // }
+        if (response.status === 200 || response.status === 204) {
+          console.log(`Contract ${contractId} 처리 성공`);
+          const contractIndex = this.contracts.findIndex(
+            (contract) => contract.contractId === contractId
+          );
+          if (contractIndex !== -1) {
+            this.contracts.splice(contractIndex, 1); // UI에서 제거
+          }
+        } else {
+          console.error(`Unexpected response status: ${response.status}`);
         }
+        // if (response.status === 200) {
+        //   // 스케줄이 존재하여 상태가 비활성화된 경우
+        //   console.log(`Contract ${contractId}: 스케줄 상태가 비활성화되었습니다.`);
+    
+        //   // 계약 목록에서 해당 계약을 찾습니다.
+        //   const contractIndex = this.contracts.findIndex(
+        //     (contract) => contract.contractId === contractId
+        //   );
+        //   if (contractIndex !== -1) {
+        //     // 해당 계약의 스케줄 중 "INACTIVE" 상태인 항목을 제외합니다.
+        //     this.contracts[contractIndex].schedules = this.contracts[contractIndex].schedules.filter(
+        //       (schedule) => schedule.status !== "F"
+        //     );
+    
+        //     // 만약 모든 스케줄이 비활성화되었다면, 해당 계약을 숨깁니다.
+        //     if (this.contracts[contractIndex].schedules.length === 0) {
+        //       this.contracts.splice(contractIndex, 1); // UI에서 계약 제거
+        //     }
+        //   }
+        // } else if (response.status === 204) {
+        //   // 계약이 삭제된 경우
+        //   console.log(`Contract ${contractId}: 계약이 삭제되었습니다.`);
+    
+        //   // 계약 목록에서 해당 계약의 인덱스를 찾습니다.
+        //   const contractIndex = this.contracts.findIndex(
+        //     (contract) => contract.contractId === contractId
+        //   );
+        //   if (contractIndex !== -1) {
+        //     // 계약을 목록에서 제거합니다.
+        //     this.contracts.splice(contractIndex, 1);
+        //   }
+        // }
       } catch (err) {
         // 계약 삭제에 실패했을 때의 처리입니다.
         this.error = "계약 삭제에 실패했습니다.";

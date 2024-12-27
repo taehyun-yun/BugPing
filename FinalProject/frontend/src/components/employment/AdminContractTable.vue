@@ -261,23 +261,24 @@ const updateContracts = (updatedContract) => {
   }
 };
 
-/* 
-  계약을 삭제하는 함수.
-  삭제 버튼을 클릭하면 호출됩니다.
-  실제로는 API를 호출하여 서버에서도 계약을 삭제해야 하지만, 
-  현재는 로컬 배열에서만 계약을 삭제합니다.
-*/
-const deleteContract = (contract) => {
-  // 사용자가 계약 삭제를 확인했는지 묻는 대화 상자 표시
-  if (confirm('정말로 이 계약을 삭제하시겠습니까?')) {
-    // 실제로는 API를 호출하여 서버에서도 계약을 삭제해야 합니다.
-    // 예시로, 여기서는 로컬 배열에서만 계약을 삭제합니다.
-    const index = contractsStore.contracts.findIndex((c) => c.contractId === contract.contractId);
-    if (index !== -1) {
-      contractsStore.contracts.splice(index, 1); // 계약을 배열에서 제거
+const deleteContract = async (contract) => {
+  if (!contract.contractId) {
+    console.error("유효하지 않은 계약 ID입니다:", contract);
+    alert("삭제할 수 없는 계약입니다.");
+    return;
+  }
+
+  if (confirm("정말로 이 계약을 삭제하시겠습니까?")) {
+    try {
+      await contractsStore.deleteContract(contract.contractId);
+      alert("계약이 성공적으로 삭제되었습니다.");
+    } catch (error) {
+      console.error("계약 삭제 중 오류 발생:", error);
+      alert("계약 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   }
 };
+
 </script>
 
 <style scoped>
