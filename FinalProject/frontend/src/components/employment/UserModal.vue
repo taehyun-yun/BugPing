@@ -253,6 +253,7 @@ onMounted(() => {
   /* 둥근 모서리 */
   font-size: 14px;
   /* 글자 크기 */
+  box-sizing: border-box; /* 박스 크기 계산 */
 }
 
 /* 검색 아이콘 스타일 */
