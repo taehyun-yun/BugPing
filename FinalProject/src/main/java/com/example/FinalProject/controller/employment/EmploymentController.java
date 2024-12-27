@@ -40,7 +40,7 @@ public class EmploymentController {
     //회사별 계약 정보
     @GetMapping("/contracts/company/{companyId}")
     public List<Contract> getContractsByCompanyId(@PathVariable Integer companyId) {
-        return contractRepository.findAllContractsByCompanyId(companyId);
+        return contractRepository.findAllActiveContractsByCompanyId(companyId);
     }
 
     // ID를 통해 특정 계약 정보를 가져옵니다
