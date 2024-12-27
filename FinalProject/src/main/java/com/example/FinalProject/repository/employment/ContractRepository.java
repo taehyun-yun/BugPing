@@ -71,12 +71,11 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
 
 //--------------------Joonho-------------------
     // 한 근무자의 모든 계약서를 최신근무지, 최신 계약순으로 조회
-@Query("SELECT DISTINCT c FROM Contract c " +
+    @Query("SELECT DISTINCT c FROM Contract c " +
         "JOIN FETCH c.work w " +
         "JOIN FETCH w.user u " +
         "JOIN FETCH w.company cp " +
         "where u.userId = :userId " +
         "ORDER BY w.hireDate, c.contractId DESC")
-Optional<List<Contract>>findAllContractsByUserId(String userId);
-
+    Optional<List<Contract>>findAllContractsByUserId(String userId);
 }

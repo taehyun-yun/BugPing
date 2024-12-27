@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -108,5 +109,15 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
             "LEFT JOIN Attendance a ON a.schedule = s " +
             "WHERE s.day = :dayOfWeek")
     List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
-
+//=============================================Joonho===============================================
+    //중복체크
+    //같은 scheduleId나 workChange는 하루에 한번만 있을 수 있게할 것이므로 결과값이 List로 출력되지 않는다.
+    //attendance에 status로 삭제 여부를 판단할 때는 여기서부터 하면 됨.
+    @Query("SELECT a FROM Attendance a " +
+            "WHERE a.schedule.scheduleId = :scheduleId " +
+            "AND DATE(a.actualStart) = :endDate")
+    Attendance findByAlreadyCheckedSchedule(Integer scheduleId, LocalDate endDate);
+    @Query("SELECT a FROM Attendance a " +
+            "WHERE a.workChange.workChangeId = :workChangeId")
+    Attendance findByAlreadyCheckedWorkChangeId(Integer workChangeId);
 }

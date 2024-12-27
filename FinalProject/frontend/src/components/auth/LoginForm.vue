@@ -47,13 +47,12 @@ import { useUserStore } from '@/stores/userStore';
             userStore.setCompany(companyRes.data[0]);
             userStore.setCompanies(companyRes.data);
             router.push({ name : "home"});
-            window.location.reload();
+            // window.location.reload();
         } catch (err){
             if(err?.response?.data.msg){
                 alert(err.response.data.msg);
             }
             router.push({ name : "home"});
-            window.location.reload();
         }
     }
     const golink = (e) =>{
