@@ -53,10 +53,15 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public void deleteNotices(List<Integer> noticeIds) {
+    public void deleteNotices(List<Integer> noticeIds, Integer companyId) {
         for (Integer noticeId : noticeIds) {
             Notice notice = noticeRepository.findById(noticeId)
                     .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다: " + noticeId));
+
+            // 회사 검증
+            if (!notice.getWork().getCompany().getCompanyId().equals(companyId)) {
+                throw new IllegalArgumentException("해당 공지사항은 삭제할 권한이 없습니다: " + noticeId);
+            }
 
             // Notice와 연결된 파일 삭제
             for (File file : notice.getFiles()) {
@@ -66,6 +71,7 @@ public class NoticeServiceImpl implements NoticeService {
             noticeRepository.delete(notice);
         }
     }
+
 
     @Override
     public Optional<Notice> getNoticeById(Integer id) {
@@ -85,15 +91,17 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public List<NoticeDTO> getAllNoticesAsDTO() {
-        return noticeRepository.findAll().stream()
+    public List<NoticeDTO> getAllNoticesAsDTOByCompany(Integer companyId) {
+        List<Notice> notices = noticeRepository.findByWork_Company_CompanyId(companyId);
+        return notices.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<NoticeDTO> getNoticesByTypeAsDTO(String type) {
-        return noticeRepository.findByType(type).stream()
+    public List<NoticeDTO> getNoticesByTypeAsDTO(String type, Integer companyId) {
+        List<Notice> notices = noticeRepository.findByTypeAndWork_Company_CompanyId(type, companyId);
+        return notices.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
