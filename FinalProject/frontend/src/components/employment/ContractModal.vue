@@ -664,6 +664,8 @@ const formatDuration = (minutes) => {
   /* 글자 크기 */
   background-color: white;
   /* 배경색 흰색 */
+
+  box-sizing: border-box; /* 테두리와 패딩 포함 */
 }
 
 /* 입력 필드 포커스 시 스타일 */
