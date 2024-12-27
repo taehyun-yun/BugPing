@@ -1,5 +1,5 @@
 // FileStorageService.java
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.notice;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

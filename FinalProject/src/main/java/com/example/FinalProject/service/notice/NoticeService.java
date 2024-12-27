@@ -1,8 +1,9 @@
 // NoticeService.java
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.notice;
 
 import com.example.FinalProject.dto.NoticeDTO;
 import com.example.FinalProject.entity.notice.Notice;
+import com.example.FinalProject.entity.work.Work;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public interface NoticeService {
 
     // DTO 반환 메서드
     NoticeDTO getNoticeByIdAsDTO(Integer id);
-    NoticeDTO createNoticeAsDTO(Notice notice);
+    NoticeDTO createNoticeAsDTO(Notice notice, Integer companyId);
     NoticeDTO updatedNoticeAsDTO(Notice notice);
 
     // 파일 삭제 관련 메서드

@@ -108,9 +108,7 @@ const fetchNotice = async () => {
   console.log("Received notice ID:", noticeId);
 
   try {
-    const response = await axios.get(
-      `${axiosAddress}/notice/${noticeId}`
-    );
+    const response = await axios.get(`${axiosAddress}/notice/${noticeId}`);
     notice.value = response.data;
   } catch (error) {
     console.error("Error fetching notice:", error);

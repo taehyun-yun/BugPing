@@ -1,14 +1,18 @@
 // NoticeServiceImpl.java
-package com.example.FinalProject.service;
+package com.example.FinalProject.service.notice;
 
 import com.example.FinalProject.dto.FileDTO;
 import com.example.FinalProject.dto.NoticeDTO;
 import com.example.FinalProject.dto.WorkDTO;
+import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.file.File;
 import com.example.FinalProject.entity.notice.Notice;
 import com.example.FinalProject.entity.work.Work;
+import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.notice.FileRepository;
 import com.example.FinalProject.repository.notice.NoticeRepository;
+import com.example.FinalProject.repository.user.UserRepository;
+import com.example.FinalProject.repository.work.WorkRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,13 +32,15 @@ public class NoticeServiceImpl implements NoticeService {
     private final FileRepository fileRepository;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
+    private final CompanyRepository companyRepository;
 
     @Autowired
-    public NoticeServiceImpl(NoticeRepository noticeRepository, FileRepository fileRepository, FileStorageService fileStorageService, ObjectMapper objectMapper) {
+    public NoticeServiceImpl(NoticeRepository noticeRepository, FileRepository fileRepository, FileStorageService fileStorageService, ObjectMapper objectMapper, CompanyRepository companyRepository) {
         this.noticeRepository = noticeRepository;
         this.fileRepository = fileRepository;
         this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
+        this.companyRepository = companyRepository;
     }
 
     @Override
@@ -72,7 +78,6 @@ public class NoticeServiceImpl implements NoticeService {
         }
     }
 
-
     @Override
     public Optional<Notice> getNoticeById(Integer id) {
         return noticeRepository.findById(id);
@@ -91,26 +96,73 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public List<NoticeDTO> getAllNoticesAsDTOByCompany(Integer companyId) {
-        List<Notice> notices = noticeRepository.findByWork_Company_CompanyId(companyId);
-        return notices.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public NoticeDTO createNoticeAsDTO(Notice notice, Integer companyId) {
+        // 1. companyId를 기반으로 회사 정보를 가져옴
+        Optional<Company> companyOptional = companyRepository.findById(companyId);
+        if (companyOptional.isEmpty()) {
+            throw new IllegalArgumentException("Invalid companyId: " + companyId);
+        }
+        Company company = companyOptional.get();
+
+        // 2. 작성자의 회사 정보 확인
+        Work work = notice.getWork();
+        if (work == null || work.getCompany() == null) {
+            throw new IllegalArgumentException("작성자의 회사 정보가 존재하지 않습니다.");
+        }
+
+        Company writerCompany = work.getCompany();
+
+        // 3. 작성자의 회사 ID와 요청된 회사 ID 비교
+        if (!writerCompany.getCompanyId().equals(companyId)) {
+            throw new IllegalArgumentException("작성자의 회사와 전달받은 회사 ID가 일치하지 않습니다.");
+        }
+
+        // 4. Notice 저장
+        Notice savedNotice = noticeRepository.save(notice);
+
+        // 5. 저장된 Notice를 DTO로 변환 후 반환
+        return convertToDTO(savedNotice);
     }
+
+//    @Override
+//    public List<NoticeDTO> getAllNoticesAsDTOByCompany(Integer companyId) {
+//        List<Notice> notices = noticeRepository.findByWork_Company_CompanyId(companyId);
+//
+//        // 디버깅 로그 추가
+//        System.out.println("companyId: " + companyId);
+//        System.out.println("조회된 공지사항 개수: " + notices.size());
+//        notices.forEach(notice -> System.out.println("Notice ID: " + notice.getNoticeId()));
+//
+//        return notices.stream()
+//                .map(this::convertToDTO)
+//                .collect(Collectors.toList());
+//    }
+
 
     @Override
     public List<NoticeDTO> getNoticesByTypeAsDTO(String type, Integer companyId) {
         List<Notice> notices = noticeRepository.findByTypeAndWork_Company_CompanyId(type, companyId);
+
+        // 디버깅 로그 추가
+        System.out.println("요청된 Company ID: " + companyId);
+        System.out.println("요청된 글 타입 : " + type);
+        System.out.println("조회된 게시글 수: " + notices.size());
+        notices.forEach(notice -> {
+            System.out.println("게시글 ID: " + notice.getNoticeId() + ", Company ID: " +
+                    (notice.getWork() != null && notice.getWork().getCompany() != null
+                            ? notice.getWork().getCompany().getCompanyId() : "null"));
+        });
+
         return notices.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public NoticeDTO createNoticeAsDTO(Notice notice) {
-        Notice savedNotice = noticeRepository.save(notice);
-        return convertToDTO(savedNotice);
-    }
+//    @Override
+//    public NoticeDTO createNoticeAsDTO(Notice notice) {
+//        Notice savedNotice = noticeRepository.save(notice);
+//        return convertToDTO(savedNotice);
+//    }
 
     @Override
     public NoticeDTO updatedNoticeAsDTO(Notice notice) {
@@ -143,6 +195,12 @@ public class NoticeServiceImpl implements NoticeService {
         }
     }
 
+    @Override
+    public List<NoticeDTO> getAllNoticesAsDTOByCompany(Integer companyId) {
+        return List.of();
+    }
+
+
     private NoticeDTO convertToDTO(Notice notice) {
         // Notice 엔티티의 데이터를 NoticeDTO로 변환
         NoticeDTO noticeDTO = new NoticeDTO();
@@ -166,6 +224,11 @@ public class NoticeServiceImpl implements NoticeService {
             workDTO.setHireDate(work.getHireDate());
             workDTO.setResignDate(work.getResignDate());
             noticeDTO.setWork(workDTO);
+        }
+
+        // Company ID 설정
+        if (work != null && work.getCompany() != null) {
+            noticeDTO.setCompanyId(work.getCompany().getCompanyId());
         }
 
         // File 매핑
