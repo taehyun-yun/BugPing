@@ -100,7 +100,7 @@ public class AttendanceService {
         )).collect(Collectors.toList());
     }
 
-    // 출퇴근 현황 출력.
+    // 출퇴근 현황 출력
     public AttendanceDetailsDTO getTodayScheduleBasedStatistics(Integer companyId) {
         LocalDate today = LocalDate.now();
         int dayOfWeek = today.getDayOfWeek().getValue();
@@ -113,6 +113,12 @@ public class AttendanceService {
         long totalScheduled = 0;
         long attended = 0;
         long notYetStarted = 0;
+        long tardy = 0; // 지각
+        long earlyLeave = 0; // 조퇴
+        long onLeave = 0; // 휴무
+
+        // 현재 시간
+        LocalDateTime now = LocalDateTime.now();
 
         // 스케줄된 사용자 계산
         for (Object[] result : results) {
@@ -120,13 +126,25 @@ public class AttendanceService {
             Attendance attendance = (Attendance) result[1];
             String userId = schedule.getContract().getWork().getUser().getUserId();
 
-            // 중복 제거
             if (scheduledUserIds.add(userId)) {
                 totalScheduled++;
+
+                // 스케줄 출근/퇴근 시간
+                LocalDateTime scheduleStart = today.atTime(schedule.getOfficialStart());
+                LocalDateTime scheduleEnd = today.atTime(schedule.getOfficialEnd());
+
                 if (attendance == null || attendance.getActualStart() == null) {
-                    notYetStarted++;
+                    if (now.isBefore(scheduleStart)) {
+                        notYetStarted++; // 출근 전
+                    } else {
+                        tardy++; // 지각
+                    }
                 } else {
-                    attended++;
+                    if (attendance.getActualEnd() != null && attendance.getActualEnd().isBefore(scheduleEnd)) {
+                        earlyLeave++; // 조퇴
+                    } else {
+                        attended++; // 정상 출근
+                    }
                 }
             }
         }
@@ -134,16 +152,15 @@ public class AttendanceService {
         // 전체 사용자 ID 목록 가져오기
         List<String> allUserIds = workRepository.findAllUserIdsByCompanyId(companyId);
 
-        // 관리자 제외
-        allUserIds.remove("master"); // 이거 필요 없음 ㅇㅇ
-
         // 휴무 계산
-        long onLeave = allUserIds.size() - scheduledUserIds.size();
+        onLeave = allUserIds.stream()
+                .filter(userId -> !scheduledUserIds.contains(userId))
+                .count();
 
         // 출근율 계산
         double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
 
-        return new AttendanceDetailsDTO(totalScheduled, attended, onLeave, notYetStarted, attendanceRate);
+        return new AttendanceDetailsDTO(totalScheduled, attended, onLeave, notYetStarted, tardy, earlyLeave, attendanceRate);
     }
 
 }

@@ -87,12 +87,12 @@
       <!-- 지각/조퇴 카드들 -->
       <div class="status-card late-card">
         <div class="status-label">지각</div>
-        <div class="status-value">-</div>
+        <div class="status-value">{{ tardy }}</div>
       </div>
 
       <div class="status-card early-leave-card">
         <div class="status-label">조퇴</div>
-        <div class="status-value">-</div>
+        <div class="status-value">{{ earlyLeave }}</div>
       </div>
     </div>
   </div>

@@ -4,7 +4,6 @@ import com.example.FinalProject.dto.EmployeeDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollRequestDTO;
 import com.example.FinalProject.dto.payrollDTO.PayrollResponseDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
-import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.payroll.PayRoll;
 import com.example.FinalProject.entity.user.User;
@@ -17,10 +16,6 @@ import com.example.FinalProject.repository.user.UserRepository;
 import com.example.FinalProject.repository.work.WorkRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
