@@ -165,7 +165,7 @@ function calculateOvertimeMinutes(emp) {
 }
 </script>
 
-  <style scoped>
+<style scoped>
   .table-container {
     padding: 1rem;
     background: white;

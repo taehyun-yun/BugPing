@@ -37,7 +37,6 @@
 
       <!-- 출근/휴무 통계 카드 -->
       <div class="status-card attendance-stats">
-        <!-- 출근/휴무 -->
         <div class="stat-row">
           <div class="stat-group">
             <div class="stat-label">출근</div>
@@ -57,16 +56,13 @@
           </div>
         </div>
 
-        <!-- 출근 전/미출근 행 -->
         <div class="stat-row">
           <div class="stat-group">
             <div class="stat-label">출근 전</div>
-            <div class="stat-bar">
-              <div class="bar-track">
-                <div class="bar-progress" :style="{ width: `${notYetStartedPercentage}%` }"></div>
-              </div>
-              <div class="stat-value">{{ notYetStarted }}</div>
+            <div class="bar-track">
+              <div class="bar-progress" :style="{ width: `${notYetStartedPercentage}%` }"></div>
             </div>
+            <div class="stat-value">{{ notYetStarted }}</div>
           </div>
           <div class="stat-group">
             <div class="stat-comparison">추가 근무자</div>
@@ -87,33 +83,46 @@
       <!-- 지각/조퇴 카드들 -->
       <div class="status-card late-card">
         <div class="status-label">지각</div>
-        <div class="status-value">{{ tardy }}</div>
+        <div class="status-value">
+          <ul>
+            <li v-for="user in lateUsers" :key="user">{{ user }}</li>
+          </ul>
+        </div>
       </div>
 
       <div class="status-card early-leave-card">
         <div class="status-label">조퇴</div>
-        <div class="status-value">{{ earlyLeave }}</div>
+        <div class="status-value">
+          <ul>
+            <li v-for="user in earlyLeaveUsers" :key="user">{{ user }}</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
-import { axiosAddress } from '@/stores/axiosAddress';
-import { useUserStore } from '@/stores/userStore';
+import { ref, computed, onMounted } from "vue";
+import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from "@/stores/userStore";
 
 const userStore = useUserStore();
 const companyId = userStore.company.companyId;
-const attendanceList = ref([]); // 데이터를 담을 배열
 
+// 상태 변수 초기화
+const employees = ref([]);
 const attendanceRate = ref(0);
 const totalScheduled = ref(0);
 const totalAttended = ref(0);
 const onLeave = ref(0);
 const notYetStarted = ref(0);
+const tardy = ref(0);
+const earlyLeave = ref(0);
 const extraWork = ref(0);
+const lateUsers = ref([]); // 지각 사용자 리스트
+const earlyLeaveUsers = ref([]); // 조퇴 사용자 리스트
 
 // 원형 그래프 계산
 const radius = 52;
@@ -126,6 +135,7 @@ const circleStyle = computed(() => {
   };
 });
 
+// 퍼센트 계산
 const attendedPercentage = computed(() =>
   totalScheduled.value > 0 ? (totalAttended.value / totalScheduled.value) * 100 : 0
 );
@@ -139,38 +149,113 @@ const extraWorkPercentage = computed(() =>
   totalScheduled.value > 0 ? (extraWork.value / totalScheduled.value) * 100 : 0
 );
 
-async function fetchAttendanceStatistics() {
+// 데이터 가져오기
+async function fetchAttendanceData() {
   try {
-    const response = await axios.get(`${axiosAddress}/api/today/attendance-statistics`, {
+    const scheduleResponse = await axios.get(`${axiosAddress}/api/attendances/schedulesList`, {
       params: { companyId },
     });
-    const data = response.data;
-    attendanceRate.value = data.attendanceRate || 0;
-    totalScheduled.value = data.totalScheduled || 0;
-    totalAttended.value = data.attended || 0;
-    onLeave.value = data.onLeave || 0;
-    notYetStarted.value = data.notYetStarted || 0;
-    extraWork.value = data.extraWork || 0;
+    const schedules = scheduleResponse.data;
+
+    const attendanceResponse = await axios.get(`${axiosAddress}/api/today`, {
+      params: { companyId },
+    });
+    const attendances = attendanceResponse.data;
+
+    calculateStatistics(schedules, attendances);
   } catch (error) {
-    console.error('Error fetching attendance statistics:', error);
+    console.error("데이터 가져오기 실패:", error);
   }
 }
 
-// 추가된 onMounted 부분
-onMounted(async () => {
-  try {
-    const response = await axios.get(`${axiosAddress}/api/today`, {
-      params: { companyId }, // 회사 ID 전달
-    });
-    attendanceList.value = response.data;
-    console.log('오늘의 출퇴근 데이터:', attendanceList.value); // 데이터를 콘솔에 출력
-  } catch (error) {
-    console.error('출퇴근 데이터 가져오기 실패:', error); // 에러 로그
-  }
-});
+// 통계 계산
+function calculateStatistics(schedules, attendances) {
+  const now = new Date();
+  totalScheduled.value = schedules.length;
 
-onMounted(fetchAttendanceStatistics);
+  const scheduleMap = schedules.reduce((map, schedule) => {
+    map[schedule.userId.toLowerCase()] = schedule;
+    return map;
+  }, {});
+
+  const attendanceMap = attendances.reduce((map, attendance) => {
+    map[attendance.userId.toLowerCase()] = attendance;
+    return map;
+  }, {});
+
+  let attendedCount = 0; // 출근자 수
+  let tardyCount = 0; // 지각자 수
+  let earlyLeaveCount = 0; // 조퇴자 수
+  let notStartedCount = 0; // 출근 전
+  let leaveCount = 0; // 휴무자
+  const lateUserList = []; // 지각 사용자 리스트
+  const earlyLeaveUserList = []; // 조퇴 사용자 리스트
+
+  schedules.forEach((schedule) => {
+    const userId = schedule.userId.toLowerCase();
+    const attendance = attendanceMap[userId];
+
+    if (!attendance || !attendance.actualStart) {
+      // 출근 데이터가 없는 경우
+      if (now < new Date(1970, 0, 1, ...schedule.officialStart.split(":"))) {
+        notStartedCount++; // 출근 전
+      }
+    } else {
+      // 출근 데이터가 있는 경우
+      attendedCount++; // 출근 카운트
+      if (attendance.commuteStatus === "지각") {
+        tardyCount++; // 지각 카운트
+        lateUserList.push(schedule.userName); // 지각 사용자 추가
+      }
+
+      // 조퇴 여부 계산
+      if (attendance.actualEnd) {
+        const scheduleEnd = new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          new Date().getDate(),
+          ...schedule.officialEnd.split(":")
+        );
+        if (new Date(attendance.actualEnd) < scheduleEnd) {
+          earlyLeaveCount++; // 조퇴 카운트
+          earlyLeaveUserList.push(schedule.userName); // 조퇴 사용자 추가
+        }
+      }
+    }
+  });
+
+  // 휴무 계산
+  leaveCount = Object.keys(attendanceMap).filter(
+    (userId) => !scheduleMap[userId]
+  ).length;
+
+  totalAttended.value = attendedCount;
+  notYetStarted.value = notStartedCount;
+  tardy.value = tardyCount;
+  earlyLeave.value = earlyLeaveCount;
+  onLeave.value = leaveCount;
+  lateUsers.value = lateUserList; // 지각 사용자 리스트 저장
+  earlyLeaveUsers.value = earlyLeaveUserList; // 조퇴 사용자 리스트 저장
+
+  // 출근율 계산
+  attendanceRate.value =
+    totalScheduled.value > 0
+      ? (totalAttended.value / totalScheduled.value) * 100
+      : 0;
+
+  console.log("통계 결과:");
+  console.log("출근:", attendedCount);
+  console.log("출근 전:", notStartedCount);
+  console.log("지각:", tardyCount, "지각자:", lateUserList);
+  console.log("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
+  console.log("휴무:", leaveCount);
+}
+
+onMounted(fetchAttendanceData);
 </script>
+
+
+
 
 <style scoped>
 .status-container {

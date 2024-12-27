@@ -1,7 +1,6 @@
 package com.example.FinalProject.service.employment;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
-import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.dto.DailyAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.entity.employment.Schedule;
@@ -20,12 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -98,69 +94,6 @@ public class AttendanceService {
                 attendance.getIsNormalAttendance(),
                 attendance.getTotalMinute()
         )).collect(Collectors.toList());
-    }
-
-    // 출퇴근 현황 출력
-    public AttendanceDetailsDTO getTodayScheduleBasedStatistics(Integer companyId) {
-        LocalDate today = LocalDate.now();
-        int dayOfWeek = today.getDayOfWeek().getValue();
-
-        // DB에서 데이터를 가져오기
-        List<Object[]> results = scheduleRepository.findSchedulesWithAttendances(companyId, dayOfWeek);
-
-        // 변수 초기화
-        Set<String> scheduledUserIds = new HashSet<>();
-        long totalScheduled = 0;
-        long attended = 0;
-        long notYetStarted = 0;
-        long tardy = 0; // 지각
-        long earlyLeave = 0; // 조퇴
-        long onLeave = 0; // 휴무
-
-        // 현재 시간
-        LocalDateTime now = LocalDateTime.now();
-
-        // 스케줄된 사용자 계산
-        for (Object[] result : results) {
-            Schedule schedule = (Schedule) result[0];
-            Attendance attendance = (Attendance) result[1];
-            String userId = schedule.getContract().getWork().getUser().getUserId();
-
-            if (scheduledUserIds.add(userId)) {
-                totalScheduled++;
-
-                // 스케줄 출근/퇴근 시간
-                LocalDateTime scheduleStart = today.atTime(schedule.getOfficialStart());
-                LocalDateTime scheduleEnd = today.atTime(schedule.getOfficialEnd());
-
-                if (attendance == null || attendance.getActualStart() == null) {
-                    if (now.isBefore(scheduleStart)) {
-                        notYetStarted++; // 출근 전
-                    } else {
-                        tardy++; // 지각
-                    }
-                } else {
-                    if (attendance.getActualEnd() != null && attendance.getActualEnd().isBefore(scheduleEnd)) {
-                        earlyLeave++; // 조퇴
-                    } else {
-                        attended++; // 정상 출근
-                    }
-                }
-            }
-        }
-
-        // 전체 사용자 ID 목록 가져오기
-        List<String> allUserIds = workRepository.findAllUserIdsByCompanyId(companyId);
-
-        // 휴무 계산
-        onLeave = allUserIds.stream()
-                .filter(userId -> !scheduledUserIds.contains(userId))
-                .count();
-
-        // 출근율 계산
-        double attendanceRate = totalScheduled > 0 ? ((double) attended / totalScheduled) * 100 : 0;
-
-        return new AttendanceDetailsDTO(totalScheduled, attended, onLeave, notYetStarted, tardy, earlyLeave, attendanceRate);
     }
 
 }

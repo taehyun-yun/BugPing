@@ -30,6 +30,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from "@/stores/userStore";
+
+// 회사 ID 가져오기
+const userStore = useUserStore();
+const companyId = userStore.company.companyId;
 
 const attendanceList = ref([
  {

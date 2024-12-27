@@ -36,15 +36,14 @@ public class Attendance {
     private String isNormalAttendance; //정상출근여부 (지각했지만 출근인정 시 사용)
     private LocalDateTime recognizedWorkStart; //인정근무시작시간
     private LocalDateTime recognizedWorkEnd; //인정근무종료시간
-    private int recognizedWorkBreakMinute; //인정휴게시간 (기준 : 분 )
+    private int recognizedWorkBreakMinute; //인정휴게시간 (기준 : 분)
     private int recognizedWorkMinute; //인정근무시간( 시작~종료 - 휴게시간 )
 
     private String overtimeStatus; //추가근무여부
-    private LocalDateTime overtimeStart; //추가근무시작시간
-    private LocalDateTime overtimeEnd; //추가근무시작시간
+    private LocalDateTime overtimeStart; //추가근무 시작시간
+    private LocalDateTime overtimeEnd; //추가근무 종료시간
     private int overtimeBreakMinute; //추가휴게시간
     private int overtimeMinute; //추가근무시간 ( 시작~종료 - 휴게시간 )
-
 
     private int totalMinute; //총근무시간(인정근무시간 + 추가근무시간)
     private String status; // 비-활성화 (삭제 관련)

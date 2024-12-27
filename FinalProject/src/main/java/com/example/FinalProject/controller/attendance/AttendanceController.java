@@ -1,7 +1,6 @@
 package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
-import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.dto.DailyAttendanceDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
@@ -113,13 +112,5 @@ public class AttendanceController {
         List<DailyAttendanceDTO> attendanceList = attendanceService.getTodayAttendanceData(companyId);
         System.out.println(" attendance 데이터 출력 확인 : " + attendanceList);
         return ResponseEntity.ok(attendanceList);
-    }
-
-    // 출결 확인
-    @GetMapping("/today/attendance-statistics")
-    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics(@RequestParam(required = false) Integer companyId) {
-        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics(companyId);
-        System.out.println("출결 확인 : " + statistics.toString());
-        return ResponseEntity.ok(statistics);
     }
 }
