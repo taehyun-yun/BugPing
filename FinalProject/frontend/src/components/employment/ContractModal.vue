@@ -387,8 +387,27 @@ const saveContract = async () => {
 
 
 const closeModal = () => {
+  resetForm(); // 모든 데이터 초기화
   emit('close');
 };
+
+const resetForm = () => {
+  editedContract.value = {
+    contractStart: '',
+    contractEnd: '',
+    hourlyWage: 0,
+  };
+  selectedEmployee.value = null;
+  selectedWorkId.value = null;
+  contractSchedules.value = [];
+  editedSchedules.value = [];
+  deletedSchedules.value = [];
+  addedSchedules.value = [];
+  currentSchedule.value = {};
+  message.value = '';
+  messageType.value = '';
+};
+
 
 //-----------------기타-------------------
 const getDayName = (day) => {
