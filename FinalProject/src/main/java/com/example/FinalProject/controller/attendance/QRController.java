@@ -72,7 +72,7 @@ public class QRController {
         }
         map.put("workChanges",workChanges);
 
-        map.put("msg","선택해라.");
+        map.put("msg","선택하세요.");
         return new ResponseEntity<>(map ,HttpStatus.OK);
     }
     @PostMapping("/commuteCheck")

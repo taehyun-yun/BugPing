@@ -78,4 +78,5 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
         "where u.userId = :userId " +
         "ORDER BY w.hireDate, c.contractId DESC")
     Optional<List<Contract>>findAllContractsByUserId(String userId);
+    List<Contract>findByWork_workId(Integer workId);
 }

@@ -52,7 +52,7 @@
         </div>
         </button>
     </div>
-    <p v-show="showWhat" class="message">{{ message }}</p>
+        <p class="message">{{ message }}</p>
     </div>
 </template>
 
@@ -74,7 +74,7 @@ const workChanges = ref([]);
 const workChangeToday = ref([]);
 const workChangeWhole = ref([]);
 //메세지
-const message = ref('');
+const message = computed(()=> schedules.value.length === 0 && workChanges.value.length===0 ? "스케쥴이 없습니다." : "체크할 일정을 선택해주세요.");
 //요일
 const weekday = ["","월","화","수","목","금","토","일"]; //DB에 월 = 1, 일 = 7
 const now = ref(new Date());
@@ -110,11 +110,6 @@ const commuteList = async () => {
             workChangeToday.value = workChangeTodayAll.filter(workChange => workChange.inOut == "IN");
             const workChangeTodayOutScheduleId = workChangeTodayAll.filter(workChange => workChange.inOut == "OUT").map(workChange => workChange.schedule.contract.work.company.companyId);
             schedulesToday.value =  schedulesWhole.value.filter(schedule => !workChangeTodayOutScheduleId.includes(schedule.contract.work.company.companyId) && schedule.day == today.value);
-        }
-        if( schedules.value.length===0 ){
-            message.value = "스케쥴이 없습니다.";
-        } else{
-            message.value = res.data.msg;
         }
     } catch (err) {        
         if (err.response.status === 401) {
