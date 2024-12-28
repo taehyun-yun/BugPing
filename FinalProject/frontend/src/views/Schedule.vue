@@ -19,8 +19,9 @@
                 <p><strong>설명:</strong> {{ modalData.description }}</p>
                 <p><strong>시작:</strong> {{ modalData.start }}</p>
                 <p><strong>종료:</strong> {{ modalData.end }}</p>
-                <p><strong>총 근무 시간:</strong> {{ modalData.workDuration }}</p>
-                <p><strong>휴게 시간:</strong> {{ modalData.breakTime }}</p>
+                <p><strong>휴게시간:</strong> {{ modalData.breakTime }}분</p> <!-- 추가 -->
+                <p><strong>총 근무시간:</strong> {{ Math.floor(modalData.totalWorkMinutes / 60) }}시간
+                    {{ modalData.totalWorkMinutes % 60 }}분</p>
                 <button @click="closeModal">닫기</button>
             </div>
         </div>
@@ -35,8 +36,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { axiosAddress } from '@/stores/axiosAddress';
-import { useUserStore } from '@/stores/userStore';
 
 // HSL 색상에서 Hue와 Lightness를 추출하는 함수
 const extractHue = (hsl) => {
@@ -88,8 +87,6 @@ const selectedCompanyId = ref(''); // 회사 ID
 const userRole = ref(''); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 const scheduleItems = ref([]);
-const userStore = useUserStore();  // pinia에 저장된 user정보 불러오기
-
 
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
@@ -107,27 +104,15 @@ const modalData = ref({
     end: '',
 });
 
-const formatDuration = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}시간 ${mins}분`;
-};
-
-const formatDate = (isoString) => {
-    const date = new Date(isoString);
-    return format(date, 'yyyy년 MM월 dd일 HH:mm');
-};
-
-
 // 모달 열기
 const openModal = (event) => {
     modalData.value = {
         title: event.title,
         description: event.extendedProps?.description || '설명 없음',
-        start: formatDate(event.start), // 포맷된 시작 시간
-        end: event.end ? formatDate(event.end) : '종료 시간이 없습니다.', // 포맷된 종료 시간
-        workDuration: formatDuration(event.extendedProps?.workDuration || 0), // 포맷된 근무 시간
-        breakTime: formatDuration(event.extendedProps?.breakTime || 0), // 포맷된 휴게 시간
+        start: format(new Date(event.start), 'yyyy-MM-dd HH:mm'),
+        end: event.end ? format(new Date(event.end), 'yyyy-MM-dd HH:mm') : '종료 시간이 없습니다.',
+        breakTime: event.extendedProps?.breakTime || 0, // 추가: 휴게시간
+        totalWorkMinutes: event.extendedProps?.totalWorkMinutes || 0, // 추가: 총 근무시간
     };
     isModalVisible.value = true;
 };
@@ -200,41 +185,6 @@ const renderEventContent = (info) => {
     }
 };
 
-const calendarRef = ref(null);
-
-// 드래그 앤 드롭 이벤트 추가
-const eventDrop = async (info) => {
-    try {
-        // 변경된 이벤트 데이터를 추출
-        const updatedEvent = {
-            scheduleId: info.event.id,
-            newStart: info.event.start.toISOString(),
-            newEnd: info.event.end ? info.event.end.toISOString() : null,
-        };
-
-        console.log("드래그로 변경된 이벤트:", updatedEvent);
-
-        // 서버로 변경 요청 전송
-        await axios.put(`${axiosAddress}/api/workchange`, updatedEvent);
-
-        // 서버 업데이트가 성공하면 로컬 데이터를 수정
-        const updatedItem = scheduleItems.value.find((item) => item.id === updatedEvent.scheduleId);
-        if (updatedItem) {
-            updatedItem.start = updatedEvent.newStart;
-            updatedItem.end = updatedEvent.newEnd;
-        }
-
-        // FullCalendar 데이터 갱신 (UI 동기화)
-        info.event.setStart(updatedEvent.newStart);
-        info.event.setEnd(updatedEvent.newEnd);
-    } catch (error) {
-        console.error("드래그 앤 드롭 이벤트 처리 중 오류 발생:", error);
-
-        // 실패 시 드래그 이전 상태로 되돌림
-        info.revert();
-    }
-};
-
 // FullCalendar 옵션
 const calendarOptions = ref({
     ...commonOptions,
@@ -252,14 +202,15 @@ const calendarOptions = ref({
         try {
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
-            const serverResponse = await axios.get(`${axiosAddress}/api/calendar`, {
+            const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
                 params: {
                     start: startFormatted,
                     end: endFormatted,
                     viewCompanySchedule: !isUserView.value,
-                    companyId: userStore.company.companyId,
                 },
             });
+
+            console.log("서버 응답 데이터:", serverResponse.data);
 
             const holidaysResponse = axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
                 params: {
@@ -288,8 +239,8 @@ const calendarOptions = ref({
                 extendedProps: {
                     originalScheduleId: event.scheduleId, // 원래 스케줄 ID
                     description: event.description,
-                    workDuration: event.workDuration, // 근무 시간
-                    breakTime: event.breakTime,       // 휴게 시간
+                    breakTime: event.breakTime, // 추가
+                    totalWorkMinutes: event.totalWorkMinutes, // 추가
                 },
             }));
 
@@ -322,10 +273,49 @@ const calendarOptions = ref({
     eventColor: '#3788d8',
     eventContent: renderEventContent,
     eventClick: (info) => openModal(info.event),
-    eventDrop: eventDrop,
 
+
+    // 드래그 앤 드롭 이벤트 추가
+    eventDrop: async (info) => {
+        try {
+            const { event } = info;
+
+            // UTC -> KST 변환 함수
+            const convertToKoreanDate = (utcDate) => {
+                const koreanOffset = 9 * 60; // UTC+9 (분 단위)
+                const utcDateObject = new Date(utcDate);
+                const koreanDate = new Date(utcDateObject.getTime() + koreanOffset * 60 * 1000);
+                return koreanDate.toISOString(); // ISO 문자열로 반환
+            };
+
+            // 변경된 이벤트 데이터를 추출
+            const updatedEvent = {
+                originalScheduleId: event.extendedProps.originalScheduleId, // 기존 스케줄 ID
+                originalDate: format(info.oldEvent.start, 'yyyy-MM-dd'), // 이전 날짜
+                newScheduleId: event.id, // 새로운 스케줄 ID
+                newDate: format(new Date(convertToKoreanDate(event.start.toISOString())), 'yyyy-MM-dd'), // 새로운 날짜 (KST)
+                startTime: convertToKoreanDate(event.start.toISOString()), // 시작 시간 (KST)
+                endTime: event.end ? convertToKoreanDate(event.end.toISOString()) : null, // 종료 시간 (KST)
+            };
+
+            console.log("전송 데이터:", JSON.stringify(updatedEvent, null, 2)); // 디버깅용
+
+            // 서버로 변경 요청 전송
+            await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
+                withCredentials: true, // 필요시 쿠키 포함
+            });
+
+            calendarRef.value.getApi().refetchEvents(); // FullCalendar 이벤트 새로고침
+            console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
+        } catch (error) {
+            console.error('일정 변경 중 오류 발생:', error);
+            console.error('서버 응답 데이터:', error.response?.data); // 서버 응답 데이터 확인
+            info.revert(); // 변경 취소
+        }
+    },
 });
 
+const calendarRef = ref(null);
 
 
 watch(buttonText, () => {

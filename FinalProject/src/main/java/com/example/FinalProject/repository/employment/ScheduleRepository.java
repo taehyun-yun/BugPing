@@ -3,15 +3,12 @@ package com.example.FinalProject.repository.employment;
 
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
-import com.example.FinalProject.entity.employment.WorkChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
@@ -59,14 +56,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 // ====================================== TH =============================================================
-//    // 금일 출근자 카운트
-//    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.day = :dayOfWeek AND s.status = 'active'")
-//    long countByDay(@Param("dayOfWeek") int dayOfWeek);
 
-//    @Query("SELECT s, a FROM Schedule s " +
-//            "LEFT JOIN Attendance a ON a.schedule = s " +
-//            "WHERE s.day = :dayOfWeek")
-//    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
+    @Query("SELECT s, a FROM Schedule s " +
+            "LEFT JOIN Attendance a ON a.schedule = s " +
+            "WHERE s.day = :dayOfWeek")
+    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
 
     @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
             "WHERE s.day = :dayOfWeek AND (a.actualStart IS NULL OR a.actualStart BETWEEN :startOfDay AND :endOfDay)")
@@ -75,4 +69,20 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+//=====================================Joonho============================================================
+    //출첵용. 유저 아이디로 종료 안된 스케쥴들 불러오기 -> 계약 종료일이 내일보다 작으면 됨. 최신 근무지순, 최신 계약 순, 요일 순 정렬
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.contract.work.user.userId = :userId" +
+            " And s.contract.work.company.companyId = :companyId" +
+            " AND s.contract.work.resignDate IS NULL" +
+            " AND s.contract.status = 'T'" +
+            " AND s.status = 'T'" +
+            " AND s.contract.contractEnd > :tomorrow" +
+            " AND s.contract.contractStart <= :today" +
+            " ORDER BY s.contract.work.workId DESC, s.contract.contractId DESC, s.day ASC")
+    List<Schedule> findOneSchedules(String userId, Integer companyId,LocalDateTime tomorrow, LocalDateTime today);
+//    @Query("SELECT s, a FROM Schedule s " +
+//            "LEFT JOIN Attendance a ON a.schedule = s " +
+//            "WHERE s.day = :dayOfWeek")
+//    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
 }

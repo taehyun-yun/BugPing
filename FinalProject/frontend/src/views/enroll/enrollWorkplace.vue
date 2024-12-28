@@ -22,20 +22,60 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="company in companies">
-                    <td>
-                        {{ company.cname }}
-                    </td>
-                    <td>
-                        {{ company.address + " " + company.detailAddress }}
-                    </td>
-                    <td>
-                        {{ company.cnum }}
-                    </td>
-                    <td>
-                        {{ company.companyCode }}
-                    </td>
-                </tr>
+                <template v-for="(company,index) in companies">
+                    <tr @click="showWorkerChange(index)">
+                        <td>
+                            {{ company.cname }}
+                        </td>
+                        <td>
+                            {{ company.address + " " + company.detailAddress }}
+                        </td>
+                        <td>
+                            {{ company.cnum }}
+                        </td>
+                        <td>
+                            {{ company.companyCode }}
+                        </td>
+                    </tr>
+                    <tr v-show="showWorker[index]">
+                        <td colspan="4">
+                            <table class="worker-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            이름
+                                        </th>
+                                        <th>
+                                            입사일
+                                        </th>
+                                        <th>
+                                            퇴사일
+                                        </th>
+                                        <th>
+                                            
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="work in company.work">
+                                        <td>
+                                            {{ work.user.name }}
+                                        </td>
+                                        <td>
+                                            {{ work.hireDate }}
+                                        </td>
+                                        <td>
+                                            {{ work.resignDate ? work.resignDate : "근무중" }}
+                                        </td>
+                                        <td>
+                                            <button class="resign-button" type="button" v-if="work.user.role.split(',').includes('employee') && !work.resignDate" @click="setResignDate(work.workId)">퇴사</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
         </div>
@@ -60,13 +100,24 @@ import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
 import { onMounted, reactive, ref } from 'vue';
 const companies = reactive([]);
+const first = ref(true);
+const showWorker = reactive([]);
 const getData = async()=>{
     try{
         const res = await axios.get(`${axiosAddress}/employer/findOwnCompany`, {withCredentials : true});
         companies.splice( 0, companies.length, ...res.data.companies);
+        companies.map(company=>company.work = res.data.works.filter(work => work.company.companyId == company.companyId));
+        if(first.value){
+            const ary = [];
+            for(let i in res.data.companies){
+                ary.push(false);
+            }
+            first.value=false;
+            showWorker.values = ary;
+        }
+        //헤더 다시 불러오기
         const userStore = useUserStore();
         const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
-        userStore.setCompany(companyRes.data[0]);
         userStore.setCompanies(companyRes.data);
     } catch(err) {
         alert(err);
@@ -75,7 +126,16 @@ const getData = async()=>{
 onMounted(()=>{
     getData();
 })
-
+const showWorkerChange = (index) =>{
+    showWorker[index] = !showWorker[index];
+}
+const setResignDate = async(workId) =>{
+    if(confirm("해당 직원을 퇴사 처리하시겠습니까?")){
+        const res = await axios.get(`${axiosAddress}/employer/resignWorker?workId=${workId}`);
+        alert(res.data);
+        getData();
+    }
+}
 //새로운 사업장 저장
 // regform 선언
 const regform = ref(null);
@@ -102,9 +162,10 @@ const submitData = async() => {
         alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
         // 보내기
         await axios.post(axiosAddress+"/employer/companyRegister",formdata,{withCredentials: true})
-        .then((res)=>{
+        .then(async(res)=>{
             alert(res.data);
-            getData();
+            await getData();
+            window.location.reload();
         })
         .catch((err)=>{
             alert(err);
@@ -154,8 +215,8 @@ const closeModal = () => {
     table th{
         text-align: center;
     }
-
-    thead tr {
+   
+    table th {
         background-color: #4FD1C5;
         color: white;
         font-weight: bold;
@@ -169,16 +230,26 @@ const closeModal = () => {
         background-color: #e8f8f5;
         cursor: pointer;
     }
+    .worker-table tr:hover {
+        cursor : default;
+    }
+    .worker-table td {
+        text-align: center;
+    }
+    /* 퇴사하기 버튼 */
     /* 추가하기 버튼 (테이블 위) */
     .add-button{
         position: relative;
         width: 800px;
         height: 100px;
     }
-    .add-button button {
+    .add-button button{
         position: absolute;
         bottom: 0;
         right: 0;
+    }
+    .resign-button,
+    .add-button button {
         padding: 10px 20px;
         background-color: #4FD1C5;
         color: white;
@@ -189,6 +260,7 @@ const closeModal = () => {
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
     }
+    .resign-button,
     .add-button button:hover {
         background-color: #38b2ac;
         /* transform: scale(1.05); */

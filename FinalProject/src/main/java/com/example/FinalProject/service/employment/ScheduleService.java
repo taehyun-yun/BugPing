@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ScheduleService {
@@ -25,6 +26,9 @@ public class ScheduleService {
 
     @Autowired
     private WorkChangeRepository workChangeRepository;
+
+    @Autowired
+    private WorkChangeService workChangeService; // WorkChangeService 추가
 
     // 특정 사용자 스케줄 조회 (기간 필터링 추가)
     public List<Map<String, Object>> getUserSchedule(String userId, LocalDate start, LocalDate end) {
@@ -42,6 +46,18 @@ public class ScheduleService {
     private List<Map<String, Object>> generateScheduleList(List<Schedule> schedules, LocalDate start, LocalDate end) {
         List<Map<String, Object>> scheduleList = new ArrayList<>();
 
+        // 스케줄 ID 리스트 추출
+        List<Integer> scheduleIds = schedules.stream()
+                .map(Schedule::getScheduleId)
+                .toList();
+
+        // WorkChange 미리 조회
+        List<WorkChange> workChanges = workChangeRepository.findAllByScheduleIdsAndDateRange(scheduleIds, start, end);
+
+        // WorkChange를 Map으로 정리 (key: scheduleId+changeDate, value: WorkChange 리스트)
+        Map<String, List<WorkChange>> workChangeMap = workChanges.stream()
+                .collect(Collectors.groupingBy(wc -> wc.getSchedule().getScheduleId() + "_" + wc.getChangeDate()));
+
         for (Schedule schedule : schedules) {
             if (schedule.getContract() == null || schedule.getContract().getContractStart() == null ||
                     schedule.getContract().getContractEnd() == null) {
@@ -50,37 +66,54 @@ public class ScheduleService {
 
             LocalDate contractStartDate = schedule.getContract().getContractStart().toLocalDate();
             LocalDate contractEndDate = schedule.getContract().getContractEnd().toLocalDate();
+
+            // 현재 날짜가 Contract 범위에 포함되지 않으면 제외
+            if (start != null && end != null) {
+                if (contractEndDate.isBefore(start) || contractStartDate.isAfter(end)) {
+                    System.out.println("Contract 범위에 포함되지 않음 - scheduleId: " + schedule.getScheduleId());
+                    continue;
+                }
+            }
+
             LocalDate currentDate = contractStartDate;
 
             while (!currentDate.isAfter(contractEndDate)) {
                 if ((start == null || !currentDate.isBefore(start)) &&
                         (end == null || !currentDate.isAfter(end))) {
+                    System.out.println("날짜 확인 : " + currentDate);
 
+                    // WorkChangeService를 사용해 변경된 WorkChange 조회
+                    Optional<WorkChange> workChangeOptional = workChangeService.getLatestWorkChange(
+                            schedule.getScheduleId(), currentDate
+                    );
+
+                    // WorkChange가 있는 경우 처리
+                    if (workChangeOptional.isPresent()) {
+                        WorkChange workChange = workChangeOptional.get();
+                        String inOut = workChange.getInOut().trim().toUpperCase();
+
+                        if ("OUT".equals(inOut)) {
+                            System.out.println("OUT 상태로 제외: " + currentDate);
+                            currentDate = currentDate.plusDays(1);
+                            continue;
+                        }
+
+                        if ("IN".equals(inOut)) {
+                            System.out.println("IN 상태 확인, 스케줄 추가 준비: " + currentDate);
+                            Map<String, Object> scheduleMap = createScheduleMap(
+                                    schedule, workChange.getChangeStartTime(), workChange.getChangeEndTime(), "변경된 근무 일정");
+                            scheduleList.add(scheduleMap);
+                            currentDate = currentDate.plusDays(1);
+                            continue;
+                        }
+                    }
+
+                    // WorkChange가 없으면 기존 스케줄 데이터를 사용
                     if (schedule.getDay() == currentDate.getDayOfWeek().getValue()) {
-                        // WorkChange 데이터 조회
-                        Optional<WorkChange> workChange = workChangeRepository
-                                .findFirstByScheduleAndInOutOrderByWorkChangeIdDesc(schedule, "IN");
-
-                        // WorkChange 데이터가 존재하면 해당 데이터를 적용
-                        LocalDateTime workStart = workChange.map(WorkChange::getChangeStartTime)
-                                .orElse(currentDate.atTime(schedule.getOfficialStart()));
-                        LocalDateTime workEnd = workChange.map(WorkChange::getChangeEndTime)
-                                .orElse(currentDate.atTime(schedule.getOfficialEnd()));
-
-                        // 근무 시간 계산 (분 단위)
-                        long workDuration = ChronoUnit.MINUTES.between(workStart, workEnd);
-
-                        // 휴게 시간 계산
-                        long breakTime = calculateBreakTime(workDuration);
-
-                        // 스케줄 데이터 생성
-                        Map<String, Object> scheduleMap = createScheduleMap(schedule, workStart, workEnd,
-                                workChange.isPresent() ? "변경된 근무 일정" : "기존 근무 일정");
-
-                        // 근무 시간 및 휴게 시간 추가
-                        scheduleMap.put("workDuration", workDuration - breakTime); // 총 근무 시간 (분)
-                        scheduleMap.put("breakTime", breakTime);       // 휴게 시간 (분)
-
+                        Map<String, Object> scheduleMap = createScheduleMap(schedule,
+                                currentDate.atTime(schedule.getOfficialStart()),
+                                currentDate.atTime(schedule.getOfficialEnd()),
+                                "기존 근무 일정");
                         scheduleList.add(scheduleMap);
                     }
                 }
@@ -88,17 +121,6 @@ public class ScheduleService {
             }
         }
         return scheduleList;
-    }
-
-    // 휴게 시간을 계산하는 메서드
-    private long calculateBreakTime(long workDurationMinutes) {
-        if (workDurationMinutes > 480) { // 8시간 초과
-            return 60; // 휴게 시간: 60분
-        } else if (workDurationMinutes > 240) { // 4시간 초과
-            return 30; // 휴게 시간: 30분
-        } else { // 4시간 이하
-            return 0; // 휴게 시간 없음
-        }
     }
 
     // 스케줄 맵 생성 메서드
@@ -109,9 +131,25 @@ public class ScheduleService {
         scheduleMap.put("start", start.toString());
         scheduleMap.put("end", end.toString());
         scheduleMap.put("description", description);
+
+        // 휴게시간 계산 로직
+        long totalMinutes = ChronoUnit.MINUTES.between(start, end);
+        long breakTime = 0;
+
+        if (totalMinutes > 8 * 60) {
+            breakTime = 60; // 8시간 초과
+        } else if (totalMinutes > 4 * 60) {
+            breakTime = 30; // 4시간 초과
+        }
+
+        long totalWorkMinutes = totalMinutes - breakTime; // 총 근무시간
+
+        // 추가 데이터 삽입
+        scheduleMap.put("breakTime", breakTime); // 휴게시간 (분)
+        scheduleMap.put("totalWorkMinutes", totalWorkMinutes); // 총 근무시간 (분)
+
         return scheduleMap;
     }
-
 
     // userId로 work의 companyId 조회
     public Integer getCompanyIdByUserId(String userId) {

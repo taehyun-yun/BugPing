@@ -4,9 +4,11 @@ import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.dto.AttendanceDetailsDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.entity.employment.WorkChange;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.repository.employment.ScheduleRepository;
+import com.example.FinalProject.repository.employment.WorkChangeRepository;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -17,29 +19,150 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final CompanyRepository companyRepository;
     private final ScheduleRepository scheduleRepository;
+    private final WorkChangeRepository workChangeRepository;
 
     @Autowired
-    public AttendanceService (AttendanceRepository attendanceRepository,CompanyRepository companyRepository, ScheduleRepository scheduleRepository){
+    public AttendanceService (AttendanceRepository attendanceRepository,CompanyRepository companyRepository, ScheduleRepository scheduleRepository, WorkChangeRepository workChangeRepository){
         this.attendanceRepository = attendanceRepository;
         this.companyRepository = companyRepository;
         this.scheduleRepository = scheduleRepository;
+        this.workChangeRepository = workChangeRepository;
     }
-
+    //QR 만들기
     public byte[] makeQRCode(int width, int height, String url) throws WriterException, IOException {
         BitMatrix bitMatrix = new MultiFormatWriter().encode(url, BarcodeFormat.QR_CODE,width,height);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix,"PNG",byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
+    }
+    //일정 불러오기
+    public List<Schedule> getOneSchedule(String userId, Integer companyId) {
+        LocalDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay();
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+        List<Schedule>schedules = scheduleRepository.findOneSchedules(userId, companyId, tomorrow, today);
+        return schedules == null ? Collections.emptyList() : schedules;
+    }
+    public List<WorkChange> getOneWorkChange(String userId, Integer companyId){
+        LocalDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay();
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+        List<WorkChange>workChanges = workChangeRepository.findOneWorkChange(userId,companyId,tomorrow,today);
+        return workChanges == null? Collections.emptyList() : workChanges;
+    }
+    //스케쥴 출근
+    public boolean commuteCheckByScheduleId(Integer scheduleId){
+        Optional<Schedule> isSchedule = scheduleRepository.findById(scheduleId);
+        if(isSchedule.isEmpty()){
+            return false;
+        }
+        Schedule schedule = isSchedule.get();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDay = schedule.getOfficialStart().isBefore(schedule.getOfficialEnd()) ? now : now.minusDays(1) ;
+
+        Attendance attendance = new Attendance();
+        attendance.setActualStart(now);
+        attendance.setSchedule(schedule);
+        attendance.setStatus("T");
+        attendance.setRecognizedWorkStart(LocalDateTime.of(now.getYear(),now.getMonth().getValue(),now.getDayOfMonth(),schedule.getOfficialStart().getHour(),schedule.getOfficialStart().getMinute()));
+        attendance.setRecognizedWorkEnd(LocalDateTime.of(endDay.getYear(),endDay.getMonth().getValue(),endDay.getDayOfMonth(),schedule.getOfficialEnd().getHour(),schedule.getOfficialEnd().getMinute()));
+        attendance.setRecognizedWorkBreakMinute(schedule.getBreakMinute());
+        //지각하든말든 일단 기본 계약한 스케쥴 대로 인정
+        Duration duration = Duration.between(schedule.getOfficialStart(),schedule.getOfficialEnd());
+        int minute = (int) duration.toMinutes();
+        int breaktime = 30 * (minute / 240);
+        attendance.setRecognizedWorkMinute(minute - breaktime);
+        attendance.setTotalMinute(minute - breaktime);
+
+        //지각에따라
+        String commuteStatus;
+        String isNormalAttendance;
+
+        if(schedule.getOfficialStart().isAfter(now.toLocalTime())){
+            commuteStatus =  "정상";
+            isNormalAttendance = "Y";
+        } else {
+            commuteStatus = "지각";
+            isNormalAttendance = "N";
+        }
+        attendance.setCommuteStatus(commuteStatus);
+        attendance.setIsNormalAttendance(isNormalAttendance);
+
+        attendanceRepository.save(attendance);
+        return true;
+    }
+    //변경 출근
+    public boolean commuteCheckByWorkChangeId(Integer workChangeId){
+        Optional<WorkChange> isWorkChange = workChangeRepository.findById(workChangeId);
+        if(isWorkChange.isEmpty()){
+            return false;
+        }
+        WorkChange workChange = isWorkChange.get();
+        Schedule schedule = workChange.getSchedule();
+        LocalDateTime now = LocalDateTime.now();
+        //LocalDateTime endDay = schedule.getOfficialStart().isBefore(schedule.getOfficialEnd()) ? now : now.minusDays(1) ;
+        Attendance attendance = new Attendance();
+
+        attendance.setActualStart(now);
+        attendance.setSchedule(schedule);
+        attendance.setStatus("T");
+        attendance.setRecognizedWorkStart(workChange.getChangeStartTime());
+        attendance.setRecognizedWorkEnd(workChange.getChangeEndTime());
+        Duration duration = Duration.between(workChange.getChangeStartTime(),workChange.getChangeEndTime());
+        int minute = (int) duration.toMinutes();
+        int breaktime = 30 * (minute / 240);
+        attendance.setRecognizedWorkMinute(minute - breaktime);
+        attendance.setTotalMinute(minute- 30 * breaktime);
+
+        //지각에따라
+        String commuteStatus;
+        String isNormalAttendance;
+
+        if(schedule.getOfficialStart().isAfter(now.toLocalTime())){
+            commuteStatus =  "정상";
+            isNormalAttendance = "Y";
+        } else {
+            commuteStatus = "지각";
+            isNormalAttendance = "N";
+        }
+        attendance.setCommuteStatus(commuteStatus);
+        attendance.setIsNormalAttendance(isNormalAttendance);
+
+        attendanceRepository.save(attendance);
+        return true;
+    }
+    //중복 출근 체크
+    public Attendance already(Integer id, String type){
+        if(type.equals("scheduleId")){
+            Optional<Schedule> isSchedule = scheduleRepository.findById(id);
+            if(isSchedule.isEmpty()){
+                return null;
+            }
+            Schedule schedule = isSchedule.get();
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime endDay = schedule.getOfficialStart().isBefore(schedule.getOfficialEnd()) ? now : now.minusDays(1) ;
+            return attendanceRepository.findByAlreadyCheckedSchedule(id,endDay.toLocalDate());
+        }
+        if(type.equals("workChangeId")){
+            return attendanceRepository.findByAlreadyCheckedWorkChangeId(id);
+        }
+        return null;
+    }
+    //퇴근
+    public void leaveCheck(Attendance attendance){
+        attendance.setActualEnd(LocalDateTime.now());
+        attendanceRepository.save(attendance);
     }
 
 // =============================================TH=====================================================

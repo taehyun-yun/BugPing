@@ -11,7 +11,6 @@
           <div class="search-fieldset">
             <input type="hidden" placeholder="검색" class="header-search-input" v-model="selectedCompany" />
             <select v-model="selectedCompany">
-            <!-- <select v-model="selectedCompany" @change="updateCompany"> -->
               <option v-for="company in userStore.companies" 
                       :key="company.id" 
                       :value="company">
@@ -20,13 +19,6 @@
             </select>
           </div>
           <div class="header-icons">
-            <!-- <img src="../assets/MainheaderImg/book.png" alt="Book Icon" class="icon" />
-            <img src="../assets/MainheaderImg/cloud.png" alt="Cloud Icon" class="icon" />
-            <img src="../assets/MainheaderImg/message.png" alt="ChannelTalk Icon" class="icon" /> -->
-            <!-- <div class="column">
-              <img src="../assets/MainheaderImg/bell.png" alt="Bell Icon" class="icon" />
-              <div class="row"></div>
-            </div> -->
             <div class="column">
               <img src="../assets/MainheaderImg/circle-user-solid.svg" alt="profile Icon" class="icon" />
                 <div class="row">
@@ -45,6 +37,7 @@
     <Teleport to="body">
       <div class="modal-overlay" @click.self="showModalChange" v-show="showModal">
         <div class="modal">
+          <p>{{ userStore.userId }}</p>
           <div class="item">
             <p>비밀번호 변경</p>
             <form ref="pwCheck" v-show="!valid">
@@ -107,10 +100,20 @@ onMounted(() => {
   }
 });
 // watch로 상태 동기화
-watch(selectedCompany, (newValue) => {
-  userStore.setCompany(newValue);
-  window.location.reload;
+let initialLoad = true; // 첫 로드 여부를 추적
+
+watch(selectedCompany, (newValue, oldValue) => {
+  if (!initialLoad) {
+    userStore.setCompany(newValue);
+
+    // 특정 조건에서만 reload
+    if (newValue !== oldValue) {
+      window.location.reload();
+    }
+  }
+  initialLoad = false; // 첫 로드 후 초기화
 });
+
 // 마이페이지-----------------------------------------------
 const showModal = ref(false);
 const showModalChange = () =>{
@@ -141,7 +144,7 @@ const setNewPassword = () =>{
   }
 }
 
-const registered = computed(() => userStore.email !== '');
+const registered = computed(() => userStore.email && userStore.email !== '');
 const inputEmail = ref('');
 const inputEmailSaved = ref('');
 const isCooltime = ref(false);

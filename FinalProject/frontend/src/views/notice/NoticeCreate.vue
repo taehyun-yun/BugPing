@@ -155,8 +155,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import megaphoneIcon from "@/assets/noticeimg/megaphone.png";
 import checklistIcon from "@/assets/noticeimg/checklist.png";
@@ -166,12 +166,15 @@ import xlsxIcon from "@/assets/noticeimg/xlsx.png";
 import pdfIcon from "@/assets/noticeimg/pdf.png";
 import elseIcon from "@/assets/noticeimg/else.png";
 import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from "@/stores/userStore";
+
 const previewImage = ref(""); // 이미지 미리보기 URL
 const previewFile = ref("");
 const uploadedFiles = ref([]); // 업로드된 파일 목록
 
+const route = useRoute();
 const router = useRouter();
-
+const userStore = useUserStore();
 // 카테고리와 첨부 파일 데이터
 const categories = ref([
   { id: 1, name: "공지", icon: megaphoneIcon },
@@ -196,10 +199,12 @@ const content = ref("");
 // 카테고리 선택 상태
 const selectedCategory = ref(categories.value[0].name); // 기본값: 첫 번째 카테고리 이름
 
-// 예시로 현재 사용자의 workId를 하드코딩 (실제 프로젝트에서는 인증을 통해 동적으로 가져와야 함)
-const workId = ref(1);
-
-// 카테고리 선택 함수
+// workId를 라우트 파라미터에서 가져오기
+const workId = computed(() => route.params.workId);
+// const companyId = computed(() => route.params.companyId);
+const companyId = computed(
+  () => userStore.company.companyId?.companyId || null
+); // 카테고리 선택 함수
 const selectCategory = (categoryName) => {
   selectedCategory.value = categoryName; // 선택한 카테고리 이름으로 업데이트
 };
@@ -209,14 +214,18 @@ const cancelNotice = () => {
   // 모든 입력 필드를 초기화
   title.value = "";
   content.value = "";
-  selectedCategory.value = "공지"; // 기본 카테고리로 초기화
+  selectedCategory.value = categories.value[0].name; // 기본 카테고리로 초기화
   uploadedFiles.value = []; // 업로드된 파일 목록 초기화
   previewImage.value = ""; // 이미지 미리보기 초기화
-  console.log("작성 취소되었습니다.");
+  alert("작성 취소되었습니다.");
 };
 
 // 작성 완료 버튼 클릭 시 동작
 const submitNotice = async () => {
+  if (!userStore.company.companyId) {
+    alert("회사 ID가 없습니다. 다시 시도해주세요.");
+    return;
+  }
   if (!title.value || !content.value) {
     alert("제목과 내용을 모두 입력해주세요.");
     return;
@@ -232,6 +241,8 @@ const submitNotice = async () => {
   formData.append("title", title.value);
   formData.append("content", content.value);
   formData.append("workId", workId.value);
+  formData.append("companyId", userStore.company.companyId);
+  formData.append("userId", userStore.userId);
   formData.append("type", typeMap[selectedCategory.value]);
 
   // 이미지 파일 추가
@@ -246,20 +257,19 @@ const submitNotice = async () => {
     }
   }
 
+  console.log("FormData Values:");
+  for (const [key, value] of formData.entries()) {
+    console.log(`${key}: ${value}`);
+  }
   try {
     const response = await axios.post(
       `${axiosAddress}/notice/create`,
       formData,
-      { withCredentials: true },
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    console.log("작성된 공지사항:", response.data);
     alert("공지사항이 작성되었습니다.");
-    // 작성 후 공지사항 목록 페이지로 이동
     router.push({ path: "/noticemain" });
   } catch (error) {
     console.error("공지사항 작성 중 오류 발생:", error);

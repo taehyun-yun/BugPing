@@ -19,6 +19,7 @@ public class UserSetUpController {
     UserSetUpController(ContractService contractService){
         this.contractService = contractService;
     }
+    //헤더에 companyList 넣기
     @GetMapping("/getHeaderCompanyList")
     public ResponseEntity<List<Map<String,Object>>> sendMyCompany(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
