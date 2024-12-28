@@ -1,3 +1,5 @@
+<!--ContractModal.vue-->
+
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
     <div class="modal-content" @click.stop>
@@ -49,8 +51,8 @@
           추가
         </button>
 
-        <section v-if="contract?.schedules?.length">
-          <div v-for="schedule in contract.schedules" :key="schedule.scheduleId" class="schedule-section">
+        <section v-if="contractSchedules.length">
+          <div v-for="schedule in contractSchedules" :key="schedule.scheduleId || schedule.temporaryId" class="schedule-section">
             <div class="schedule-header day-box">
               <span class="day">{{ getDayName(schedule.day) }}</span>
             </div>
@@ -94,6 +96,8 @@
     </div>
 
     <ScheduleModal :is-open="showScheduleModal" :schedule="currentSchedule" @close="closeScheduleModal" @confirm="handleScheduleConfirm" />
+    <!-- currentSchedule라는 부모의 데이터를 자식 컴포넌트의 schedule prop으로 전달 -->
+     <!-- 자식 컴포넌트에서 발생하는 confirm 이벤트를 감지하고, 이를 처리하는 부모의 메서드(handleScheduleConfirm)를 연결 -->
 
     <UserModal :is-open="showUserModal" @close="closeUserModal" @save="handleUserSelection" />
   </div>
@@ -105,6 +109,7 @@ import { useContractsStore } from '@/stores/contracts';
 import ScheduleModal from '@/components/employment/ScheduleModal.vue';
 import UserModal from '@/components/employment/UserModal.vue';
 
+//부모에게서 받은 거
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -127,35 +132,45 @@ const emit = defineEmits(['close', 'save']);
 const contractsStore = useContractsStore();
 
 const editedContract = ref({});
-const addedSchedules = ref([]);
-const editedSchedules = ref([]);
-const deletedSchedules = ref([]);
-const message = ref('');
-const messageType = ref('');
-const showScheduleModal = ref(false);
-const currentSchedule = ref({});
+
 const showUserModal = ref(false);
 const selectedEmployee = ref(null);
 const selectedWorkId = ref(null); // 선택된 workId를 저장
 
+const contractSchedules = ref(props.contract?.schedules ? [...props.contract.schedules] : []);//UI용
+
+const editedSchedules = ref([]);//기존스케쥴
+const deletedSchedules = ref([]);//기존스케쥴 중에서 삭제되는 스케쥴
+const addedSchedules = ref([]);//새로 추가 되는스케쥴
+const currentSchedule = ref({});//스케쥴모달에 전달할 스케쥴
+const showScheduleModal = ref(false);
+
+
+const message = ref('');
+const messageType = ref('');
+
+
 watch(
   () => props.contract,
   (newContract) => {
+    console.log('contractModal - props.contract:', props.contract);
     if (newContract) {
-      const { contractStart, contractEnd, hourlyWage, work } = newContract;
+      const { contractStart, contractEnd, hourlyWage, work, schedules = [] } = newContract;
       editedContract.value = {
         contractStart: contractStart?.split('T')[0] || '',
         contractEnd: contractEnd?.split('T')[0] || '',
         hourlyWage: hourlyWage || 0,
       };
-      selectedEmployee.value = work?.user || null; // 🔵 work.user 설정
-      selectedWorkId.value = work?.workId || null; // 🔵 workId 설정
+      selectedEmployee.value = work?.user || null;
+      selectedWorkId.value = work?.workId || null;
+      contractSchedules.value = [...schedules]; // schedules를 안전하게 설정//???????
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
-
+///----------------user--------------------
+// user.name이 지정되어있지 않으면(수정하기로 들어온게 아니면) 유저모달 열 수 있게 하기
 const handleMemberClick = () => {
   if (!props.contract?.work?.user?.name) {
     openUserModal();
@@ -169,11 +184,10 @@ const openUserModal = () => {
 
 const handleUserSelection = ({ employee, workId }) => {
   selectedEmployee.value = employee;
-  selectedWorkId.value = workId; // WorkID 저장
+  selectedWorkId.value = workId;
 
-  // 📌 콘솔 로그 추가: 선택된 사용자와 workId 확인
-  console.log('User Selected:', employee);
-  console.log('Work ID Selected:', workId);
+  console.log('User Selected:', employee);//{ name: '홍길동', userId: 123 }
+  console.log('Work ID Selected:', workId);//456
 
   message.value = `${employee.name}이(가) 선택되었습니다.`;
   messageType.value = 'success';
@@ -181,35 +195,55 @@ const handleUserSelection = ({ employee, workId }) => {
 };
 
 
-
-
-
 const closeUserModal = () => {
   showUserModal.value = false;
 };
 
+
+
+///----------------Schedule--------------------
+
+// const addSchedule = () => {
+//   currentSchedule.value = {
+//     id: null,
+//     day: '',
+//     officialStart: '',
+//     officialEnd: '',
+//     breakMinute: 0,
+//   };
+//   showScheduleModal.value = true;
+// };
+
 const addSchedule = () => {
-  currentSchedule.value = {
-    id: null,
+  const newSchedule = {
+    temporaryId: '', //없어도 될것같긴함
     day: '',
     officialStart: '',
     officialEnd: '',
     breakMinute: 0,
   };
+
+  currentSchedule.value = newSchedule; // 새 스케줄 전달
+  console.log('ContractModal - Add Schedule - Sending:', newSchedule); // 디버깅
   showScheduleModal.value = true;
 };
 
 const editSchedule = (schedule) => {
-  currentSchedule.value = { ...schedule };
+  // if (!schedule.temporaryId) {
+  //   schedule.temporaryId = Date.now(); // 🔵 임시 ID 생성
+  // }
+  console.log('contractModal - Edit schedule - Sending to modal:', schedule); // 🔵 전달 전 데이터 확인
+  currentSchedule.value = { ...schedule }; // 전달
   showScheduleModal.value = true;
 };
 
 const handleDeleteSchedule = (schedule) => {
-  if (!schedule.scheduleId) {
-    addedSchedules.value = addedSchedules.value.filter((s) => s.id !== schedule.id);
-  } else {
+  if (!schedule.scheduleId) {//새로 추가된 스케쥴이면
+    contractSchedules.value = contractSchedules.value.filter((s) => s.temporaryId !== schedule.temporaryId);
+    addedSchedules.value = addedSchedules.value.filter((s) => s.temporaryId !== schedule.temporaryId);
+  } else {//기존 스케쥴이면
     deletedSchedules.value.push(schedule);
-    props.contract.schedules = props.contract.schedules.filter((s) => s.scheduleId !== schedule.scheduleId);
+    contractSchedules.value = contractSchedules.value.filter((s) => s.scheduleId !== schedule.scheduleId);
   }
   message.value = '스케줄이 삭제되었습니다.';
   messageType.value = 'success';
@@ -217,24 +251,46 @@ const handleDeleteSchedule = (schedule) => {
 };
 
 const handleScheduleConfirm = (schedule) => {
+  console.log('ContractModal - Schedule Confirmed:', schedule); // 반환된 데이터 확인
+
   if (schedule.scheduleId) {
-    const index = props.contract.schedules.findIndex((s) => s.scheduleId === schedule.scheduleId);
+    console.log('기존 스케줄 수정할거야!');
+    const index = contractSchedules.value.findIndex((s) => s.scheduleId === schedule.scheduleId);
     if (index !== -1) {
-      props.contract.schedules[index] = schedule;
+      contractSchedules.value[index] = { ...schedule };
+
+      // 수정된 스케줄 추적
       editedSchedules.value.push(schedule);
       message.value = '스케줄이 수정되었습니다.';
-      messageType.value = 'success';
+    }
+  } else if (schedule.temporaryId) {
+    console.log('새로운 스케줄 수정할거야!');
+    const index = contractSchedules.value.findIndex((s) => s.temporaryId === schedule.temporaryId);
+    if (index !== -1) {
+      contractSchedules.value[index] = { ...schedule };
+
+      // addedSchedules에서도 수정된 스케줄을 업데이트
+      const addedIndex = addedSchedules.value.findIndex((s) => s.temporaryId === schedule.temporaryId);
+      if (addedIndex !== -1) {
+        addedSchedules.value[addedIndex] = { ...schedule };
+      }
+
+      message.value = '새로 추가된 스케줄이 수정되었습니다.';
     }
   } else {
-    const newSchedule = { ...schedule, id: Date.now() };
-    props.contract.schedules.push(newSchedule);
+
+    console.log('새로운 스케줄 추가할거야!');
+    const newSchedule = { ...schedule, temporaryId: Date.now() };
+    contractSchedules.value.push(newSchedule);
     addedSchedules.value.push(newSchedule);
     message.value = '스케줄이 추가되었습니다.';
-    messageType.value = 'success';
   }
+
   showScheduleModal.value = false;
   clearMessage();
 };
+
+
 
 const clearMessage = () => {
   setTimeout(() => {
@@ -243,6 +299,142 @@ const clearMessage = () => {
   }, 2000);
 };
 
+const closeScheduleModal = () => {
+  showScheduleModal.value = false;
+};
+
+
+//----------------contract---------------
+const saveContract = async () => {
+  try {
+    console.log('saveContract - Selected Employee:', selectedEmployee.value);
+    console.log('saveContract - Selected Work ID:', selectedWorkId.value);
+
+    // 유효성 검사: 근로자, 시급, 계약 시작일, 계약 종료일 확인
+    if (!selectedEmployee.value) {
+      message.value = '구성원을 선택해주세요.'; // 메시지 설정
+      messageType.value = 'error'; // 메시지 타입 설정
+      return; // 저장 중단
+    }
+    if (!editedContract.value.hourlyWage || editedContract.value.hourlyWage <= 0) {
+      message.value = '시급을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    if (!editedContract.value.contractStart) {
+      message.value = '계약 시작일을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    if (!editedContract.value.contractEnd) {
+      message.value = '계약 종료일을 입력해주세요.';
+      messageType.value = 'error';
+      return;
+    }
+    const startDate = new Date(editedContract.value.contractStart);
+    const endDate = new Date(editedContract.value.contractEnd);
+
+    if (endDate < startDate) {
+      message.value = '계약 종료일은 계약 시작일 이후여야 합니다.';
+      messageType.value = 'error';
+      return;
+    }
+
+    const contractData = {
+      ...props.contract,
+      ...editedContract.value,
+      work: {
+        user: {
+          userId: selectedEmployee.value.userId,
+          name: selectedEmployee.value.name,
+        },
+        workId: selectedWorkId.value,
+      },
+      contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
+      contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T23:59:59` : null,
+    };
+
+    // 콘솔 로그 추가: 구성된 contractData 확인
+    console.log('saveContract - Contract Data to Save:', contractData);
+
+    let savedContract;
+    if (props.contract?.contractId) {
+      savedContract = await contractsStore.updateContract(props.contract.contractId, contractData);
+    } else {
+      savedContract = await contractsStore.addContract(contractData);
+      emit('save', savedContract); // 새 계약 데이터 전달//???????
+    }
+
+    // 스케줄 저장 로직
+    const contractId = savedContract?.contractId || props.contract.contractId;
+
+    // 추가된 스케줄 저장
+    // for (const schedule of addedSchedules.value) {
+    //   await contractsStore.addSchedule(contractId, schedule); // contractId와 함께 저장
+    // }
+
+    // 스케줄 데이터에서 `temporaryId` 제거 & contractId 추가
+    // const schedulesToSave = addedSchedules.value.map(({ temporaryId, ...schedule }) => schedule);
+    const schedulesToSave = addedSchedules.value.map(({ temporaryId, ...schedule }) => ({
+      ...schedule,
+      contract: { // contractId를 포함한 contract 객체 추가
+        contractId,
+      },
+    }));
+    console.log('saveContract - Schedules to Save:', schedulesToSave);
+
+    // 추가된 스케줄 저장
+    for (const schedule of schedulesToSave) {
+      await contractsStore.addSchedule(contractId, schedule);//savedContract.contractId //여기는 contractId 필요! 만약 스케쥴안에있다면 매개변수로는 안줘도됨!!!
+    }
+
+    // 수정된 스케줄 업데이트
+    for (const schedule of editedSchedules.value) {
+      await contractsStore.editSchedule(contractId, schedule.scheduleId, schedule); // contractId 추가 필요 여부 검토!!!!피니아에서!!
+    }
+
+    // 삭제된 스케줄 제거
+    for (const schedule of deletedSchedules.value) {
+      await contractsStore.deleteSchedule(contractId, schedule.scheduleId); // contractId 추가 필요 여부 검토!!!!피니아에서!!
+    }
+
+    message.value = '계약과 스케줄이 성공적으로 저장되었습니다.';
+    messageType.value = 'success';
+    closeModal();
+  } catch (error) {
+    console.error('계약 저장 실패:', error);
+    message.value = '계약 저장에 실패했습니다.';
+    messageType.value = 'error';
+  } finally {
+    clearMessage();
+  }
+};
+
+
+const closeModal = () => {
+  resetForm(); // 모든 데이터 초기화
+  emit('close');
+};
+
+const resetForm = () => {
+  editedContract.value = {
+    contractStart: '',
+    contractEnd: '',
+    hourlyWage: 0,
+  };
+  selectedEmployee.value = null;
+  selectedWorkId.value = null;
+  contractSchedules.value = [];
+  editedSchedules.value = [];
+  deletedSchedules.value = [];
+  addedSchedules.value = [];
+  currentSchedule.value = {};
+  message.value = '';
+  messageType.value = '';
+};
+
+
+//-----------------기타-------------------
 const getDayName = (day) => {
   const dayMapNumber = {
     1: '월',
@@ -260,78 +452,6 @@ const formatDuration = (minutes) => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours}시간 ${mins}분`;
-};
-
-
-const saveContract = async () => {
-  try {
-    // 📌 콘솔 로그 추가: 현재 selectedEmployee와 selectedWorkId 확인
-    console.log('Selected Employee:', selectedEmployee.value);
-    console.log('Selected Work ID:', selectedWorkId.value);
-
-    // 📌 유효성 검사: 구성원이 선택되었는지 확인
-    if (!selectedEmployee.value) {
-      throw new Error('구성원이 선택되지 않았습니다.');
-    }
-
-    const contractData = {
-      ...props.contract,
-      ...editedContract.value,
-      work: {
-        user: {
-          userId: selectedEmployee.value.userId,
-          name: selectedEmployee.value.name,
-        },
-        workId: selectedWorkId.value,
-      },
-      contractStart: editedContract.value.contractStart ? `${editedContract.value.contractStart}T00:00:00` : null,
-      contractEnd: editedContract.value.contractEnd ? `${editedContract.value.contractEnd}T00:00:00` : null,
-    };
-
-    // 📌 콘솔 로그 추가: 구성된 contractData 확인
-    console.log('Contract Data to Save:', contractData);
-
-    let newContract;
-    if (props.contract?.contractId) {
-      // 기존 계약 업데이트
-      await contractsStore.updateContract(props.contract.contractId, contractData);
-      console.log('Contract updated successfully in store.');
-    } else {
-      // 새 계약 생성
-      newContract = await contractsStore.addContract(contractData);
-
-      // 📌 콘솔 로그 추가: addContract의 반환값 확인
-      console.log('Added Contract:', newContract);
-
-      if (newContract?.contractId) {
-        emit('save', newContract); // 생성된 계약 데이터를 부모 컴포넌트로 전달
-      } else {
-        throw new Error('새 계약 생성 실패: contractId가 반환되지 않았습니다.');
-      }
-    }
-
-    message.value = '계약이 성공적으로 저장되었습니다.';
-    messageType.value = 'success';
-    closeModal();
-  } catch (error) {
-    console.error('계약 저장 실패:', error);
-    message.value = '계약 저장에 실패했습니다.';
-    messageType.value = 'error';
-  } finally {
-    clearMessage();
-  }
-};
-
-
-
-
-
-
-const closeModal = () => {
-  emit('close');
-};
-const closeScheduleModal = () => {
-  showScheduleModal.value = false;
 };
 
 
@@ -588,6 +708,8 @@ const closeScheduleModal = () => {
   /* 글자 크기 */
   background-color: white;
   /* 배경색 흰색 */
+
+  box-sizing: border-box; /* 테두리와 패딩 포함 */
 }
 
 /* 입력 필드 포커스 시 스타일 */

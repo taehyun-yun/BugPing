@@ -33,13 +33,16 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     // 특정 Contract ID로 스케줄을 조회하는 메서드
     List<Schedule> findByContractContractId(Integer contractId);
 
+    // 특정 계약 ID에 연결된 스케줄이 존재하는지 확인 //계약 삭제시 사용 (T,F 둘다 조회)
+    boolean existsByContract_ContractId(Integer contractId);
+
     //특정 Contract ID로 스케줄을 조회 + 패치조인
     @Query("SELECT s FROM Schedule s " +
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "WHERE c.id = :contractId")
+            "WHERE c.id = :contractId AND s.status = 'T'")
     List<Schedule> findSchedulesByContractIdWithContractWorkAndUser(@Param("contractId") Integer contractId);
 
 
@@ -48,14 +51,15 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
             "JOIN FETCH w.company cp " +
-            "WHERE s.id = :scheduleId")
+            "WHERE s.id = :scheduleId AND s.status = 'T'")
     Schedule findScheduleWithContractWorkAndUser(@Param("scheduleId") Integer scheduleId);
 
     @Query("SELECT DISTINCT s FROM Schedule s " +
             "JOIN FETCH s.contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
-            "JOIN FETCH w.company cp ")
+            "JOIN FETCH w.company cp " +
+            "WHERE s.status = 'T'")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 // ====================================== TH =============================================================
 //    // 금일 출근자 카운트

@@ -55,6 +55,11 @@ public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer>
              "AND wc.schedule.status = 'T' " +
              "ORDER BY wc.changeDate")
      List<WorkChange> findOneWorkChange(String userId, Integer companyId, LocalDateTime tomorrow, LocalDateTime today);
+
+
+    //----------------------------------------ES------------------------------------------------
+    // 특정 스케줄에 대한 WorkChange 데이터가 존재하는지 확인
+    boolean existsBySchedule_ScheduleId(Integer scheduleId);
 }
 
 

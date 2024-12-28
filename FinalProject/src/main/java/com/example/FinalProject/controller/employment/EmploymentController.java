@@ -1,11 +1,14 @@
 package com.example.FinalProject.controller.employment;
 
+import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.employment.ContractRepository;
 import com.example.FinalProject.repository.employment.ScheduleRepository;
 import com.example.FinalProject.entity.employment.Contract;
 import com.example.FinalProject.entity.employment.Schedule;
+import com.example.FinalProject.repository.employment.WorkChangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +23,12 @@ public class EmploymentController {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    // Contract 엔드포인트
+    @Autowired
+    private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private WorkChangeRepository workChangeRepository;
+
 
     // 모든 계약 정보를 가져옵니다 //이거 말고 회사별로 써야함
     @GetMapping("/contracts")
@@ -32,7 +40,7 @@ public class EmploymentController {
     //회사별 계약 정보
     @GetMapping("/contracts/company/{companyId}")
     public List<Contract> getContractsByCompanyId(@PathVariable Integer companyId) {
-        return contractRepository.findAllContractsByCompanyId(companyId);
+        return contractRepository.findAllActiveContractsByCompanyId(companyId);
     }
 
     // ID를 통해 특정 계약 정보를 가져옵니다
@@ -73,16 +81,55 @@ public class EmploymentController {
         }
     }
 
-    // ID를 통해 특정 계약을 삭제합니다
+//    // ID를 통해 특정 계약을 삭제합니다
+//    @DeleteMapping("/contracts/{id}")
+//    public ResponseEntity<Void> deleteContract(@PathVariable Integer id) {
+//        if (contractRepository.existsById(id)) {
+//            contractRepository.deleteById(id);
+//            return ResponseEntity.noContent().build();
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+
+
+    //ID를 통해 특정 계약을 삭제 또는 비활성화
+    //@Transactional
     @DeleteMapping("/contracts/{id}")
-    public ResponseEntity<Void> deleteContract(@PathVariable Integer id) {
-        if (contractRepository.existsById(id)) {
-            contractRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteOrDeactivateContract(@PathVariable Integer id) {
+        // 1. 계약 조회
+        Optional<Contract> optionalContract = contractRepository.findById(id);
+        if (optionalContract.isEmpty()) {
+            return ResponseEntity.notFound().build(); // 계약이 없으면 404 반환
+        }
+
+        Contract contract = optionalContract.get();
+
+        // 2. 연결된 스케줄 조회(T, F 둘다 조회)
+        boolean hasSchedule = scheduleRepository.existsByContract_ContractId(id);
+
+        if (hasSchedule) {
+            // 3. 스케줄 상태를 "F"로 변경(T만 가져와서 F로 변경)
+            List<Schedule> schedules = scheduleRepository.findSchedulesByContractIdWithContractWorkAndUser(id);
+            for (Schedule schedule : schedules) {
+                schedule.setStatus("F");
+                scheduleRepository.save(schedule);
+            }
+
+            // 4. 계약 상태를 "F"로 변경
+            contract.setStatus("F");
+            Contract savedContract = contractRepository.save(contract);
+            System.out.println("Updated contract status: " + savedContract.getStatus());
+
+            // 5. 상태를 변경한 후 200 OK 반환
+            return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.notFound().build();
+            // 6. 연결된 스케줄이 없으면 계약 삭제
+            contractRepository.deleteById(id);
+            return ResponseEntity.noContent().build(); // 삭제 완료 시 204 반환
         }
     }
+
 
     // Schedule 엔드포인트
 
@@ -120,6 +167,18 @@ public class EmploymentController {
     // 새로운 스케줄을 생성합니다
     @PostMapping("/schedules")
     public Schedule createSchedule(@RequestBody Schedule schedule) {
+
+        if (schedule.getContract() != null && schedule.getContract().getContractId() != null) {
+
+            Contract contract = contractRepository.findById(schedule.getContract().getContractId())
+                    .orElseThrow(() -> new IllegalArgumentException("EmploymentController createSchedule - Invalid contractId: " + schedule.getContract().getContractId()));
+            //contractId로 데이터베이스에서 Contract를 찾지 못했을 경우 예외를 발생
+
+            schedule.setContract(contract); // Contract 객체 설정
+        }
+
+        schedule.setStatus("T");
+
         return scheduleRepository.save(schedule);
     }
 
@@ -140,14 +199,62 @@ public class EmploymentController {
         }
     }
 
+
+    //삭제 대신 사용할 스케쥴 상태 비활성화
+//    @PutMapping("/schedules/{id}/deactivate")
+//    public ResponseEntity<Schedule> deactivateSchedule(@PathVariable Integer id) {
+//        Optional<Schedule> optionalSchedule = scheduleRepository.findById(id);
+//
+//        if (optionalSchedule.isPresent()) {
+//            Schedule schedule = optionalSchedule.get();
+//            schedule.setStatus("F"); // 상태를 비활성화로 변경
+//            Schedule updatedSchedule = scheduleRepository.save(schedule);
+//            return ResponseEntity.ok(updatedSchedule); // 변경된 스케줄 반환
+//        } else {
+//            return ResponseEntity.notFound().build(); // 스케줄을 찾지 못한 경우
+//        }
+//    }
+
+
+
+
     // ID를 통해 특정 스케줄을 삭제합니다
+//    @DeleteMapping("/schedules/{id}")
+//    public ResponseEntity<Void> deleteSchedule(@PathVariable Integer id) {
+//        if (scheduleRepository.existsById(id)) {
+//            scheduleRepository.deleteById(id);
+//            return ResponseEntity.noContent().build();
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+
     @DeleteMapping("/schedules/{id}")
-    public ResponseEntity<Void> deleteSchedule(@PathVariable Integer id) {
-        if (scheduleRepository.existsById(id)) {
-            scheduleRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteOrDeactivateSchedule(@PathVariable Integer id) {
+        Optional<Schedule> optionalSchedule = scheduleRepository.findById(id);
+
+        if (optionalSchedule.isPresent()) {
+            Schedule schedule = optionalSchedule.get();
+
+            // 출결 데이터가 있는지 확인
+            boolean hasAttendance = attendanceRepository.existsBySchedule_ScheduleId(schedule.getScheduleId());
+            boolean hasWorkChange = workChangeRepository.existsBySchedule_ScheduleId(schedule.getScheduleId());
+
+
+            if (hasAttendance || hasWorkChange) {
+                // 출결 또는 WorkChange 데이터가 있으면 상태를 "F"로 설정
+                schedule.setStatus("F");
+                scheduleRepository.save(schedule); // 데이터베이스에 상태 변경 저장
+                return ResponseEntity.ok().build(); // 성공 응답 반환
+            } else {
+                // 출결 데이터가 없으면 스케줄을 삭제
+                scheduleRepository.delete(schedule);
+                return ResponseEntity.noContent().build(); // 삭제 성공 응답 반환
+            }
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build(); // 스케줄을 찾을 수 없는 경우
         }
     }
+
+
 }
