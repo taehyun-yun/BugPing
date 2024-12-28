@@ -28,7 +28,7 @@
 
         <!-- 근무시간 입력 섹션 -->
         <section class="work-time-section">
-          <h3>근무시간 <span class="required">*</span></h3>
+          <h3>근무시간 <span class="required"></span></h3>
           <!-- 근무 시작과 끝 시간을 선택하는 입력 그룹 -->
           <div class="time-inputs">
             <!-- 근무 시작 시간 그룹 -->
@@ -61,7 +61,7 @@
                 <select v-model="endHour">
                   <option value="">선택</option>
                   <!-- 0시부터 23시까지 선택할 수 있는 옵션 -->
-                  <option v-for="h in 24" :key="`end-${h}`">
+                  <option v-for="h in 24" :key="`end-hour-${h}`">
                     {{ String(h - 1).padStart(2, '0') }}
                   </option>
                 </select>
@@ -87,21 +87,21 @@
           <!-- 휴식 시간 입력 필드: 시간과 분을 선택할 수 있습니다. -->
           <div class="break-time-input">
             <div class="select-wrapper">
-              <select v-model="breakHour">
+              <select v-model="breakTimeHour">
                 <option value="">선택</option>
-                <!-- 1시간부터 24시간까지 선택할 수 있는 옵션 -->
-                <option v-for="h in 24" :key="`break-hour-${h}`" :value="h">
-                  {{ String(h-1).padStart(2, '0') }}
+                <!-- 0시간부터 23시간까지 선택할 수 있는 옵션 -->
+                <option v-for="h in 24" :key="`break-hour-${h}`" :value="h - 1">
+                  {{ String(h - 1).padStart(2, '0') }}
                 </option>
               </select>
             </div>
             <span>시간</span>
             <div class="select-wrapper">
-              <select v-model="breakMinute">
+              <select v-model="breakTimeMinute">
                 <option value="">선택</option>
-                <!-- 1분부터 60분까지 선택할 수 있는 옵션 -->
-                <option v-for="m in 60" :key="`break-minute-${m}`" :value="m">
-                  {{ String(m-1).padStart(2, '0') }}
+                <!-- 0분부터 59분까지 선택할 수 있는 옵션 -->
+                <option v-for="m in 60" :key="`break-minute-${m}`" :value="m - 1">
+                  {{ String(m - 1).padStart(2, '0') }}
                 </option>
               </select>
             </div>
@@ -112,8 +112,15 @@
 
       <!-- 모달 푸터: 취소 및 확인 버튼 -->
       <div class="modal-footer">
-        <button class="cancel-button" @click="closeModal">취소</button>
-        <button class="confirm-button" @click="handleConfirm">확인</button>
+        <!-- 메시지 컨테이너 -->
+        <div class="message-container" v-if="message" :class="messageType">
+          {{ message }}
+        </div>
+        <!-- 버튼 그룹 -->
+        <div class="button-group">
+          <button class="cancel-button" @click="closeModal">취소</button>
+          <button class="confirm-button" @click="handleConfirm">확인</button>
+        </div>
       </div>
     </div>
   </div>
@@ -140,6 +147,9 @@ const props = defineProps({
   }
 })
 
+console.log('Initial schedule:', props.schedule); // 🔵 초기 스케줄 정보 확인
+
+
 // 부모 컴포넌트로 이벤트를 보낼 때 사용
 const emit = defineEmits(['close', 'confirm']) // 'close'와 'confirm' 이벤트 선언
 
@@ -149,40 +159,44 @@ const startHour = ref('') // 근무 시작 시간 (시)
 const startMinute = ref('') // 근무 시작 시간 (분)
 const endHour = ref('') // 근무 종료 시간 (시)
 const endMinute = ref('') // 근무 종료 시간 (분)
-const breakHour = ref(0) // 휴식 시간 (시간, 기본값: 0)
-const breakMinute = ref(0) // 휴식 시간 (분, 기본값: 0)
+const breakTimeHour = ref('') // 휴식 시간 (시간)
+const breakTimeMinute = ref('') // 휴식 시간 (분)
+
+const message = ref('');
+const messageType = ref('');
+
 
 // 스케줄 정보가 변경될 때마다 모달 내부 상태를 업데이트
 watch(
-  () => props.schedule, // 감시할 대상: 부모로부터 전달된 스케줄 정보
-  (newSchedule) => { // 스케줄 정보가 변경되었을 때 실행되는 콜백 함수
-    if (newSchedule) { // 새로운 스케줄 정보가 존재하면
-      selectedDay.value = newSchedule.day || ''; // 선택된 요일을 업데이트
-      if (newSchedule.officialStart) { // 근무 시작 시간이 존재하면
-        const [startH, startM] = newSchedule.officialStart.split(':'); // 시와 분을 분리
-        startHour.value = startH; // 시작 시 업데이트
-        startMinute.value = startM; // 시작 분 업데이트
-      }
-      if (newSchedule.officialEnd) { // 근무 종료 시간이 존재하면
-        const [endH, endM] = newSchedule.officialEnd.split(':'); // 시와 분을 분리
-        endHour.value = endH; // 종료 시 업데이트
-        endMinute.value = endM; // 종료 분 업데이트
-      }
-      const breakTime = newSchedule.breakMinute ?? 0; // 휴식 시간이 null 또는 undefined이면 0으로 설정
-      breakHour.value = Math.floor(breakTime / 60); // 휴식 시간을 시간 단위로 변환
-      breakMinute.value = breakTime % 60; // 휴식 시간을 분 단위로 변환
-    } else { // 새로운 스케줄 정보가 없으면 (초기화)
-      selectedDay.value = ''; // 선택된 요일 초기화
-      startHour.value = ''; // 시작 시 초기화
-      startMinute.value = ''; // 시작 분 초기화
-      endHour.value = ''; // 종료 시 초기화
-      endMinute.value = ''; // 종료 분 초기화
-      breakHour.value = 0; // 휴식 시간 (시간) 초기화
-      breakMinute.value = 0; // 휴식 시간 (분) 초기화
+  () => props.schedule,
+  (newSchedule) => {
+    console.log('ScheduleModal - Received schedule:', newSchedule);
+
+    if (newSchedule) {
+      selectedDay.value = newSchedule.day || '';
+      const [startH, startM] = newSchedule.officialStart?.split(':') || ['', ''];
+      startHour.value = startH;
+      startMinute.value = startM;
+
+      const [endH, endM] = newSchedule.officialEnd?.split(':') || ['', ''];
+      endHour.value = endH;
+      endMinute.value = endM;
+
+      const breakTime = newSchedule.breakMinute ?? 0;
+      breakTimeHour.value = Math.floor(breakTime / 60);
+      breakTimeMinute.value = breakTime % 60;
+
+      // 디버깅용 로그 추가
+      console.log('Calculated Break Time:', {
+        breakMinute: breakTime,
+        breakTimeHour: breakTimeHour.value,
+        breakTimeMinute: breakTimeMinute.value,
+      });   
     }
   },
-  { immediate: true } // 컴포넌트가 처음 로드될 때도 실행
-)
+  { immediate: true }
+);
+
 
 // 모달을 닫는 함수: 부모 컴포넌트로 'close' 이벤트를 보냄
 const closeModal = () => {
@@ -191,22 +205,39 @@ const closeModal = () => {
 
 // 확인 버튼을 클릭했을 때 실행되는 함수: 입력된 스케줄 정보를 부모 컴포넌트로 전달
 const handleConfirm = () => {
+
+  // 유효성 검사: 요일 선택 여부 확인
+  if (!selectedDay.value) {
+  showMessage('요일을 선택해주세요.', 'error');
+  return;
+}
+
   // 휴식 시간을 총 분으로 계산
-  const totalBreakMinutes = (breakHour.value || 0) * 60 + (breakMinute.value || 0)
+  const totalBreakTimeMinutes = (breakTimeHour.value || 0) * 60 + (breakTimeMinute.value || 0)
 
   // 입력된 스케줄 데이터를 객체로 생성
   const scheduleData = {
-    scheduleId: props.schedule.scheduleId || null, // 기존 스케줄 ID가 있으면 포함, 없으면 null
+    ...props.schedule, // 기존 데이터 유지 (temporaryId 포함) // temporaryId 포함아님 현재 코드 수정함
+    // scheduleId: props.schedule.scheduleId || null, // 기존 스케줄 ID가 있으면 포함, 없으면 null
     day: selectedDay.value, // 선택된 요일
-    officialStart: startHour.value && startMinute.value ? `${startHour.value}:${startMinute.value}` : '', // 근무 시작 시간
-    officialEnd: endHour.value && endMinute.value ? `${endHour.value}:${endMinute.value}` : '', // 근무 종료 시간
-    breakMinute: totalBreakMinutes // 휴식 시간 (총 분)
+    officialStart: `${startHour.value || '00'}:${startMinute.value || '00'}`,
+    officialEnd: `${endHour.value || '00'}:${endMinute.value || '00'}`,
+    breakMinute: totalBreakTimeMinutes,
   }
 
   // 부모 컴포넌트로 'confirm' 이벤트와 스케줄 데이터를 전달
   emit('confirm', scheduleData)
   closeModal() // 모달을 닫음
 }
+
+const showMessage = (msg, type = 'error') => {
+  message.value = msg;
+  messageType.value = type;
+  setTimeout(() => {
+    message.value = '';
+    messageType.value = '';
+  }, 3000);
+};
 
 // 요일 목록 정의: 요일의 레이블과 값을 포함한 배열
 const weekdays = [
@@ -496,14 +527,65 @@ textarea {
   padding: 20px;
   /* 내부 여백 */
   display: flex;
+
   /* 플렉스 박스 레이아웃 사용 */
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
+
+
+  justify-content: space-between; /* 메시지는 왼쪽, 버튼은 오른쪽 */
+  align-items: center; /* 수직 가운데 정렬 */
+
   /* 오른쪽으로 요소 정렬 */
   gap: 12px;
   /* 요소 간 간격 */
   border-top: 1px solid #eee;
   /* 상단 테두리 */
 }
+
+.modal-footer {
+  padding: 20px;
+  display: flex;
+  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: space-between; /* 메시지는 왼쪽, 버튼은 오른쪽 */
+  gap: 12px;
+  border-top: 1px solid #eee;
+  position: relative; /* 버튼 위치 고정을 위한 설정 */
+  min-height: 40px; /* footer 자체의 최소 높이 설정 */
+}
+
+/* 메시지 컨테이너 스타일 */
+.message-container {
+  font-size: 14px;
+  flex: 1; /* 버튼과 균형 유지 */
+  min-height: 18px; /* 메시지가 없어도 일정한 높이 유지 */
+  visibility: hidden; /* 메시지가 없을 때 공간만 차지 */
+  display: block; /* block으로 강제 고정 */
+}
+
+.message-container.error {
+  visibility: visible; /* 에러 메시지가 있을 때 보이도록 설정 */
+  color: red;
+  font-weight: bold;
+}
+
+.message-container.success {
+  visibility: visible; /* 성공 메시지가 있을 때 보이도록 설정 */
+  color: green;
+  font-weight: bold;
+}
+
+/* 버튼 그룹 스타일 */
+.button-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end; /* 항상 오른쪽 정렬 */
+  flex-shrink: 0; /* 메시지와의 균형 유지 */
+  position: absolute; /* 버튼 위치 고정을 위해 사용 */
+  right: 20px; /* 모달 오른쪽으로부터 20px */
+}
+
+
 
 /* 취소 및 확인 버튼 기본 스타일 */
 .cancel-button,
@@ -551,23 +633,18 @@ textarea {
 }
 
 /* 반응형 스타일: 화면 너비가 480px 이하일 때 적용 */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   .modal-content {
     width: 100%;
-    /* 너비 100% */
     height: 100%;
-    /* 높이 100% */
     max-height: 100vh;
-    /* 최대 높이 화면의 100% */
     border-radius: 0;
-    /* 모서리 없애기 */
   }
 
   .weekday-buttons {
     flex-wrap: wrap;
-    /* 버튼을 여러 줄로 감싸기 */
     justify-content: center;
-    /* 가운데 정렬 */
   }
-}
+
+} */
 </style>

@@ -40,6 +40,7 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
 
 //---------------------ES----------------------
 
+    //계약 ID로 계약 데이터를 조회
     @Query("SELECT DISTINCT c FROM Contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
@@ -47,6 +48,7 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
             "WHERE c.id = :contractId")
     Contract findContractWithWorkAndUser(@Param("contractId") Integer contractId);
 
+    //회사별 아닌거 일단 안씀
     @Query("SELECT DISTINCT c FROM Contract c " +
             "JOIN FETCH c.work w " +
             "JOIN FETCH w.user u " +
@@ -54,13 +56,14 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
     List<Contract> findAllContractsWithWorkAndUser();
 
 
-    // 특정 회사 ID로 계약 조회
+    // 특정 회사 ID에 속한 모든 활성화된 계약 데이터를 조회. 계약 시작이 오래된 순으로
     @Query("SELECT c FROM Contract c " +
             "JOIN c.work w " +
             "JOIN w.company cp " +
-            "WHERE cp.companyId = :companyId " +
-            "ORDER BY c.contractStart DESC")
-    List<Contract> findAllContractsByCompanyId(@Param("companyId") Integer companyId);
+            "WHERE cp.companyId = :companyId AND c.status = 'T' " +
+            "ORDER BY c.contractStart ASC")
+    List<Contract> findAllActiveContractsByCompanyId(@Param("companyId") Integer companyId);
+
 
 
 
