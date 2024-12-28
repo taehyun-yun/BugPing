@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -22,62 +21,51 @@ public class WorkChangeService {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    public Optional<WorkChange> getLatestWorkChange(Integer scheduleId, LocalDate changeDate) {
-        return workChangeRepository.findLatestWorkChange(scheduleId, changeDate);
-    }
-
     public void updateWorkChange(Integer originalScheduleId, LocalDate originalDate, Integer newScheduleId, LocalDate newDate) {
-        // 기존 스케줄 처리
-        Schedule originalSchedule = scheduleRepository.findById(originalScheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("기존 스케줄이 존재하지 않습니다."));
-        handleWorkChange(originalSchedule, originalDate, "OUT");
+        // 1. 기존 날짜 OUT으로 처리
+        handleWorkChange(originalScheduleId, originalDate, "OUT");
 
-        // 새로운 스케줄 처리
-        Schedule newSchedule = scheduleRepository.findById(newScheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("새로운 스케줄이 존재하지 않습니다."));
-        handleWorkChange(newSchedule, newDate, "IN");
+        // 2. 새로운 날짜 IN으로 처리
+        handleWorkChange(newScheduleId, newDate, "IN");
     }
 
-    @Transactional
-    private void handleWorkChange(Schedule schedule, LocalDate date, String inOut) {
-        // 기존 WorkChange 확인
-        Optional<WorkChange> existingChange = workChangeRepository.findBySchedule_ScheduleIdAndChangeDateAndInOut(
-                schedule.getScheduleId(), date, inOut);
+    private void handleWorkChange(Integer scheduleId, LocalDate date, String inOut) {
+        // 기존 데이터 조회
+        List<WorkChange> existingChanges = workChangeRepository.findBySchedule_ScheduleIdAndChangeDate(scheduleId, date);
 
-        if (existingChange.isPresent()) {
-            // 기존 데이터 업데이트
-            WorkChange workChange = existingChange.get();
-            workChange.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
-            workChange.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
-            workChangeRepository.save(workChange);
-            System.out.println("기존 WorkChange 업데이트: " + workChange);
-        } else {
-            // 새로운 데이터 생성
-            WorkChange newWorkChange = new WorkChange();
-            newWorkChange.setSchedule(schedule);
-            newWorkChange.setChangeDate(date);
-            newWorkChange.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
-            newWorkChange.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
-            newWorkChange.setInOut(inOut);
-            newWorkChange.setPermit(true);
-            newWorkChange.setStatus("변경됨");
-            workChangeRepository.save(newWorkChange);
-            System.out.println("새로운 WorkChange 추가: " + newWorkChange);
-        }
-
-        // IN과 OUT 관계 검증
-        if ("OUT".equals(inOut)) {
-            boolean hasIn = workChangeRepository.findBySchedule_ScheduleIdAndChangeDateAndInOut(
-                    schedule.getScheduleId(), date, "IN").isPresent();
-            if (!hasIn) {
-                throw new IllegalStateException("OUT 데이터를 추가하려면 IN 데이터가 필요합니다.");
-            }
-        } else if ("IN".equals(inOut)) {
-            boolean hasOut = workChangeRepository.findBySchedule_ScheduleIdAndChangeDateAndInOut(
-                    schedule.getScheduleId(), date, "OUT").isPresent();
-            if (!hasOut) {
-                throw new IllegalStateException("IN 데이터를 추가하려면 OUT 데이터가 필요합니다.");
+        // 기존 데이터 삭제 또는 상태 업데이트
+        for (WorkChange change : existingChanges) {
+            if (!change.getInOut().equals(inOut)) {
+                // IN/OUT 상태가 다르면 삭제
+                workChangeRepository.delete(change);
+                System.out.println("삭제된 WorkChange 데이터: " + change);
+            } else {
+                // 동일한 상태(IN/OUT)이면 업데이트
+                change.setChangeStartTime(date.atTime(change.getSchedule().getOfficialStart()));
+                change.setChangeEndTime(date.atTime(change.getSchedule().getOfficialEnd()));
+                change.setStatus(inOut.equals("IN") ? "입력됨" : "출력됨");
+                workChangeRepository.save(change);
+                System.out.println("업데이트된 WorkChange 데이터: " + change);
+                return; // 동일한 데이터가 있으면 종료
             }
         }
+
+        // 새로운 WorkChange 데이터 생성
+        createNewWorkChange(scheduleId, date, inOut);
+    }
+
+    private void createNewWorkChange(Integer scheduleId, LocalDate date, String inOut) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("스케줄을 찾을 수 없습니다."));
+        WorkChange newWorkChange = new WorkChange();
+        newWorkChange.setSchedule(schedule);
+        newWorkChange.setChangeDate(date);
+        newWorkChange.setInOut(inOut);
+        newWorkChange.setPermit(true);
+        newWorkChange.setStatus(inOut.equals("IN") ? "입력됨" : "출력됨");
+        newWorkChange.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
+        newWorkChange.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
+        workChangeRepository.save(newWorkChange);
+        System.out.println("새로운 WorkChange 생성 완료: " + newWorkChange);
     }
 }

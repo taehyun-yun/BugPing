@@ -17,7 +17,7 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
     List<Work> findByCompany_CompanyId(Integer companyId);
 
     // userId로 company 조회할때 사용
-    Work findByUser_UserId(String userId);
+    List<Work> findByUser_UserId(String userId);
 
 //--------------------------Joonho----------------------------
     //재직중인지 아닌지
