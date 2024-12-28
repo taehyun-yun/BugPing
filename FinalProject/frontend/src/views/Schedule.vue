@@ -36,6 +36,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useUserStore } from '@/stores/userStore';
 
 // HSL 색상에서 Hue와 Lightness를 추출하는 함수
 const extractHue = (hsl) => {
@@ -83,10 +84,13 @@ const getEmployeeColor = (name) => {
 
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
-const selectedCompanyId = ref(''); // 회사 ID
 const userRole = ref(''); // 사용자 역할 
 const isUserView = ref(true); // 초기 상태: 내 근무 보기
 const scheduleItems = ref([]);
+
+// pinia Store에서 companyId 가져오기
+const userStore = useUserStore();
+const selectedCompanyId = computed(()=> userStore.company?.companyId);
 
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
@@ -185,6 +189,14 @@ const renderEventContent = (info) => {
     }
 };
 
+// 회사 ID 변경 시 스케줄 새로고침
+watch(selectedCompanyId, () => {
+    console.log('회사 ID 변경 :', selectedCompanyId.value);
+    if (calendarRef.value) {
+        calendarRef.value.getApi().refetchEvents();
+    }
+});
+
 // FullCalendar 옵션
 const calendarOptions = ref({
     ...commonOptions,
@@ -207,6 +219,7 @@ const calendarOptions = ref({
                     start: startFormatted,
                     end: endFormatted,
                     viewCompanySchedule: !isUserView.value,
+                    companyId: selectedCompanyId.value,
                 },
             });
 
@@ -225,10 +238,9 @@ const calendarOptions = ref({
 
             const [serverResult, holidayResult] = await Promise.all([serverResponse, holidaysResponse]);
 
-            const { userId, role, companyId, schedules } = serverResult.data;
+            const { userId, role, schedules } = serverResult.data;
             selectedUserId.value = userId;
             userRole.value = role;
-            selectedCompanyId.value = companyId;
 
             scheduleItems.value = schedules.map((event) => ({
                 id: event.scheduleId, // FullCalendar 이벤트 ID 설정
@@ -316,7 +328,6 @@ const calendarOptions = ref({
 });
 
 const calendarRef = ref(null);
-
 
 watch(buttonText, () => {
     const calendarApi = calendarRef.value.getApi();

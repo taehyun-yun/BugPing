@@ -28,93 +28,69 @@ public class ScheduleService {
     private WorkChangeRepository workChangeRepository;
 
     @Autowired
-    private WorkChangeService workChangeService; // WorkChangeService 추가
+    private WorkChangeService workChangeService;
 
-    // 특정 사용자 스케줄 조회 (기간 필터링 추가)
+    // userId로 사용자가 속한 모든 companyId 조회 (단일/복수 모두 처리)
+    public List<Integer> getCompanyIdsByUserId(String userId) {
+        List<Work> userWorks = workRepository.findByUser_UserId(userId);
+        return userWorks.stream()
+                .map(work -> work.getCompany().getCompanyId())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    // 특정 사용자 스케줄 조회
     public List<Map<String, Object>> getUserSchedule(String userId, LocalDate start, LocalDate end) {
         List<Schedule> schedules = scheduleRepository.findByContract_Work_User_UserId(userId);
         return generateScheduleList(schedules, start, end);
     }
 
-    // 회사의 모든 사용자 스케줄 조회 (기간 필터링 추가)
+    // 회사의 모든 사용자 스케줄 조회
     public List<Map<String, Object>> getCompanySchedule(Integer companyId, LocalDate start, LocalDate end) {
         List<Schedule> companySchedule = scheduleRepository.findByContract_Work_Company_CompanyId(companyId);
         return generateScheduleList(companySchedule, start, end);
     }
 
-    // 스케줄 데이터를 FullCalendar에 맞게 변환 (WorkChange 반영 추가)
+    // 스케줄 데이터를 FullCalendar에 맞게 변환
     private List<Map<String, Object>> generateScheduleList(List<Schedule> schedules, LocalDate start, LocalDate end) {
         List<Map<String, Object>> scheduleList = new ArrayList<>();
+        List<Integer> scheduleIds = schedules.stream().map(Schedule::getScheduleId).toList();
 
-        // 스케줄 ID 리스트 추출
-        List<Integer> scheduleIds = schedules.stream()
-                .map(Schedule::getScheduleId)
-                .toList();
-
-        // WorkChange 미리 조회
+        // WorkChange 데이터 로드
         List<WorkChange> workChanges = workChangeRepository.findAllByScheduleIdsAndDateRange(scheduleIds, start, end);
-
-        // WorkChange를 Map으로 정리 (key: scheduleId+changeDate, value: WorkChange 리스트)
         Map<String, List<WorkChange>> workChangeMap = workChanges.stream()
                 .collect(Collectors.groupingBy(wc -> wc.getSchedule().getScheduleId() + "_" + wc.getChangeDate()));
 
         for (Schedule schedule : schedules) {
-            if (schedule.getContract() == null || schedule.getContract().getContractStart() == null ||
-                    schedule.getContract().getContractEnd() == null) {
-                continue; // 데이터가 누락된 스케줄은 무시
-            }
+            LocalDate contractStart = schedule.getContract().getContractStart().toLocalDate();
+            LocalDate contractEnd = schedule.getContract().getContractEnd().toLocalDate();
+            LocalDate currentDate = contractStart;
 
-            LocalDate contractStartDate = schedule.getContract().getContractStart().toLocalDate();
-            LocalDate contractEndDate = schedule.getContract().getContractEnd().toLocalDate();
-
-            // 현재 날짜가 Contract 범위에 포함되지 않으면 제외
-            if (start != null && end != null) {
-                if (contractEndDate.isBefore(start) || contractStartDate.isAfter(end)) {
-                    System.out.println("Contract 범위에 포함되지 않음 - scheduleId: " + schedule.getScheduleId());
-                    continue;
-                }
-            }
-
-            LocalDate currentDate = contractStartDate;
-
-            while (!currentDate.isAfter(contractEndDate)) {
+            while (!currentDate.isAfter(contractEnd)) {
                 if ((start == null || !currentDate.isBefore(start)) &&
                         (end == null || !currentDate.isAfter(end))) {
-                    System.out.println("날짜 확인 : " + currentDate);
 
-                    // WorkChangeService를 사용해 변경된 WorkChange 조회
-                    Optional<WorkChange> workChangeOptional = workChangeService.getLatestWorkChange(
-                            schedule.getScheduleId(), currentDate
-                    );
+                    // WorkChange 데이터 확인
+                    String key = schedule.getScheduleId() + "_" + currentDate;
+                    List<WorkChange> changes = workChangeMap.get(key);
 
-                    // WorkChange가 있는 경우 처리
-                    if (workChangeOptional.isPresent()) {
-                        WorkChange workChange = workChangeOptional.get();
-                        String inOut = workChange.getInOut().trim().toUpperCase();
-
-                        if ("OUT".equals(inOut)) {
-                            System.out.println("OUT 상태로 제외: " + currentDate);
-                            currentDate = currentDate.plusDays(1);
-                            continue;
+                    if (changes != null && !changes.isEmpty()) {
+                        for (WorkChange change : changes) {
+                            if ("OUT".equals(change.getInOut())) {
+                                System.out.println("OUT 상태, 표시하지 않음: " + currentDate);
+                                continue;
+                            } else if ("IN".equals(change.getInOut())) {
+                                scheduleList.add(createScheduleMap(schedule, change.getChangeStartTime(),
+                                        change.getChangeEndTime(), "변경된 근무 일정"));
+                                continue;
+                            }
                         }
-
-                        if ("IN".equals(inOut)) {
-                            System.out.println("IN 상태 확인, 스케줄 추가 준비: " + currentDate);
-                            Map<String, Object> scheduleMap = createScheduleMap(
-                                    schedule, workChange.getChangeStartTime(), workChange.getChangeEndTime(), "변경된 근무 일정");
-                            scheduleList.add(scheduleMap);
-                            currentDate = currentDate.plusDays(1);
-                            continue;
-                        }
-                    }
-
-                    // WorkChange가 없으면 기존 스케줄 데이터를 사용
-                    if (schedule.getDay() == currentDate.getDayOfWeek().getValue()) {
-                        Map<String, Object> scheduleMap = createScheduleMap(schedule,
+                    } else if (schedule.getDay() == currentDate.getDayOfWeek().getValue()) {
+                        // 기본 스케줄 추가
+                        scheduleList.add(createScheduleMap(schedule,
                                 currentDate.atTime(schedule.getOfficialStart()),
                                 currentDate.atTime(schedule.getOfficialEnd()),
-                                "기존 근무 일정");
-                        scheduleList.add(scheduleMap);
+                                "기존 근무 일정"));
                     }
                 }
                 currentDate = currentDate.plusDays(1);
@@ -123,7 +99,7 @@ public class ScheduleService {
         return scheduleList;
     }
 
-    // 스케줄 맵 생성 메서드
+    // 스케줄 맵 생성
     private Map<String, Object> createScheduleMap(Schedule schedule, LocalDateTime start, LocalDateTime end, String description) {
         Map<String, Object> scheduleMap = new HashMap<>();
         scheduleMap.put("scheduleId", schedule.getScheduleId());
@@ -132,42 +108,54 @@ public class ScheduleService {
         scheduleMap.put("end", end.toString());
         scheduleMap.put("description", description);
 
-        // 휴게시간 계산 로직
         long totalMinutes = ChronoUnit.MINUTES.between(start, end);
-        long breakTime = 0;
+        long breakTime = totalMinutes > 8 * 60 ? 60 : totalMinutes > 4 * 60 ? 30 : 0;
 
-        if (totalMinutes > 8 * 60) {
-            breakTime = 60; // 8시간 초과
-        } else if (totalMinutes > 4 * 60) {
-            breakTime = 30; // 4시간 초과
-        }
-
-        long totalWorkMinutes = totalMinutes - breakTime; // 총 근무시간
-
-        // 추가 데이터 삽입
-        scheduleMap.put("breakTime", breakTime); // 휴게시간 (분)
-        scheduleMap.put("totalWorkMinutes", totalWorkMinutes); // 총 근무시간 (분)
+        scheduleMap.put("breakTime", breakTime);
+        scheduleMap.put("totalWorkMinutes", totalMinutes - breakTime);
 
         return scheduleMap;
     }
 
-    // userId로 work의 companyId 조회
+    /*// userId로 work의 companyId 조회
     public Integer getCompanyIdByUserId(String userId) {
         Work work = workRepository.findByUser_UserId(userId);
         return work != null ? work.getCompany().getCompanyId() : null;
-    }
+    }*/
 
     // 사용자 역할에 대한 스케줄 조회
-    public List<Map<String, Object>> getSchedulesByRole(String userId, String role, LocalDate start, LocalDate end, boolean viewCompanySchedule) {
-        if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
-            Integer companyId = getCompanyIdByUserId(userId);
-            if (companyId != null) {
-                return getCompanySchedule(companyId, start, end);
+    public List<Map<String, Object>> getSchedulesByRole(
+            String userId,
+            String role,
+            LocalDate start,
+            LocalDate end,
+            boolean viewCompanySchedule,
+            Integer selectedCompanyId
+    ) {
+        // 사용자가 속한 모든 회사 ID 조회
+        List<Integer> companyIds = getCompanyIdsByUserId(userId);
+
+        // 1. 특정 회사 ID로 스케줄 조회
+        if (selectedCompanyId != null) {
+            if (companyIds.contains(selectedCompanyId)) {
+                // 선택된 회사 ID가 사용자 회사 목록에 포함된 경우
+                return getCompanySchedule(selectedCompanyId, start, end);
             } else {
-                throw new IllegalStateException("회사 정보를 찾을 수 없습니다.");
+                throw new IllegalArgumentException("사용자가 속하지 않은 회사입니다. 회사 ID: " + selectedCompanyId);
             }
-        } else {
-            return getUserSchedule(userId, start, end);
         }
+
+        // 2. 회사 전체 스케줄 조회 (고용주이거나 회사 스케줄 보기가 활성화된 경우)
+        if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
+            if (!companyIds.isEmpty()) {
+                // 사용자의 첫 번째 회사 ID로 조회
+                return getCompanySchedule(companyIds.get(0), start, end);
+            } else {
+                throw new IllegalStateException("사용자가 속한 회사가 없습니다.");
+            }
+        }
+
+        // 3. 사용자 개인 스케줄 조회
+        return getUserSchedule(userId, start, end);
     }
 }

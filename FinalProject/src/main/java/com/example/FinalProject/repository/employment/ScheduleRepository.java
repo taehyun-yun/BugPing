@@ -20,7 +20,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     // Contract와 관련된 모든 일정 조회
     List<Schedule> findByContract(Contract contract);
 
-    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.contract.work.company.companyId = :companyId")
+
     List<Schedule> findByCompanyId(@Param("companyId") Integer companyId);
 
     @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
@@ -57,9 +59,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "JOIN FETCH w.company cp ")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 
-    public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer> {
-        List<WorkChange> findByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
-    }
 // ====================================== TH =============================================================
 //    // 금일 출근자 카운트
 //    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.day = :dayOfWeek AND s.status = 'active'")
