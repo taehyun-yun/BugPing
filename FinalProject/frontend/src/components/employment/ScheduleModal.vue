@@ -112,8 +112,15 @@
 
       <!-- 모달 푸터: 취소 및 확인 버튼 -->
       <div class="modal-footer">
-        <button class="cancel-button" @click="closeModal">취소</button>
-        <button class="confirm-button" @click="handleConfirm">확인</button>
+        <!-- 메시지 컨테이너 -->
+        <div class="message-container" v-if="message" :class="messageType">
+          {{ message }}
+        </div>
+        <!-- 버튼 그룹 -->
+        <div class="button-group">
+          <button class="cancel-button" @click="closeModal">취소</button>
+          <button class="confirm-button" @click="handleConfirm">확인</button>
+        </div>
       </div>
     </div>
   </div>
@@ -155,6 +162,10 @@ const endMinute = ref('') // 근무 종료 시간 (분)
 const breakTimeHour = ref('') // 휴식 시간 (시간)
 const breakTimeMinute = ref('') // 휴식 시간 (분)
 
+const message = ref('');
+const messageType = ref('');
+
+
 // 스케줄 정보가 변경될 때마다 모달 내부 상태를 업데이트
 watch(
   () => props.schedule,
@@ -194,6 +205,13 @@ const closeModal = () => {
 
 // 확인 버튼을 클릭했을 때 실행되는 함수: 입력된 스케줄 정보를 부모 컴포넌트로 전달
 const handleConfirm = () => {
+
+  // 유효성 검사: 요일 선택 여부 확인
+  if (!selectedDay.value) {
+  showMessage('요일을 선택해주세요.', 'error');
+  return;
+}
+
   // 휴식 시간을 총 분으로 계산
   const totalBreakTimeMinutes = (breakTimeHour.value || 0) * 60 + (breakTimeMinute.value || 0)
 
@@ -211,6 +229,15 @@ const handleConfirm = () => {
   emit('confirm', scheduleData)
   closeModal() // 모달을 닫음
 }
+
+const showMessage = (msg, type = 'error') => {
+  message.value = msg;
+  messageType.value = type;
+  setTimeout(() => {
+    message.value = '';
+    messageType.value = '';
+  }, 3000);
+};
 
 // 요일 목록 정의: 요일의 레이블과 값을 포함한 배열
 const weekdays = [
@@ -500,14 +527,65 @@ textarea {
   padding: 20px;
   /* 내부 여백 */
   display: flex;
+
   /* 플렉스 박스 레이아웃 사용 */
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
+
+
+  justify-content: space-between; /* 메시지는 왼쪽, 버튼은 오른쪽 */
+  align-items: center; /* 수직 가운데 정렬 */
+
   /* 오른쪽으로 요소 정렬 */
   gap: 12px;
   /* 요소 간 간격 */
   border-top: 1px solid #eee;
   /* 상단 테두리 */
 }
+
+.modal-footer {
+  padding: 20px;
+  display: flex;
+  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: space-between; /* 메시지는 왼쪽, 버튼은 오른쪽 */
+  gap: 12px;
+  border-top: 1px solid #eee;
+  position: relative; /* 버튼 위치 고정을 위한 설정 */
+  min-height: 40px; /* footer 자체의 최소 높이 설정 */
+}
+
+/* 메시지 컨테이너 스타일 */
+.message-container {
+  font-size: 14px;
+  flex: 1; /* 버튼과 균형 유지 */
+  min-height: 18px; /* 메시지가 없어도 일정한 높이 유지 */
+  visibility: hidden; /* 메시지가 없을 때 공간만 차지 */
+  display: block; /* block으로 강제 고정 */
+}
+
+.message-container.error {
+  visibility: visible; /* 에러 메시지가 있을 때 보이도록 설정 */
+  color: red;
+  font-weight: bold;
+}
+
+.message-container.success {
+  visibility: visible; /* 성공 메시지가 있을 때 보이도록 설정 */
+  color: green;
+  font-weight: bold;
+}
+
+/* 버튼 그룹 스타일 */
+.button-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end; /* 항상 오른쪽 정렬 */
+  flex-shrink: 0; /* 메시지와의 균형 유지 */
+  position: absolute; /* 버튼 위치 고정을 위해 사용 */
+  right: 20px; /* 모달 오른쪽으로부터 20px */
+}
+
+
 
 /* 취소 및 확인 버튼 기본 스타일 */
 .cancel-button,
@@ -555,23 +633,18 @@ textarea {
 }
 
 /* 반응형 스타일: 화면 너비가 480px 이하일 때 적용 */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   .modal-content {
     width: 100%;
-    /* 너비 100% */
     height: 100%;
-    /* 높이 100% */
     max-height: 100vh;
-    /* 최대 높이 화면의 100% */
     border-radius: 0;
-    /* 모서리 없애기 */
   }
 
   .weekday-buttons {
     flex-wrap: wrap;
-    /* 버튼을 여러 줄로 감싸기 */
     justify-content: center;
-    /* 가운데 정렬 */
   }
-}
+
+} */
 </style>
