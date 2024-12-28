@@ -117,12 +117,6 @@ public class ScheduleService {
         return scheduleMap;
     }
 
-    /*// userId로 work의 companyId 조회
-    public Integer getCompanyIdByUserId(String userId) {
-        Work work = workRepository.findByUser_UserId(userId);
-        return work != null ? work.getCompany().getCompanyId() : null;
-    }*/
-
     // 사용자 역할에 대한 스케줄 조회
     public List<Map<String, Object>> getSchedulesByRole(
             String userId,

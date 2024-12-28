@@ -90,7 +90,8 @@ const scheduleItems = ref([]);
 
 // pinia Store에서 companyId 가져오기
 const userStore = useUserStore();
-const selectedCompanyId = computed(()=> userStore.company?.companyId);
+const selectedCompanyId = ref(userStore.company.companyId);
+
 
 // 근무자 이름 리스트 생성
 const employeeNames = computed(() => {
@@ -189,13 +190,6 @@ const renderEventContent = (info) => {
     }
 };
 
-// 회사 ID 변경 시 스케줄 새로고침
-watch(selectedCompanyId, () => {
-    console.log('회사 ID 변경 :', selectedCompanyId.value);
-    if (calendarRef.value) {
-        calendarRef.value.getApi().refetchEvents();
-    }
-});
 
 // FullCalendar 옵션
 const calendarOptions = ref({
@@ -212,6 +206,7 @@ const calendarOptions = ref({
     },
     events: async (fetchInfo, successCallback, failureCallback) => {
         try {
+            console.log("FullCalendar 요청 시 companyId:", selectedCompanyId.value); // companyid 확ㅇ인
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
             const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
@@ -247,6 +242,7 @@ const calendarOptions = ref({
                 title: event.title,
                 start: event.start,
                 end: event.end,
+                editable: role == 'ROLE_EMPLOYER',   
                 color: getEmployeeColor(event.title),
                 extendedProps: {
                     originalScheduleId: event.scheduleId, // 원래 스케줄 ID
@@ -280,7 +276,7 @@ const calendarOptions = ref({
             failureCallback(error);
         }
     },
-    editable: true,
+
     selectable: true,
     eventColor: '#3788d8',
     eventContent: renderEventContent,
@@ -290,6 +286,7 @@ const calendarOptions = ref({
     // 드래그 앤 드롭 이벤트 추가
     eventDrop: async (info) => {
         try {
+
             const { event } = info;
 
             // UTC -> KST 변환 함수
@@ -314,7 +311,6 @@ const calendarOptions = ref({
 
             // 서버로 변경 요청 전송
             await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
-                withCredentials: true, // 필요시 쿠키 포함
             });
 
             calendarRef.value.getApi().refetchEvents(); // FullCalendar 이벤트 새로고침

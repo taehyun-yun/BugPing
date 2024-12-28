@@ -23,12 +23,13 @@ public class ScheduleController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(required = false, defaultValue = "false") boolean viewCompanySchedule,
-            @RequestParam(required = false) Integer selectedCompanyId // 선택된 회사 ID
+            @RequestParam(required = false) Integer companyId // 선택된 회사 ID
     ) {
         try {
             // 현재 사용자 ID 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userId = authentication.getName();
+
 
             // 사용자 역할 확인
             boolean isEmployer = authentication.getAuthorities().stream()
@@ -42,25 +43,26 @@ public class ScheduleController {
             }
 
             // 선택된 회사 ID 검증
-            if (selectedCompanyId != null && !companyIds.contains(selectedCompanyId)) {
+            if (companyId != null && !companyIds.contains(companyId)) {
                 return ResponseEntity.badRequest().body("선택된 회사 ID는 사용자가 속한 회사가 아닙니다.");
             }
 
             // 선택된 회사 ID가 없는 경우 기본값 설정
-            if (selectedCompanyId == null) {
-                selectedCompanyId = companyIds.get(0); // 첫 번째 회사 ID로 기본 설정
+            if (companyId == null) {
+                System.out.println("회사가 없어여 : " + companyId);
+                companyId = companyIds.get(0); // 첫 번째 회사 ID로 기본 설정
             }
 
             // 스케줄 조회
             List<Map<String, Object>> schedules = scheduleService.getSchedulesByRole(
-                    userId, role, start, end, viewCompanySchedule, selectedCompanyId
+                    userId, role, start, end, viewCompanySchedule, companyId
             );
 
             // 응답 구성
             Map<String, Object> response = new HashMap<>();
             response.put("userId", userId);
             response.put("role", role);
-            response.put("selectedCompanyId", selectedCompanyId);
+            response.put("selectedCompanyId", companyId);
             response.put("companyIds", companyIds); // 사용자 회사 ID 목록 반환
             response.put("schedules", schedules);
 

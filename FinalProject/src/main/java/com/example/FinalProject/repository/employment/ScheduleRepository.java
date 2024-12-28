@@ -16,16 +16,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     //UserId로 조회
     List<Schedule> findByContract_Work_User_UserId(String userId);
 
-    // Contract와 관련된 모든 일정 조회
-    List<Schedule> findByContract(Contract contract);
-
     @Query("SELECT s FROM Schedule s " +
             "WHERE s.contract.work.company.companyId = :companyId")
-
     List<Schedule> findByCompanyId(@Param("companyId") Integer companyId);
-
-    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId")
-    List<Schedule> findSchedulesByCompanyId(@Param("companyId") Integer companyId);
 
     List<Schedule> findByContract_Work_Company_CompanyId(Integer companyId);
 
