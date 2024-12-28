@@ -22,9 +22,6 @@ public interface WorkChangeRepository extends JpaRepository<WorkChange, Integer>
                                                        @Param("startDate") LocalDate startDate,
                                                        @Param("endDate") LocalDate endDate);
 
-
-     Optional<WorkChange> findTopByScheduleAndChangeDate(Schedule schedule, LocalDate changeDate);
-
 //-------------------------------------------Joonho--------------------------------------------------
      //출첵용. In Out 둘다 불러감. 프런트에서 구분할 거임.
      //유저 아이디로 종료 안된 스케쥴들 불러오기 -> 계약 종료일이 내일보다 작으면 됨. 최신 날짜 순
