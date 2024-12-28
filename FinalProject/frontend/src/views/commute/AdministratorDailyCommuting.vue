@@ -7,7 +7,7 @@
         <div class="dashboard-section">
           <!-- companyId를 props로 전달 -->
           <admin-daily-widget :company-id="companyId"/>
-          <admin-daily-colleague-widget :company-id="companyId"/>
+          <admin-daily-colleague-widget :company-id="companyId" :overtime-user="overtimeUser"/>
         </div>
       </div>
     </div>
@@ -15,7 +15,7 @@
     <!-- 하단 섹션(테이블) -->
     <div class="attendance-section-container">
       <div class="attendance-section">
-        <admin-daily-attendance-table :company-id="companyId" />
+        <admin-daily-attendance-table :company-id="companyId" @overtime-click="handleOvertimeClick" />
       </div>
     </div>
   </div>
@@ -31,6 +31,14 @@ import { useUserStore } from '@/stores/userStore';
 const today = ref(new Date().toLocaleDateString());
 const userStore = useUserStore();
 const companyId = userStore.company.companyId; // userStore에서 companyId 가져오기
+
+// 선택된 초과 근무 사용자 정보를 저장
+const overtimeUser = ref(null);
+
+// AdminDailyAttendanceTable에서 클릭 이벤트 처리
+function handleOvertimeClick(user) {
+  overtimeUser.value = { ...user }; // 객체 복사로 반응성 유지
+}
 
 </script>
 

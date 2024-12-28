@@ -172,8 +172,8 @@ const handleUserSelection = ({ employee, workId }) => {
   selectedWorkId.value = workId; // WorkID 저장
 
   // 📌 콘솔 로그 추가: 선택된 사용자와 workId 확인
-  console.log('User Selected:', employee);
-  console.log('Work ID Selected:', workId);
+  ('User Selected:', employee);
+  ('Work ID Selected:', workId);
 
   message.value = `${employee.name}이(가) 선택되었습니다.`;
   messageType.value = 'success';
@@ -266,8 +266,8 @@ const formatDuration = (minutes) => {
 const saveContract = async () => {
   try {
     // 📌 콘솔 로그 추가: 현재 selectedEmployee와 selectedWorkId 확인
-    console.log('Selected Employee:', selectedEmployee.value);
-    console.log('Selected Work ID:', selectedWorkId.value);
+    ('Selected Employee:', selectedEmployee.value);
+    ('Selected Work ID:', selectedWorkId.value);
 
     // 📌 유효성 검사: 구성원이 선택되었는지 확인
     if (!selectedEmployee.value) {
@@ -289,19 +289,19 @@ const saveContract = async () => {
     };
 
     // 📌 콘솔 로그 추가: 구성된 contractData 확인
-    console.log('Contract Data to Save:', contractData);
+    ('Contract Data to Save:', contractData);
 
     let newContract;
     if (props.contract?.contractId) {
       // 기존 계약 업데이트
       await contractsStore.updateContract(props.contract.contractId, contractData);
-      console.log('Contract updated successfully in store.');
+      ('Contract updated successfully in store.');
     } else {
       // 새 계약 생성
       newContract = await contractsStore.addContract(contractData);
 
       // 📌 콘솔 로그 추가: addContract의 반환값 확인
-      console.log('Added Contract:', newContract);
+      ('Added Contract:', newContract);
 
       if (newContract?.contractId) {
         emit('save', newContract); // 생성된 계약 데이터를 부모 컴포넌트로 전달

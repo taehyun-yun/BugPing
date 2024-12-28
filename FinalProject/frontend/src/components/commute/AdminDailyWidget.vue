@@ -243,12 +243,12 @@ function calculateStatistics(schedules, attendances) {
       ? (totalAttended.value / totalScheduled.value) * 100
       : 0;
 
-  console.log("통계 결과:");
-  console.log("출근:", attendedCount);
-  console.log("출근 전:", notStartedCount);
-  console.log("지각:", tardyCount, "지각자:", lateUserList);
-  console.log("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
-  console.log("휴무:", leaveCount);
+  ("통계 결과:");
+  ("출근:", attendedCount);
+  ("출근 전:", notStartedCount);
+  ("지각:", tardyCount, "지각자:", lateUserList);
+  ("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
+  ("휴무:", leaveCount);
 }
 
 onMounted(fetchAttendanceData);

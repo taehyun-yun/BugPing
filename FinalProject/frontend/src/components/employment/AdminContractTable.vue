@@ -272,12 +272,12 @@ const getDayName = (dayNumber) => {
 // };
 // 🔵 수정된 addOrUpdateContract 함수
 const addOrUpdateContract = async (contract) => { 
-  console.log('addOrUpdateContract called with:', contract); // 🔵 추가된 콘솔 로그
+  ('addOrUpdateContract called with:', contract); // 🔵 추가된 콘솔 로그
   if (contract.contractId) {
     // 기존 계약 업데이트: 스토어의 updateContract 액션 호출
     try {
       await contractsStore.updateContract(contract.contractId, contract);
-      console.log('Contract updated successfully:', contract); // 🔵 추가된 콘솔 로그
+      ('Contract updated successfully:', contract); // 🔵 추가된 콘솔 로그
     } catch (error) {
       console.error('Failed to update contract:', error); // 🔵 추가된 콘솔 로그
     }
@@ -285,7 +285,7 @@ const addOrUpdateContract = async (contract) => {
     // 새 계약 추가: 스토어의 addContract 액션 호출
     try {
       const newContract = await contractsStore.addContract(contract);
-      console.log('Contract added successfully:', newContract); // 🔵 추가된 콘솔 로그
+      ('Contract added successfully:', newContract); // 🔵 추가된 콘솔 로그
     } catch (error) {
       console.error('Failed to add contract:', error); // 🔵 추가된 콘솔 로그
     }

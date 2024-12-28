@@ -2,6 +2,7 @@ package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.dto.DailyAttendanceDTO;
+import com.example.FinalProject.dto.OvertimeRequestDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 @Slf4j
@@ -113,4 +113,21 @@ public class AttendanceController {
         System.out.println(" attendance 데이터 출력 확인 : " + attendanceList);
         return ResponseEntity.ok(attendanceList);
     }
+
+    // 추가 근무 저장
+    @PostMapping("/overtime")
+    public ResponseEntity<?> updateOvertime(@RequestBody OvertimeRequestDTO overtimeRequestDTO) {
+        System.out.println("요청 데이터 확인: " + overtimeRequestDTO.toString());
+
+        if (overtimeRequestDTO.getAttendanceId() == null ||
+                overtimeRequestDTO.getOvertimeStart() == null ||
+                overtimeRequestDTO.getOvertimeEnd() == null) {
+            throw new IllegalArgumentException("Attendance ID, Overtime Start, Overtime End는 필수입니다.");
+        }
+
+        attendanceService.updateOvertime(overtimeRequestDTO);
+        // 로직 처리
+        return ResponseEntity.ok("추가 근무 업데이트 성공");
+    }
+
 }

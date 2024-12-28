@@ -2,6 +2,7 @@ package com.example.FinalProject.service.employment;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
 import com.example.FinalProject.dto.DailyAttendanceDTO;
+import com.example.FinalProject.dto.OvertimeRequestDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.entity.employment.Schedule;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
@@ -19,9 +20,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -96,4 +99,53 @@ public class AttendanceService {
         )).collect(Collectors.toList());
     }
 
+    // 추가 근무 업데이트 로직
+    public void updateOvertime(OvertimeRequestDTO overtimeRequestDTO) {
+        if (overtimeRequestDTO.getOvertimeEnd() == null) {
+            throw new IllegalArgumentException("추가 근무 종료 시간이 null입니다.");
+        }
+
+        // overtimeStart와 overtimeEnd를 받아서 계산
+        LocalDateTime overtimeStart = Optional.ofNullable(overtimeRequestDTO.getOvertimeStart())
+                .orElseThrow(() -> new IllegalArgumentException("추가 근무 시작 시간이 null입니다."));
+
+        LocalDateTime overtimeEnd = overtimeRequestDTO.getOvertimeEnd();
+
+        // 추가 근무 시간이 동일한지 체크
+        if (overtimeStart.isEqual(overtimeEnd)) {
+            throw new IllegalArgumentException("추가 근무 시작 시간과 종료 시간이 동일합니다. 시간을 다시 확인해주세요.");
+        }
+
+        // 시간 차이를 계산
+        Duration duration = Duration.between(overtimeStart, overtimeEnd);
+
+        // 추가 근무 시간이 4시간 이상일 경우 휴게 시간을 30분씩 추가
+        long overtimeMinutes = duration.toMinutes();
+        int overtimeBreakMinute = 0;
+
+        // 4시간 이상 근무할 경우 휴게 시간 계산
+        if (overtimeMinutes >= 240) {
+            overtimeBreakMinute = (int) (overtimeMinutes / 60) * 30; // 1시간마다 30분 휴게시간
+        }
+
+        // 실제 추가 근무 시간 계산 (총 시간에서 휴게 시간 제외)
+        int overtimeMinute = (int) overtimeMinutes - overtimeBreakMinute;
+
+        // DB에서 해당 출근 기록을 찾음
+        Attendance attendance = attendanceRepository.findById(overtimeRequestDTO.getAttendanceId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 출근 기록을 찾을 수 없습니다."));
+
+        // 추가 근무 데이터 설정
+        attendance.setOvertimeStart(overtimeStart);
+        attendance.setOvertimeEnd(overtimeEnd);
+        attendance.setOvertimeStatus("추가 근무");
+        attendance.setOvertimeBreakMinute(overtimeBreakMinute);
+        attendance.setOvertimeMinute(overtimeMinute);
+
+        // DB에 저장
+        attendanceRepository.save(attendance);
+
+        // 로그 출력
+        log.info("추가 근무 시간 저장 완료: {}, 휴게 시간: {}, 실 근무 시간: {}", overtimeMinutes, overtimeBreakMinute, overtimeMinute);
+    }
 }

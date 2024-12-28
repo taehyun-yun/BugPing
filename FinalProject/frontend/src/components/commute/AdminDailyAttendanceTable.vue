@@ -9,7 +9,7 @@
           <th>퇴근시간</th>
           <th>근무 여부</th>
           <th>총 근무 시간</th>
-          <th>초과 근무 시간</th>
+          <th>초과 근무</th>
         </tr>
       </thead>
       <tbody>
@@ -20,7 +20,7 @@
           <td>{{ formatTime(emp.actualEnd) }}</td>
           <td>{{ emp.commuteStatus }}</td> <!-- 근무 여부 -->
           <td>{{ calculateTotalWorkMinutes(emp.actualStart, emp.actualEnd) }}</td>
-          <td>{{ calculateOvertimeMinutes(emp) }}</td>
+          <td><button @click="handleOvertimeClick(emp)">추가 근무 시작</button></td>
         </tr>
       </tbody>
     </table>
@@ -42,6 +42,9 @@ const employees = ref([]);
 const schedules = ref([]);
 const attendances = ref([]);
 
+// 이벤트 정의
+const emit = defineEmits(["overtime-click"]);
+
 onMounted(async () => {
   try {
     // 스케줄 데이터 가져오기
@@ -56,6 +59,7 @@ onMounted(async () => {
     });
     attendances.value = attendanceResponse.data;
 
+    ("출근 데이터:", attendances.value); // attendanceId 필드 확인
     // 데이터 병합
     mergeScheduleAndAttendance();
   } catch (error) {
@@ -66,20 +70,24 @@ onMounted(async () => {
 // 스케줄과 출근 데이터 병합
 function mergeScheduleAndAttendance() {
   const mergedData = schedules.value.map(schedule => {
-    console.log(`스케줄 데이터: ${schedule.userId}`);
+    (`스케줄 데이터: ${schedule.userId}`);
 
     // userId를 기준으로 출근 데이터 찾기 (대소문자 무시)
     const matchedAttendance = attendances.value.find(
       attendance => attendance.userId.toLowerCase() === schedule.userId.toLowerCase()
     );
 
-    console.log(
+    (
       `Comparing User ID: ${schedule.userId} with Attendance User ID: ${
         matchedAttendance?.userId || 'undefined'
       }`
     );
 
+    ("스케줄 데이터:", schedule);
+    ("매칭된 출근 데이터:", matchedAttendance);
+
     return {
+      attendanceId: matchedAttendance?.attendanceId || null, // 추가
       userId: schedule.userId,
       userName: schedule.userName,
       officialStart: schedule.officialStart,
@@ -91,7 +99,7 @@ function mergeScheduleAndAttendance() {
     };
   });
 
-  console.log('병합된 데이터:', mergedData);
+  ('병합된 데이터:', mergedData);
   employees.value = mergedData;
 }
 
@@ -162,6 +170,25 @@ function calculateOvertimeMinutes(emp) {
     console.error("초과 근무 시간 계산 오류:", error, emp);
     return "계산 오류";
   }
+}
+
+function handleOvertimeClick(emp) {
+
+  ("넘겨받은 데이터:", emp);
+
+  emit("overtime-click", {
+    attendanceId: emp.attendanceId, // 수정: 필드명 일관성 유지
+    userId: emp.userId,
+    userName: emp.userName,
+    actualEnd: emp.actualEnd,
+  });
+
+  ("넘겨주는 데이터:", {
+    attendanceId: emp.attendanceId,
+    userId: emp.userId,
+    userName: emp.userName,
+    actualEnd: emp.actualEnd,
+  });
 }
 </script>
 
