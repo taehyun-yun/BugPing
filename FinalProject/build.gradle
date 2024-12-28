@@ -45,8 +45,17 @@ dependencies {
 	implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
 	implementation 'com.google.zxing:core:3.5.0'
 	implementation 'com.google.zxing:javase:3.5.0'
+	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+//ext {
+//	set('springCloudVersion', "2024.0.0")
+//}
+//dependencyManagement {
+//	imports {
+//		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+//	}
+//}

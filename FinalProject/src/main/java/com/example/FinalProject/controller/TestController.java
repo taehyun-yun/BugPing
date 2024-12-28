@@ -56,4 +56,10 @@ public class TestController {
         System.out.println("hi");
         return "hi";
     }
+    @GetMapping("/path1/hello")
+    public String sayhello(){
+        System.out.println("hi");
+        return "hi";
+    }
+
 }
