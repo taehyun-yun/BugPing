@@ -13,16 +13,6 @@ import java.util.Optional;
 
 public interface ContractRepository extends JpaRepository<Contract, Integer> {
 //---------------------TH----------------------
-    @Query("SELECT c FROM Contract c " +
-            "JOIN c.work w " +
-            "JOIN w.user u " +
-            "WHERE u.userId = :userId " +
-            "AND c.contractStart <= :endDate " +
-            "AND c.contractEnd >= :startDate")
-    Contract findValidContractByUserIdAndDateRange(
-            @Param("userId") String userId,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
 
     @Query("SELECT c FROM Contract c " +
             "WHERE c.work.user.userId = :userId " +

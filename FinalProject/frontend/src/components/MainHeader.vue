@@ -54,7 +54,7 @@
               <p>이메일 등록</p>
               <input type="email" placeholder="이메일 입력" required v-model="inputEmail">
               <button class="send-button" @click="sendCode" type="button">
-                <img v-show="wait" style="margin : 0 ; width: 20px; height: 20px; "src="/src/assets/Loginimg/Dual Ring.svg">
+                <img v-show="wait" style="margin : 0 ; width: 20px; height: 20px; " src="/src/assets/Loginimg/Dual Ring.svg">
                 <div v-show="!wait">{{sendButtonMsg}}</div>
               </button>
             </form>

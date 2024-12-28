@@ -7,21 +7,20 @@
           <th>ID</th>
           <th>출근시간</th>
           <th>퇴근시간</th>
-          <th>정상 출근 여부</th>
+          <th>근무 여부</th>
           <th>총 근무 시간</th>
+          <th>초과 근무</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="emp in employees" :key="emp.attendanceId">
+        <tr v-for="emp in employees" :key="emp.userId">
           <td>{{ emp.userName }}</td>
           <td>{{ emp.userId }}</td>
           <td>{{ formatTime(emp.actualStart) }}</td>
-          <td>{{ emp.actualEnd ? formatTime(emp.actualEnd) : "미출근" }}</td>
-          <td>{{ determineAttendanceStatus(emp.actualStart) }}</td>
-          <td> 계산 불가 </td>
-          <td>
-            <button class="edit-button" @click="handleClick(emp)">버튼</button>
-          </td>
+          <td>{{ formatTime(emp.actualEnd) }}</td>
+          <td>{{ emp.commuteStatus }}</td> <!-- 근무 여부 -->
+          <td>{{ calculateTotalWorkMinutes(emp.actualStart, emp.actualEnd) }}</td>
+          <td><button @click="handleOvertimeClick(emp)">추가 근무 시작</button></td>
         </tr>
       </tbody>
     </table>
@@ -32,66 +31,168 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
+import { useUserStore } from "@/stores/userStore";
 
+// 회사 ID 가져오기
+const userStore = useUserStore();
+const companyId = userStore.company.companyId;
+
+// 스케줄과 출근 데이터 저장
 const employees = ref([]);
+const schedules = ref([]);
+const attendances = ref([]);
+
+// 이벤트 정의
+const emit = defineEmits(["overtime-click"]);
 
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      `${axiosAddress}/api/attendances/attendancesList`
-    );
-    console.log("API Response:", response.data);
-    employees.value = response.data;
+    // 스케줄 데이터 가져오기
+    const scheduleResponse = await axios.get(`${axiosAddress}/api/attendances/schedulesList`, {
+      params: { companyId },
+    });
+    schedules.value = scheduleResponse.data;
+
+    // 출근 데이터 가져오기
+    const attendanceResponse = await axios.get(`${axiosAddress}/api/today`, {
+      params: { companyId },
+    });
+    attendances.value = attendanceResponse.data;
+
+    ("출근 데이터:", attendances.value); // attendanceId 필드 확인
+    // 데이터 병합
+    mergeScheduleAndAttendance();
   } catch (error) {
-    console.error(error);
+    console.error("데이터 가져오기 실패:", error);
   }
 });
 
-// 출근 시간 및 퇴근 시간 포맷
-function formatTime(dateString) {
-  if (!dateString) return "미출근";
-  const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+// 스케줄과 출근 데이터 병합
+function mergeScheduleAndAttendance() {
+  const mergedData = schedules.value.map(schedule => {
+    (`스케줄 데이터: ${schedule.userId}`);
+
+    // userId를 기준으로 출근 데이터 찾기 (대소문자 무시)
+    const matchedAttendance = attendances.value.find(
+      attendance => attendance.userId.toLowerCase() === schedule.userId.toLowerCase()
+    );
+
+    (
+      `Comparing User ID: ${schedule.userId} with Attendance User ID: ${
+        matchedAttendance?.userId || 'undefined'
+      }`
+    );
+
+    ("스케줄 데이터:", schedule);
+    ("매칭된 출근 데이터:", matchedAttendance);
+
+    return {
+      attendanceId: matchedAttendance?.attendanceId || null, // 추가
+      userId: schedule.userId,
+      userName: schedule.userName,
+      officialStart: schedule.officialStart,
+      officialEnd: schedule.officialEnd,
+      actualStart: matchedAttendance?.actualStart || null,
+      actualEnd: matchedAttendance?.actualEnd || null,
+      commuteStatus: determineAttendanceStatus(matchedAttendance, schedule),
+      totalMinute: matchedAttendance?.totalMinute || 0,
+    };
+  });
+
+  ('병합된 데이터:', mergedData);
+  employees.value = mergedData;
 }
 
-// 정상 출근 여부 계산
-function determineAttendanceStatus(actualStart) {
-  const now = new Date().getTime();
-  if (!actualStart) return "미출근";
 
-  const actualStartTime = new Date(actualStart).getTime();
-  return actualStartTime <= now ? "근무중" : "미출근";
+
+// 근무 상태 계산
+function determineAttendanceStatus(attendance, schedule) {
+  const now = new Date();
+  const officialStart = schedule.officialStart
+    ? new Date(1970, 0, 1, ...schedule.officialStart.split(":"))
+    : null;
+
+  if (!attendance) {
+    if (officialStart && now < officialStart) return "출근 전";
+    return "미출근";
+  }
+
+  if (attendance.actualEnd) return "퇴근 완료";
+  if (attendance.actualStart) return "근무중";
+  return "미출근";
 }
 
-// // 총 근무 시간 계산
-// function calculateTotalWorkMinutes(actualStart, actualEnd, dbTotalMinutes) {
-//   // DB에서 가져온 값이 존재하고 0이 아닌 경우
-//   if (dbTotalMinutes !== undefined && dbTotalMinutes > 0) {
-//     return `${dbTotalMinutes} 분`;
-//   }
-
-//   // DB 값이 없거나 0일 경우 계산
-//   if (!actualStart) return "미출근";
-
-//   const start = new Date(actualStart).getTime();
-//   const end = actualEnd ? new Date(actualEnd).getTime() : new Date().getTime();
-
-//   const diffMilliseconds = end - start;
-//   if (diffMilliseconds < 0) return "시간 오류";
-
-//   const diffMinutes = Math.floor(diffMilliseconds / 60000);
-//   return `${diffMinutes} 분`;
-// }
+// 시간 포맷 함수
+function formatTime(timeString) {
+  if (!timeString) return ""; // 데이터가 없으면 빈 문자열 반환
+  try {
+    const date = new Date(timeString);
+    if (isNaN(date)) {
+      console.error("Invalid date format:", timeString);
+      return "Invalid Date";
+    }
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (error) {
+    console.error("시간 포맷 오류:", error, timeString);
+    return "Invalid Date";
+  }
+}
 
 
-function handleClick(emp) {
-  console.log("Clicked on:", emp);
-  // 추가 로직 작성
+// 총 근무 시간 계산
+function calculateTotalWorkMinutes(actualStart, actualEnd) {
+  if (!actualStart) return "계산 불가";
+
+  const start = new Date(actualStart).getTime();
+  const end = actualEnd ? new Date(actualEnd).getTime() : new Date().getTime();
+  const diffMilliseconds = end - start;
+  if (diffMilliseconds < 0) return "시간 오류";
+
+  const diffMinutes = Math.floor(diffMilliseconds / 60000);
+  return `${diffMinutes} 분`;
+}
+
+// 초과 근무 시간 계산
+function calculateOvertimeMinutes(emp) {
+  try {
+    const officialStart = new Date(`1970-01-01T${emp.officialStart}`).getTime();
+    const officialEnd = new Date(`1970-01-01T${emp.officialEnd}`).getTime();
+    const officialMinutes = Math.floor((officialEnd - officialStart) / 60000);
+
+    if (!emp.actualStart || !emp.actualEnd) return "0 분"; // 출근/퇴근 시간이 없으면 0
+    const actualStart = new Date(emp.actualStart).getTime();
+    const actualEnd = new Date(emp.actualEnd).getTime();
+    const actualMinutes = Math.floor((actualEnd - actualStart) / 60000);
+
+    const overtime = actualMinutes - officialMinutes;
+    return `${overtime > 0 ? overtime : 0} 분`;
+  } catch (error) {
+    console.error("초과 근무 시간 계산 오류:", error, emp);
+    return "계산 오류";
+  }
+}
+
+function handleOvertimeClick(emp) {
+
+  ("넘겨받은 데이터:", emp);
+
+  emit("overtime-click", {
+    attendanceId: emp.attendanceId, // 수정: 필드명 일관성 유지
+    userId: emp.userId,
+    userName: emp.userName,
+    actualEnd: emp.actualEnd,
+  });
+
+  ("넘겨주는 데이터:", {
+    attendanceId: emp.attendanceId,
+    userId: emp.userId,
+    userName: emp.userName,
+    actualEnd: emp.actualEnd,
+  });
 }
 </script>
 
-  
-  <style scoped>
+<style scoped>
   .table-container {
     padding: 1rem;
     background: white;

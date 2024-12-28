@@ -60,19 +60,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "WHERE s.status = 'T'")
     List<Schedule> findAllSchedulesWithContractWorkAndUser();
 // ====================================== TH =============================================================
-
-    @Query("SELECT s, a FROM Schedule s " +
-            "LEFT JOIN Attendance a ON a.schedule = s " +
-            "WHERE s.day = :dayOfWeek")
-    List<Object[]> findSchedulesWithAttendances(@Param("dayOfWeek") Integer dayOfWeek);
-
-    @Query("SELECT s, a FROM Schedule s LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
-            "WHERE s.day = :dayOfWeek AND (a.actualStart IS NULL OR a.actualStart BETWEEN :startOfDay AND :endOfDay)")
-    List<Object[]> findSchedulesWithAttendances(
-            @Param("dayOfWeek") int dayOfWeek,
-            @Param("startOfDay") LocalDateTime startOfDay,
-            @Param("endOfDay") LocalDateTime endOfDay
-    );
+    @Query("SELECT s FROM Schedule s WHERE s.contract.work.company.companyId = :companyId AND s.day = :dayOfWeek")
+    List<Schedule> findSchedulesByCompanyAndDay(@Param("companyId") Integer companyId, @Param("dayOfWeek") int dayOfWeek);
 //=====================================Joonho============================================================
     //출첵용. 유저 아이디로 종료 안된 스케쥴들 불러오기 -> 계약 종료일이 내일보다 작으면 됨. 최신 근무지순, 최신 계약 순, 요일 순 정렬
     @Query("SELECT s FROM Schedule s " +

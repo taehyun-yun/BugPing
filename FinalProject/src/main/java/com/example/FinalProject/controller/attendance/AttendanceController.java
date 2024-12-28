@@ -1,18 +1,20 @@
 package com.example.FinalProject.controller.attendance;
 
 import com.example.FinalProject.dto.AdminAttendanceDTO;
-import com.example.FinalProject.dto.AttendanceDetailsDTO;
+import com.example.FinalProject.dto.DailyAttendanceDTO;
+import com.example.FinalProject.dto.OvertimeRequestDTO;
 import com.example.FinalProject.entity.attendance.Attendance;
 import com.example.FinalProject.repository.attendance.AttendanceRepository;
 import com.example.FinalProject.repository.company.CompanyRepository;
 import com.example.FinalProject.service.employment.AttendanceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class AttendanceController {
@@ -92,17 +94,40 @@ public class AttendanceController {
 
     // ==============================================================TH=========================================
     // 금일 출근자 리스트 조회
-    @GetMapping("/attendances/attendancesList")
-    public ResponseEntity<List<AdminAttendanceDTO>> getTodayAttendanceList() {
-        List<AdminAttendanceDTO> attendanceList = attendanceService.getTodayAttendances();
+    @GetMapping("/attendances/schedulesList")
+    public ResponseEntity<List<AdminAttendanceDTO>> getTodayScheduleList(@RequestParam(required = false) Integer companyId) {
+        // 스케줄 기반 데이터 가져오기
+        List<AdminAttendanceDTO> scheduleList = attendanceService.getTodaySchedules(companyId);
+
+        // 로그 출력
+        log.info("금일 스케줄 기반 근무자 리스트 출력: {}", scheduleList);
+
+        // 결과 반환
+        return ResponseEntity.ok(scheduleList);
+    }
+
+    // 오늘 날짜의 attendance 데이터 조회
+    @GetMapping("/today")
+    public ResponseEntity<List<DailyAttendanceDTO>> getTodayAttendanceData(@RequestParam Integer companyId) {
+        List<DailyAttendanceDTO> attendanceList = attendanceService.getTodayAttendanceData(companyId);
+        System.out.println(" attendance 데이터 출력 확인 : " + attendanceList);
         return ResponseEntity.ok(attendanceList);
     }
 
-    // 출결 확인
-    @GetMapping("/today/attendance-statistics")
-    public ResponseEntity<AttendanceDetailsDTO> getTodayAttendanceStatistics() {
-        AttendanceDetailsDTO statistics = attendanceService.getTodayScheduleBasedStatistics();
-        return ResponseEntity.ok(statistics);
+    // 추가 근무 저장
+    @PostMapping("/overtime")
+    public ResponseEntity<?> updateOvertime(@RequestBody OvertimeRequestDTO overtimeRequestDTO) {
+        System.out.println("요청 데이터 확인: " + overtimeRequestDTO.toString());
+
+        if (overtimeRequestDTO.getAttendanceId() == null ||
+                overtimeRequestDTO.getOvertimeStart() == null ||
+                overtimeRequestDTO.getOvertimeEnd() == null) {
+            throw new IllegalArgumentException("Attendance ID, Overtime Start, Overtime End는 필수입니다.");
+        }
+
+        attendanceService.updateOvertime(overtimeRequestDTO);
+        // 로직 처리
+        return ResponseEntity.ok("추가 근무 업데이트 성공");
     }
 
 }

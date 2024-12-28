@@ -1,8 +1,7 @@
 package com.example.FinalProject.repository.attendance;
 
-import com.example.FinalProject.entity.employment.Schedule;
-import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.FinalProject.entity.attendance.Attendance;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -111,15 +110,12 @@ public interface AttendanceRepository  extends JpaRepository<Attendance, Integer
 // ========================================== TH ====================================================
 
     // 금일 출근자 조회
-    @Query("SELECT s, a FROM Schedule s " +
-            "LEFT JOIN Attendance a ON s.scheduleId = a.schedule.scheduleId " +
-            "WHERE s.day = :dayOfWeek " +
-            "AND (a.actualStart IS NULL OR DATE(a.actualStart) = :todayDate)")
-    List<Object[]> findSchedulesWithAttendances(
-            @Param("dayOfWeek") int dayOfWeek,
-            @Param("todayDate") LocalDate todayDate);
+    @Query("SELECT a FROM Attendance a " +
+            "WHERE FUNCTION('DATE', a.actualStart) = CURRENT_DATE " +
+            "AND a.schedule.contract.work.company.companyId = :companyId")
+    List<Attendance> findTodayAttendances(@Param("companyId") Integer companyId);
 
- //=============================================Joonho===============================================
+    //=============================================Joonho===============================================
     //중복체크
     //같은 scheduleId나 workChange는 하루에 한번만 있을 수 있게할 것이므로 결과값이 List로 출력되지 않는다.
     //attendance에 status로 삭제 여부를 판단할 때는 여기서부터 하면 됨.

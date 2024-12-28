@@ -114,7 +114,7 @@ const fetchAllEmployees = async () => {
       resignDate: work.resignDate || null,
       hireDate: work.hireDate,
     }));
-    console.log('전체 직원 데이터:', employees.value);
+    ('전체 직원 데이터:', employees.value);
   } catch (error) {
     console.error('직원 데이터 가져오기 실패:', error);
   }
@@ -148,7 +148,7 @@ const filteredEmployees = computed(() => {
 // const saveSelection = () => {
 //   // 체크박스를 사용하므로 여러 직원이 선택될 수 있습니다.
 //   const selectedEmployees = employees.value.filter(employee => employee.selected)
-//   console.log('선택된 직원:', selectedEmployees) // 선택된 직원 콘솔 출력
+//   ('선택된 직원:', selectedEmployees) // 선택된 직원 콘솔 출력
 //   if (selectedEmployees.length > 0) {
 //     emit('save', selectedEmployees) // 모든 선택된 직원을 'save' 이벤트로 전송
 //   }
@@ -157,8 +157,8 @@ const filteredEmployees = computed(() => {
 const saveSelection = () => {
   if (selectedEmployee.value) {
     emit("save", { employee: selectedEmployee.value, workId: selectedEmployee.value.workId }); // 직원과 workId 함께 전달
-    console.log("saveSelection-selectedEmployee.value:"+selectedEmployee.value);
-    console.log("saveSelection-selectedEmployee.value.workId:"+selectedEmployee.value.workId);
+    ("saveSelection-selectedEmployee.value:"+selectedEmployee.value);
+    ("saveSelection-selectedEmployee.value.workId:"+selectedEmployee.value.workId);
     closeModal();
   } else {
     alert("직원을 선택해주세요.");

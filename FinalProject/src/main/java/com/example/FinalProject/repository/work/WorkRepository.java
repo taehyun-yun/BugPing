@@ -4,7 +4,6 @@ import com.example.FinalProject.entity.company.Company;
 import com.example.FinalProject.entity.work.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,5 +33,6 @@ public interface WorkRepository extends JpaRepository<Work, Integer> {
 //--------------------------JJang----------------------------
 
   Optional<Work> findTopByUser_userIdAndCompany_CompanyIdOrderByHireDateDesc(String userId, Integer companyId);
+
 
 }

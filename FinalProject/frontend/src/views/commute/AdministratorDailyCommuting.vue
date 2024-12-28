@@ -5,8 +5,9 @@
     <div class="top-section-container">
       <div class="top-section">
         <div class="dashboard-section">
-          <admin-daily-widget />
-          <admin-daily-colleague-widget/>
+          <!-- companyId를 props로 전달 -->
+          <admin-daily-widget :company-id="companyId"/>
+          <admin-daily-colleague-widget :company-id="companyId" :overtime-user="overtimeUser"/>
         </div>
       </div>
     </div>
@@ -14,7 +15,7 @@
     <!-- 하단 섹션(테이블) -->
     <div class="attendance-section-container">
       <div class="attendance-section">
-        <admin-daily-attendance-table />
+        <admin-daily-attendance-table :company-id="companyId" @overtime-click="handleOvertimeClick" />
       </div>
     </div>
   </div>
@@ -25,8 +26,20 @@ import { ref } from 'vue'
 import AdminDailyWidget from '@/components/commute/AdminDailyWidget.vue';
 import AdminDailyColleagueWidget from '@/components/commute/AdminDailyColleagueWidget.vue';
 import AdminDailyAttendanceTable from '@/components/commute/AdminDailyAttendanceTable.vue';
+import { useUserStore } from '@/stores/userStore';
 
 const today = ref(new Date().toLocaleDateString());
+const userStore = useUserStore();
+const companyId = userStore.company.companyId; // userStore에서 companyId 가져오기
+
+// 선택된 초과 근무 사용자 정보를 저장
+const overtimeUser = ref(null);
+
+// AdminDailyAttendanceTable에서 클릭 이벤트 처리
+function handleOvertimeClick(user) {
+  overtimeUser.value = { ...user }; // 객체 복사로 반응성 유지
+}
+
 </script>
 
 <style scoped>
@@ -59,9 +72,10 @@ const today = ref(new Date().toLocaleDateString());
 }
 
 .today {
+  padding-top: 30px;
   text-align: center;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
   font-size: 1.2rem;
 }
 </style>
