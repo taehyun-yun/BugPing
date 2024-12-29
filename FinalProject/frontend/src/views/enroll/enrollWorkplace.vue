@@ -168,7 +168,7 @@ const submitData = async() => {
             window.location.reload();
         })
         .catch((err)=>{
-            alert(err);
+            alert(err.response.data);
         })
     }else{
         alert("필수 항목을 전부 입력해주세요.");

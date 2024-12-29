@@ -116,6 +116,7 @@ watch(currentCooltime,(newValue)=>{
         sendButtonMsg.value = '인증번호 발송';
     }
 },{ deep : true})
+
 //전화번호 input 3개 합치기
 const t = reactive({
     num1 : '',
@@ -135,6 +136,23 @@ const localdata = reactive({
     email : '',
     birth : '',
     gender : '',
+});
+
+watch(() => localdata.birth, (newBirth) => {
+    const birthDate = new Date(newBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+    }
+
+    if (age < 15) {
+        alert('생년월일은 만 15세 이상만 가능합니다.');
+        localdata.birth = ''; // 입력값 초기화
+    }
 });
 
 const emit = defineEmits(['update']);
