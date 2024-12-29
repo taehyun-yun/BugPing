@@ -91,22 +91,6 @@ const scheduleItems = ref([]);
 // pinia Store에서 companyId 가져오기
 const userStore = useUserStore();
 const selectedCompanyId = ref(userStore.company.companyId);
-const toast = useToast();
-
-//toast 옵션
-const toastOptions = {
-    position: POSITION.BOTTOM_LEFT,
-    timeout: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnFocusLoss: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: false,
-    icon: true,
-};
-
 
 
 // 근무자 이름 리스트 생성
@@ -336,7 +320,7 @@ const calendarOptions = ref({
 
             // 계약 기간을 벗어난 경우 처리
             if (!contractValidationResponse.data.valid) {
-                toast.error("변경된 날짜가 계약 기간을 벗어났습니다.");
+                alert("변경된 날짜가 계약 기간을 벗어났습니다.");
                 info.revert(); // 변경 취소
                 return;
             }
@@ -348,11 +332,11 @@ const calendarOptions = ref({
             console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
 
             // 성공 메시지 표시
-            toast.success('근무 변경이 완료되었습니다.');
+            alert('근무 변경이 완료되었습니다.');
         } catch (error) {
             console.error('일정 변경 중 오류 발생:', error);
             console.error('서버 응답 데이터:', error.response?.data); // 서버 응답 데이터 확인
-            toast.error('근무 변경 중 오류가 발생했습니다. 다시 시도해주세요.');
+            alert('근무 변경 중 오류가 발생했습니다. 다시 시도해주세요.');
             info.revert(); // 변경 취소
         }
     },
