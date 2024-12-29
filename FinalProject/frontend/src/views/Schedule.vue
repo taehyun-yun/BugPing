@@ -91,6 +91,22 @@ const scheduleItems = ref([]);
 // pinia Store에서 companyId 가져오기
 const userStore = useUserStore();
 const selectedCompanyId = ref(userStore.company.companyId);
+const toast = useToast();
+
+//toast 옵션
+const toastOptions = {
+    position: POSITION.BOTTOM_LEFT,
+    timeout: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    icon: true,
+};
+
 
 
 // 근무자 이름 리스트 생성
@@ -141,11 +157,19 @@ const commonOptions = {
     initialView: 'dayGridMonth',
     locale: 'ko',
     dayCellDidMount: (info) => {
+        const today = new Date();
+        const formattedToday = today.toISOString().split('T')[0]; // 오늘 날짜를 'yyyy-MM-dd' 형식으로 변환
+
         const day = info.date.getDay(); // 0: 일요일, 6: 토요일
         if (day === 6) {
             info.el.style.backgroundColor = '#E6E6FA'; // 연한 보라색
         } else if (day === 0) {
             info.el.style.backgroundColor = '#F3E5F5'; // 연한 분홍색
+        }
+
+        // 오늘 날짜 배경색 설정
+        if (info.date.toISOString().split('T')[0] === formattedToday) {
+            info.el.style.backgroundColor = '#FFFFE0'; // 연한 노란색
         }
     },
 };
@@ -242,7 +266,8 @@ const calendarOptions = ref({
                 title: event.title,
                 start: event.start,
                 end: event.end,
-                editable: role == 'ROLE_EMPLOYER',   
+                eventColor: '#3788d8',
+                editable: role == 'ROLE_EMPLOYER',
                 color: getEmployeeColor(event.title),
                 extendedProps: {
                     originalScheduleId: event.scheduleId, // 원래 스케줄 ID
@@ -286,38 +311,48 @@ const calendarOptions = ref({
     // 드래그 앤 드롭 이벤트 추가
     eventDrop: async (info) => {
         try {
-
             const { event } = info;
-
-            // UTC -> KST 변환 함수
-            const convertToKoreanDate = (utcDate) => {
-                const koreanOffset = 9 * 60; // UTC+9 (분 단위)
-                const utcDateObject = new Date(utcDate);
-                const koreanDate = new Date(utcDateObject.getTime() + koreanOffset * 60 * 1000);
-                return koreanDate.toISOString(); // ISO 문자열로 반환
-            };
 
             // 변경된 이벤트 데이터를 추출
             const updatedEvent = {
                 originalScheduleId: event.extendedProps.originalScheduleId, // 기존 스케줄 ID
                 originalDate: format(info.oldEvent.start, 'yyyy-MM-dd'), // 이전 날짜
                 newScheduleId: event.id, // 새로운 스케줄 ID
-                newDate: format(new Date(convertToKoreanDate(event.start.toISOString())), 'yyyy-MM-dd'), // 새로운 날짜 (KST)
-                startTime: convertToKoreanDate(event.start.toISOString()), // 시작 시간 (KST)
-                endTime: event.end ? convertToKoreanDate(event.end.toISOString()) : null, // 종료 시간 (KST)
+                newDate: format(new Date(event.start.toISOString()), 'yyyy-MM-dd'), // 새로운 날짜
             };
 
             console.log("전송 데이터:", JSON.stringify(updatedEvent, null, 2)); // 디버깅용
 
+            // 서버에서 계약 기간 확인 요청
+            const contractValidationResponse = await axios.get(
+                `http://localhost:8707/api/contract/validate`,
+                {
+                    params: {
+                        scheduleId: updatedEvent.newScheduleId,
+                        date: updatedEvent.newDate,
+                    },
+                }
+            );
+
+            // 계약 기간을 벗어난 경우 처리
+            if (!contractValidationResponse.data.valid) {
+                toast.error("변경된 날짜가 계약 기간을 벗어났습니다.");
+                info.revert(); // 변경 취소
+                return;
+            }
+
             // 서버로 변경 요청 전송
-            await axios.post('http://localhost:8707/api/workchange', updatedEvent, {
-            });
+            await axios.post('http://localhost:8707/api/workchange', updatedEvent);
 
             calendarRef.value.getApi().refetchEvents(); // FullCalendar 이벤트 새로고침
             console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
+
+            // 성공 메시지 표시
+            toast.success('근무 변경이 완료되었습니다.');
         } catch (error) {
             console.error('일정 변경 중 오류 발생:', error);
             console.error('서버 응답 데이터:', error.response?.data); // 서버 응답 데이터 확인
+            toast.error('근무 변경 중 오류가 발생했습니다. 다시 시도해주세요.');
             info.revert(); // 변경 취소
         }
     },

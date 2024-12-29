@@ -30,29 +30,35 @@ public class WorkChangeService {
     }
 
     private void handleWorkChange(Integer scheduleId, LocalDate date, String inOut) {
-        // 기존 데이터 조회
-        List<WorkChange> existingChanges = workChangeRepository.findBySchedule_ScheduleIdAndChangeDate(scheduleId, date);
+        // 스케줄 조회
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("스케줄을 찾을 수 없습니다."));
 
-        // 기존 데이터 삭제 또는 상태 업데이트
+        // 계약 기간 확인
+        LocalDate contractStart = schedule.getContract().getContractStart().toLocalDate();
+        LocalDate contractEnd = schedule.getContract().getContractEnd().toLocalDate();
+        if (date.isBefore(contractStart) || date.isAfter(contractEnd)) {
+            throw new IllegalArgumentException("변경된 날짜가 계약 기간을 벗어납니다.");
+        }
+
+        // 기존 데이터 조회 및 처리
+        List<WorkChange> existingChanges = workChangeRepository.findBySchedule_ScheduleIdAndChangeDate(scheduleId, date);
         for (WorkChange change : existingChanges) {
             if (!change.getInOut().equals(inOut)) {
-                // IN/OUT 상태가 다르면 삭제
                 workChangeRepository.delete(change);
-                System.out.println("삭제된 WorkChange 데이터: " + change);
             } else {
-                // 동일한 상태(IN/OUT)이면 업데이트
-                change.setChangeStartTime(date.atTime(change.getSchedule().getOfficialStart()));
-                change.setChangeEndTime(date.atTime(change.getSchedule().getOfficialEnd()));
+                change.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
+                change.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
                 change.setStatus(inOut.equals("IN") ? "입력됨" : "출력됨");
                 workChangeRepository.save(change);
-                System.out.println("업데이트된 WorkChange 데이터: " + change);
-                return; // 동일한 데이터가 있으면 종료
+                return;
             }
         }
 
         // 새로운 WorkChange 데이터 생성
         createNewWorkChange(scheduleId, date, inOut);
     }
+
 
     private void createNewWorkChange(Integer scheduleId, LocalDate date, String inOut) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
