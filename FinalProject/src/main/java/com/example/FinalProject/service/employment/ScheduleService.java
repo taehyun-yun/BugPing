@@ -117,7 +117,6 @@ public class ScheduleService {
         return scheduleMap;
     }
 
-    // 사용자 역할에 대한 스케줄 조회
     public List<Map<String, Object>> getSchedulesByRole(
             String userId,
             String role,
@@ -126,30 +125,22 @@ public class ScheduleService {
             boolean viewCompanySchedule,
             Integer selectedCompanyId
     ) {
-        // 사용자가 속한 모든 회사 ID 조회
-        List<Integer> companyIds = getCompanyIdsByUserId(userId);
-
-        // 1. 특정 회사 ID로 스케줄 조회
-        if (selectedCompanyId != null) {
-            if (companyIds.contains(selectedCompanyId)) {
-                // 선택된 회사 ID가 사용자 회사 목록에 포함된 경우
-                return getCompanySchedule(selectedCompanyId, start, end);
+        // 기본적으로 회사 스케줄 반환
+        if (viewCompanySchedule) {
+            if (selectedCompanyId != null) {
+                List<Integer> companyIds = getCompanyIdsByUserId(userId);
+                if (companyIds.contains(selectedCompanyId)) {
+                    return getCompanySchedule(selectedCompanyId, start, end);
+                } else {
+                    throw new IllegalArgumentException("사용자가 속하지 않은 회사입니다. 회사 ID: " + selectedCompanyId);
+                }
             } else {
-                throw new IllegalArgumentException("사용자가 속하지 않은 회사입니다. 회사 ID: " + selectedCompanyId);
+                throw new IllegalArgumentException("회사 ID가 필요합니다.");
             }
         }
 
-        // 2. 회사 전체 스케줄 조회 (고용주이거나 회사 스케줄 보기가 활성화된 경우)
-        if ("employer".equalsIgnoreCase(role) || viewCompanySchedule) {
-            if (!companyIds.isEmpty()) {
-                // 사용자의 첫 번째 회사 ID로 조회
-                return getCompanySchedule(companyIds.get(0), start, end);
-            } else {
-                throw new IllegalStateException("사용자가 속한 회사가 없습니다.");
-            }
-        }
-
-        // 3. 사용자 개인 스케줄 조회
+        // 개인 스케줄 반환
         return getUserSchedule(userId, start, end);
     }
+
 }

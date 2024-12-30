@@ -85,7 +85,7 @@ const getEmployeeColor = (name) => {
 // 나의 일정, 회사 일정 보기
 const selectedUserId = ref(''); // 사용자 ID
 const userRole = ref(''); // 사용자 역할 
-const isUserView = ref(true); // 초기 상태: 내 근무 보기
+const isUserView = ref(false); // 초기 상태: 회사 근무 보기
 const scheduleItems = ref([]);
 
 // pinia Store에서 companyId 가져오기
@@ -133,7 +133,7 @@ const apiKey = 'AIzaSyCcMLoDEakYxNOfXxKIE8JYVIsa8PevUr4';
 const holidayCalendarId = 'ko.south_korea%23holiday@group.v.calendar.google.com';
 
 // 버튼 텍스트 동적 설정
-const buttonText = computed(() => (isUserView.value ? '회사 근무 보기' : '내 근무 보기'));
+const buttonText = computed(() => (isUserView.value ? '회사 스케줄 보기' : '내 스케줄 보기'));
 
 // 공통 옵션 설정
 const commonOptions = {
