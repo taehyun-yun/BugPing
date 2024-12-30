@@ -46,13 +46,13 @@ import { useUserStore } from '@/stores/userStore';
             const companyRes = await axios.get(`${axiosAddress}/api/getHeaderCompanyList`,{withCredentials : true})
             userStore.setCompany(companyRes.data[0]);
             userStore.setCompanies(companyRes.data);
-            router.push({ name : "home"});
+            router.push({ name : "AdministratorDailyCommuting"});
             // window.location.reload();
         } catch (err){
             if(err?.response?.data.msg){
                 alert(err.response.data.msg);
             }
-            router.push({ name : "home"});
+            router.push({ name : "AdministratorDailyCommuting"});
         }
     }
     const golink = (e) =>{

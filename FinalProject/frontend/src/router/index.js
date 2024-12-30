@@ -18,7 +18,6 @@ import Find from "@/components/auth/Find.vue";
 import Main from "@/views/Main.vue";
 import EnrollEmployee from "@/views/enroll/enrollEmployee.vue";
 import EnrollWorkplace from "@/views/enroll/enrollWorkplace.vue";
-import Home from "@/views/Home.vue";
 import QRCheck from "@/components/commute/QRCheck.vue";
 import AdministratorDailyCommuting from "@/views/commute/AdministratorDailyCommuting.vue";
 import AdminDailyWidget from "@/components/commute/AdminDailyWidget.vue";
@@ -28,7 +27,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     //빈깡통
-    { path: "/", component: Main, meta: { requiresAuth: true } },
+    { path: "/", component: Main, meta: { requiresAuth: true }, redirect : "/adminMainPage" },
     //로그인
     {
       path: "/login",
@@ -114,7 +113,6 @@ const router = createRouter({
       meta: { header: true, sidebar: true, requiresAuth: true },
       children: [
         // { path: 'calculator', name: 'CalculatorPage', component: CalculatorPage, meta : { title : "지급내역", }, },
-        { path: "home", name: "home", component: Home, meta: {} },
         {
           path: "noticemain",
           name: "notice",
@@ -188,7 +186,7 @@ const getRole = async () => {
 // 전역 가드 설정
 router.beforeEach(async (to, from, next) => {
   if (!to.matched.length) {
-    return next({ name: "home" }); // 기본 경로로 이동
+    return next({ name: "AdministratorDailyCommuting" }); // 기본 경로로 이동
   }
   //부모 meta 상속하기
   if (to.matched.length > 0) {
@@ -200,7 +198,7 @@ router.beforeEach(async (to, from, next) => {
   //로그인하면 못가는 페이지처리
   if (to?.meta?.onlyBeforeLogin) {
     let auth = await getRole();
-    return !auth[0] ? next() : next("/home");
+    return !auth[0] ? next() : next({name: "AdministratorDailyCommuting"});
   }
   //로그인이 필요없다면,
   if (!to?.meta?.requiresAuth) {

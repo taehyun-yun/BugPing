@@ -179,7 +179,8 @@ const fetchNotices = async () => {
   try {
     const companyId = userStore.company.companyId; // 회사 ID 가져오기
     if (!companyId) {
-      alert("회사 정보가 없습니다. 다시 로그인 해주세요.");
+      //alert("회사 정보가 없습니다. 다시 로그인 해주세요.");
+      //watch로 fetchNotices 설정해놔서 로그아웃할 때 companyId를 지우니까 alert 가 떠서 주석처리함
       return;
     }
 
