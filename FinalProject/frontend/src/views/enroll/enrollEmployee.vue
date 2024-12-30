@@ -102,6 +102,7 @@ const enroll = async() =>{
         const userStore = useUserStore()
         userStore.setCompanies(companyRes.data);
         userStore.setCompany({ companyId : companyInfo.companyId, cname : companyInfo.cname});
+        window.location.reload();
     } catch (err) {
         alert(err.response.data);
     }
