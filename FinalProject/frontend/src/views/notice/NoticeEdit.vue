@@ -212,10 +212,9 @@ const removedFileIds = ref([]);
 const loadNotice = async () => {
   const noticeId = route.params.id; // URL에서 공지사항 ID 가져오기
   try {
-    const response = await axios.get(
-      `${axiosAddress}/notice/${noticeId}`,
-      { withCredentials: true }
-    );
+    const response = await axios.get(`${axiosAddress}/notice/${noticeId}`, {
+      withCredentials: true,
+    });
     notice.value = response.data;
 
     // 백엔드에서 보내는 type 값에 따라 프론트엔드 카테고리 설정
@@ -237,7 +236,6 @@ const loadNotice = async () => {
         { withCredentials: true };
     }
   } catch (error) {
-    console.error("공지사항을 불러오는 중 오류 발생:", error);
     alert("공지사항을 불러오는 중 오류가 발생했습니다.");
     router.push({ name: "notice" }); // 오류 시 목록 페이지로 이동
   }
@@ -290,7 +288,6 @@ const saveNotice = async () => {
     alert("공지사항이 성공적으로 저장되었습니다.");
     router.push({ name: "noticedetail", params: { id: noticeId } });
   } catch (error) {
-    console.error("공지사항 저장 중 오류 발생:", error);
     alert("공지사항 저장 중 오류가 발생했습니다.");
   }
 };
