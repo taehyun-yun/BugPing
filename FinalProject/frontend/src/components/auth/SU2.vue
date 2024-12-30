@@ -59,7 +59,7 @@ const submitData = async() => {
         const entries = Object.entries(mergedData);
         entries.forEach(([key, value])=> formdata.append(key,value));
         //확인용
-        alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
+        // alert(entries.map(([key, value]) => `${key}: ${value}`).join('\n'));
         // 보내기
         await axios.post(axiosAddress+"/userRegister",formdata,{withCredentials: true})
         .then((res)=>{
