@@ -19,6 +19,9 @@
             </select>
           </div>
           <div class="header-icons">
+            <div class="column" @click="showModalChange2" v-if="userStore.roles.includes('employer')">
+              <img src="../assets/MainheaderImg/colored-qr-code.png" alt="qrIcon" class="icon">
+            </div>
             <div class="column">
               <img src="../assets/MainheaderImg/circle-user-solid.svg" alt="profile Icon" class="icon" />
                 <div class="row">
@@ -72,6 +75,13 @@
         </div>
       </div>
     </Teleport>
+    <Teleport to="body">
+      <div class="modal-overlay" @click.self="showModalChange2" v-show="showModal2">
+        <div class="modal">
+          <QRCode></QRCode>
+        </div>
+      </div>
+    </Teleport>
   </template>
 
 <script setup>
@@ -80,6 +90,7 @@ import { useUserStore } from '@/stores/userStore';
 import axios from 'axios';
 import { ref, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import QRCode from './commute/QRCode.vue';
 const router = useRouter();
 //누르면 app.vue에 있는 sidebar와 연결됨-----------------------------------------------
 const showOrNot = ref(useRoute().meta.sidebar);
@@ -207,6 +218,11 @@ watch(currentCooltime,(newValue)=>{
         sendButtonMsg.value = '인증번호 발송';
     }
 },{ deep : true})
+// QR ----------------------------
+const showModal2 = ref(false);
+const showModalChange2 = () =>{
+  showModal2.value = !showModal2.value;
+}
 
 // 로그아웃 ----------------------
 const goToLoginPage = async() => {
@@ -214,7 +230,7 @@ const goToLoginPage = async() => {
   .get(axiosAddress+"/logout",{withCredentials : true})
   .then(()=>{
     //pinia persist true로 인해 localstorage에 저장된 데이터 삭제
-    userStore.$reset();
+    localStorage.clear();
     alert("로그아웃되었습니다.")
   })
   router.push("/login");

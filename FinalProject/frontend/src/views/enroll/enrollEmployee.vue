@@ -126,8 +126,7 @@ const getMyAllContract = ()=> {
                 contract.work.company.companyId === work.company.companyId
             )
         })
-        showContract = [];
-        for(i in myCompanies){
+        for(let i in myCompanies){
             showContract.push(false);
         }
     });
