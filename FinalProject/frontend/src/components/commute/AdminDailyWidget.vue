@@ -171,99 +171,110 @@ async function fetchAttendanceData() {
 // 통계 계산
 function calculateStatistics(schedules, attendances) {
   const now = new Date();
+  console.log("현재 시간:", now);
   totalScheduled.value = schedules.length;
 
   const scheduleMap = schedules.reduce((map, schedule) => {
-    map[schedule.userId.toLowerCase()] = schedule;
+    const normalizedUserId = schedule.userId.trim().toLowerCase();
+    map[normalizedUserId] = schedule;
     return map;
   }, {});
 
   const attendanceMap = attendances.reduce((map, attendance) => {
-    map[attendance.userId.toLowerCase()] = attendance;
+    const normalizedUserId = attendance.userId.trim().toLowerCase();
+    map[normalizedUserId] = attendance;
     return map;
   }, {});
 
-  let attendedCount = 0; // 출근자 수
-  let tardyCount = 0; // 지각자 수
-  let earlyLeaveCount = 0; // 조퇴자 수
-  let notYetStartedCount = 0; // 출근 전
-  let leaveCount = 0; // 휴무자
-  const lateUserList = []; // 지각 사용자 리스트
-  const earlyLeaveUserList = []; // 조퇴 사용자 리스트
+  console.log("Schedules UserIDs:", schedules.map(s => s.userId));
+  console.log("Attendances UserIDs:", attendances.map(a => a.userId));
+
+  let attendedCount = 0; 
+  let tardyCount = 0; 
+  let earlyLeaveCount = 0; 
+  let notYetStartedCount = 0; 
+  let leaveCount = 0; 
+  const lateUserList = [];
+  const earlyLeaveUserList = [];
 
   schedules.forEach((schedule) => {
-    console.log("Schedule ID:", schedule.scheduleId); // scheduleId 출력
-    const userId = schedule.userId.toLowerCase();
-    const attendance = attendanceMap[userId];
+  const userId = schedule.userId.trim().toLowerCase(); // 정규화된 userId
+  const attendance = attendanceMap[userId];
 
-    console.log("Schedule UserId:", userId);
-    console.log("Attendance Data:", attendance);
+  const [startHour, startMinute] = schedule.officialStart.split(":").map(Number);
+  const officialStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute, 0, 0);
 
-    const [startHour, startMinute] = schedule.officialStart.split(":").map(Number);
-    const officialStart = new Date();
-    officialStart.setHours(startHour, startMinute, 0, 0); // 오늘 날짜의 officialStart 설정
-
-    if (!attendance || !attendance.actualStart) {
-
-      console.log("No Attendance or Missing Start Time for User:", userId);
-      // 출근 데이터가 없는 경우
-      if (now < officialStart) {
-        notYetStartedCount++; // 출근 전
-      }
-    } else {
-      // 출근 데이터가 있는 경우
-      attendedCount++; // 출근 카운트
-      if (attendance.commuteStatus === "지각") {
-        tardyCount++; // 지각 카운트
-        lateUserList.push(schedule.userName); // 지각 사용자 추가
-      }
-
-      // 조퇴 여부 계산
-      if (attendance.actualEnd) {
-        const [endHour, endMinute] = schedule.officialEnd.split(":").map(Number);
-        const scheduleEnd = new Date();
-        scheduleEnd.setHours(endHour, endMinute, 0, 0); // 오늘 날짜의 officialEnd 설정
-
-        if (new Date(attendance.actualEnd) < scheduleEnd) {
-          earlyLeaveCount++; // 조퇴 카운트
-          earlyLeaveUserList.push(schedule.userName); // 조퇴 사용자 추가
-        }
-      }
-    }
+  console.log("매핑 확인:", {
+    scheduleUserId: schedule.userId,
+    normalizedUserId: userId,
+    attendance,
+    isAttendanceMissing: !attendance,
+    officialStart,
+    now,
   });
 
-  // 휴무 계산
+  if (!attendance || !attendance.actualStart) {
+    // 출근 데이터가 없는 경우 즉시 출근 전으로 카운트
+    notYetStartedCount++;
+    console.log(`User ID: ${userId} - 출근 전 카운트 증가`);
+  } else if (now < officialStart) {
+    // 출근 예정 시간이 현재 시간 이후일 때
+    notYetStartedCount++;
+    console.log(`User ID: ${userId} - 출근 전 (예정) 카운트 증가`);
+  } else {
+    attendedCount++;
+    if (attendance.commuteStatus === "지각") {
+      tardyCount++;
+      lateUserList.push(schedule.userName);
+    }
+
+    // 조퇴 여부 계산
+    if (attendance.actualEnd) {
+      const [endHour, endMinute] = schedule.officialEnd.split(":").map(Number);
+      const scheduleEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute, 0, 0);
+
+      if (new Date(attendance.actualEnd) < scheduleEnd) {
+        earlyLeaveCount++;
+        earlyLeaveUserList.push(schedule.userName);
+      }
+    }
+  }
+});
+
   leaveCount = schedules.filter((schedule) => {
-    const userId = schedule.userId.toLowerCase();
-    return !attendanceMap[userId];
+    const userId = schedule.userId.trim().toLowerCase();
+    const attendance = attendanceMap[userId];
+    const isAbsent = !attendance && now >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), ...schedule.officialStart.split(":").map(Number));
+    console.log("User ID:", userId, "휴무 여부:", isAbsent, "Attendance:", attendance);
+    return isAbsent;
   }).length;
 
   totalAttended.value = attendedCount;
-  notYetStarted.value = notYetStartedCount; // 수정된 변수 사용
+  notYetStarted.value = notYetStartedCount;
   tardy.value = tardyCount;
   earlyLeave.value = earlyLeaveCount;
   onLeave.value = leaveCount;
-  lateUsers.value = lateUserList; // 지각 사용자 리스트 저장
-  earlyLeaveUsers.value = earlyLeaveUserList; // 조퇴 사용자 리스트 저장
+  lateUsers.value = lateUserList;
+  earlyLeaveUsers.value = earlyLeaveUserList;
 
-  // 출근율 계산
   attendanceRate.value =
     totalScheduled.value > 0
       ? (totalAttended.value / totalScheduled.value) * 100
       : 0;
 
-  console.log("통계 결과:");
-  console.log("출근:", attendedCount);
-  console.log("총 출근:");
-  console.log("출근 전:", notYetStartedCount);
-  console.log("지각:", tardyCount, "지각자:", lateUserList);
-  console.log("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
-  console.log("휴무:", leaveCount);
+  console.log("통계 결과:", {
+    출근자: attendedCount,
+    출근전: notYetStartedCount,
+    지각: tardyCount,
+    조퇴: earlyLeaveCount,
+    휴무: leaveCount,
+  });
 }
 
 
 onMounted(fetchAttendanceData);
 </script>
+
 
 
 
