@@ -1,7 +1,7 @@
 <template>
     <div class="signup-container">
         <div class="top">
-            <img class="logo" src="/src/assets/Loginimg/instancelogo2.png" @click="golink" draggable="false">
+            <img class="logo" src="/src/assets/Loginimg/logo.png" @click="golink" draggable="false">
         </div>
         <div class="bottom"></div>
     </div>

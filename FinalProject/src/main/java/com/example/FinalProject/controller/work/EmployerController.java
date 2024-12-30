@@ -25,13 +25,11 @@ public class EmployerController {
     final private JoinService joinService;
     final private UserRepository userRepository;
     final private WorkRepository workRepository;
-    final private ScheduleRepository scheduleRepository;
 
-    EmployerController(JoinService joinService, UserRepository userRepository, WorkRepository workRepository, ScheduleRepository scheduleRepository){
+    EmployerController(JoinService joinService, UserRepository userRepository, WorkRepository workRepository){
         this.joinService = joinService;
         this.userRepository = userRepository;
         this.workRepository = workRepository;
-        this.scheduleRepository = scheduleRepository;
     }
     @GetMapping("/findOwnCompany")
     public ResponseEntity<Map<String,Object>> findOwnCompany(){
