@@ -41,6 +41,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import axios from "axios";
+import { axiosAddress } from "@/stores/axiosAddress";
 
 // Prop 선언
 const props = defineProps(["overtimeUser"]);
@@ -117,7 +118,7 @@ async function sendOvertimeData(overtimeData) {
 
   try {
     const response = await axios.post(
-      "http://localhost:8707/api/overtime",
+      `${axiosAddress}/api/overtime`,
       overtimePayload
     );
     ("try 안의 overtimePayload : ", overtimePayload);

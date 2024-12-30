@@ -37,6 +37,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useUserStore } from '@/stores/userStore';
+import { axiosAddress } from '@/stores/axiosAddress';
 
 // HSL 색상에서 Hue와 Lightness를 추출하는 함수
 const extractHue = (hsl) => {
@@ -217,7 +218,7 @@ const calendarOptions = ref({
             console.log("FullCalendar 요청 시 companyId:", selectedCompanyId.value); // companyid 확ㅇ인
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
-            const serverResponse = await axios.get('http://localhost:8707/api/calendar', {
+            const serverResponse = await axios.get(`${axiosAddress}/api/calendar`, {
                 params: {
                     start: startFormatted,
                     end: endFormatted,
@@ -309,7 +310,7 @@ const calendarOptions = ref({
 
             // 서버에서 계약 기간 확인 요청
             const contractValidationResponse = await axios.get(
-                `http://localhost:8707/api/contract/validate`,
+                `${axiosAddress}/api/contract/validate`,
                 {
                     params: {
                         scheduleId: updatedEvent.newScheduleId,
@@ -326,7 +327,7 @@ const calendarOptions = ref({
             }
 
             // 서버로 변경 요청 전송
-            await axios.post('http://localhost:8707/api/workchange', updatedEvent);
+            await axios.post(`${axiosAddress}/api/workchange`, updatedEvent);
 
             calendarRef.value.getApi().refetchEvents(); // FullCalendar 이벤트 새로고침
             console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
