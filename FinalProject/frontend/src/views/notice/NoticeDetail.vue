@@ -50,7 +50,7 @@
         >
           <!-- 이미지 미리보기 -->
           <img
-            :src="`${axios}/notice/files/${file.filePath}`"
+            :src="`${axiosAddress}/notice/files/${file.filePath}`"
             alt="첨부 이미지"
             class="preview-image"
             width="800"
@@ -105,13 +105,13 @@ const notice = ref({
  */
 const fetchNotice = async () => {
   const noticeId = route.params.id;
-  console.log("Received notice ID:", noticeId);
+  // console.log("Received notice ID:", noticeId);
 
   try {
     const response = await axios.get(`${axiosAddress}/notice/${noticeId}`);
     notice.value = response.data;
   } catch (error) {
-    console.error("Error fetching notice:", error);
+    // console.error("Error fetching notice:", error);
     router.push({ name: "notice" });
   }
 };
@@ -135,7 +135,7 @@ const deleteNotice = async () => {
       alert("공지사항이 삭제되었습니다.");
       router.push({ name: "notice" });
     } catch (error) {
-      console.error("공지사항 삭제 중 오류 발생:", error);
+      // console.error("공지사항 삭제 중 오류 발생:", error);
       alert("공지사항 삭제 중 오류가 발생했습니다.");
     }
   }

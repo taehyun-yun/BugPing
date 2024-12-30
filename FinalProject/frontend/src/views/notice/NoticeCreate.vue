@@ -257,10 +257,10 @@ const submitNotice = async () => {
     }
   }
 
-  console.log("FormData Values:");
-  for (const [key, value] of formData.entries()) {
-    console.log(`${key}: ${value}`);
-  }
+  // console.log("FormData Values:");
+  // for (const [key, value] of formData.entries()) {
+  //   console.log(`${key}: ${value}`);
+  // }
   try {
     const response = await axios.post(
       `${axiosAddress}/notice/create`,
@@ -272,7 +272,7 @@ const submitNotice = async () => {
     alert("공지사항이 작성되었습니다.");
     router.push({ path: "/noticemain" });
   } catch (error) {
-    console.error("공지사항 작성 중 오류 발생:", error);
+    // console.error("공지사항 작성 중 오류 발생:", error);
     alert("공지사항 작성 중 오류가 발생했습니다.");
   }
 };

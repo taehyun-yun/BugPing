@@ -29,6 +29,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // "/notice/files/**" URL 패턴을 "C:/uploads/" 디렉토리에 매핑
         registry.addResourceHandler("/notice/files/**")
-                .addResourceLocations("file:///C:/education/KOSA_finalProject/BugPing/FinalProject/frontend/src/uploads");
+                .addResourceLocations("file:///C:/education/BugPing/FinalProject/frontend/src/uploads");
     }
 }

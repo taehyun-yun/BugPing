@@ -1,7 +1,6 @@
 <template>
   <div class="status-container">
     <h2 class="status-title">출퇴근 현황</h2>
-
     <div class="status-grid">
       <!-- 출근율 카드 -->
       <div class="status-card attendance-rate">
@@ -34,7 +33,6 @@
           </div>
         </div>
       </div>
-
       <!-- 출근/휴무 통계 카드 -->
       <div class="status-card attendance-stats">
         <div class="stat-row">
@@ -55,14 +53,15 @@
             <div class="stat-value red">{{ onLeave }}</div>
           </div>
         </div>
-
         <div class="stat-row">
           <div class="stat-group">
             <div class="stat-label">출근 전</div>
             <div class="bar-track">
-              <div class="bar-progress" :style="{ width: `${notYetStartedPercentage}%` }"></div>
+              <!-- <div class="bar-progress" :style="{ width: `${notYetStartedPercentage}%` }"></div> -->
+              <div class="bar-progress" :style="{ width: `${50}%` }"></div>
             </div>
-            <div class="stat-value">{{ notYetStarted }}</div>
+            <!-- <div class="stat-value">{{ notYetStarted }}</div> -->
+            <div class="stat-value">{{ 1 }}</div>
           </div>
           <div class="stat-group">
             <div class="stat-comparison">추가 근무자</div>
@@ -72,14 +71,12 @@
             <div class="stat-value red">{{ extraWork }}</div>
           </div>
         </div>
-
         <div class="employee-count">
           <span class="icon">👥</span>
           출근 대상
           <span class="count">{{ totalScheduled }}</span>
         </div>
       </div>
-
       <!-- 지각/조퇴 카드들 -->
       <div class="status-card late-card">
         <div class="status-label">지각</div>
@@ -89,7 +86,6 @@
           </ul>
         </div>
       </div>
-
       <div class="status-card early-leave-card">
         <div class="status-label">조퇴</div>
         <div class="status-value">
@@ -101,16 +97,13 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { axiosAddress } from "@/stores/axiosAddress";
 import { useUserStore } from "@/stores/userStore";
-
 const userStore = useUserStore();
 const companyId = userStore.company.companyId;
-
 // 상태 변수 초기화
 const employees = ref([]);
 const attendanceRate = ref(0);
@@ -123,7 +116,6 @@ const earlyLeave = ref(0);
 const extraWork = ref(0);
 const lateUsers = ref([]); // 지각 사용자 리스트
 const earlyLeaveUsers = ref([]); // 조퇴 사용자 리스트
-
 // 원형 그래프 계산
 const radius = 52;
 const circumference = 2 * Math.PI * radius;
@@ -134,7 +126,6 @@ const circleStyle = computed(() => {
     strokeDashoffset: offset,
   };
 });
-
 // 퍼센트 계산
 const attendedPercentage = computed(() =>
   totalScheduled.value > 0 ? (totalAttended.value / totalScheduled.value) * 100 : 0
@@ -148,7 +139,6 @@ const notYetStartedPercentage = computed(() =>
 const extraWorkPercentage = computed(() =>
   totalScheduled.value > 0 ? (extraWork.value / totalScheduled.value) * 100 : 0
 );
-
 // 데이터 가져오기
 async function fetchAttendanceData() {
   try {
@@ -156,49 +146,48 @@ async function fetchAttendanceData() {
       params: { companyId },
     });
     const schedules = scheduleResponse.data;
-
     const attendanceResponse = await axios.get(`${axiosAddress}/api/today`, {
       params: { companyId },
     });
     const attendances = attendanceResponse.data;
-
     calculateStatistics(schedules, attendances);
   } catch (error) {
     console.error("데이터 가져오기 실패:", error);
   }
 }
-
 // 통계 계산
 function calculateStatistics(schedules, attendances) {
   const now = new Date();
   totalScheduled.value = schedules.length;
-
   const scheduleMap = schedules.reduce((map, schedule) => {
     map[schedule.userId.toLowerCase()] = schedule;
     return map;
   }, {});
-
   const attendanceMap = attendances.reduce((map, attendance) => {
     map[attendance.userId.toLowerCase()] = attendance;
     return map;
   }, {});
-
   let attendedCount = 0; // 출근자 수
   let tardyCount = 0; // 지각자 수
   let earlyLeaveCount = 0; // 조퇴자 수
-  let notStartedCount = 0; // 출근 전
+  let notYetStartedCount = 0; // 출근 전
   let leaveCount = 0; // 휴무자
   const lateUserList = []; // 지각 사용자 리스트
   const earlyLeaveUserList = []; // 조퇴 사용자 리스트
-
   schedules.forEach((schedule) => {
+    console.log("Schedule ID:", schedule.scheduleId); // scheduleId 출력
     const userId = schedule.userId.toLowerCase();
     const attendance = attendanceMap[userId];
-
+    console.log("Schedule UserId:", userId);
+    console.log("Attendance Data:", attendance);
+    const [startHour, startMinute] = schedule.officialStart.split(":").map(Number);
+    const officialStart = new Date();
+    officialStart.setHours(startHour, startMinute, 0, 0); // 오늘 날짜의 officialStart 설정
     if (!attendance || !attendance.actualStart) {
+      console.log("No Attendance or Missing Start Time for User:", userId);
       // 출근 데이터가 없는 경우
-      if (now < new Date(1970, 0, 1, ...schedule.officialStart.split(":"))) {
-        notStartedCount++; // 출근 전
+      if (now < officialStart) {
+        notYetStartedCount++; // 출근 전
       }
     } else {
       // 출근 데이터가 있는 경우
@@ -207,15 +196,11 @@ function calculateStatistics(schedules, attendances) {
         tardyCount++; // 지각 카운트
         lateUserList.push(schedule.userName); // 지각 사용자 추가
       }
-
       // 조퇴 여부 계산
       if (attendance.actualEnd) {
-        const scheduleEnd = new Date(
-          new Date().getFullYear(),
-          new Date().getMonth(),
-          new Date().getDate(),
-          ...schedule.officialEnd.split(":")
-        );
+        const [endHour, endMinute] = schedule.officialEnd.split(":").map(Number);
+        const scheduleEnd = new Date();
+        scheduleEnd.setHours(endHour, endMinute, 0, 0); // 오늘 날짜의 officialEnd 설정
         if (new Date(attendance.actualEnd) < scheduleEnd) {
           earlyLeaveCount++; // 조퇴 카운트
           earlyLeaveUserList.push(schedule.userName); // 조퇴 사용자 추가
@@ -223,53 +208,44 @@ function calculateStatistics(schedules, attendances) {
       }
     }
   });
-
   // 휴무 계산
-  leaveCount = Object.keys(attendanceMap).filter(
-    (userId) => !scheduleMap[userId]
-  ).length;
-
+  leaveCount = schedules.filter((schedule) => {
+    const userId = schedule.userId.toLowerCase();
+    return !attendanceMap[userId];
+  }).length;
   totalAttended.value = attendedCount;
-  notYetStarted.value = notStartedCount;
+  notYetStarted.value = notYetStartedCount; // 수정된 변수 사용
   tardy.value = tardyCount;
   earlyLeave.value = earlyLeaveCount;
   onLeave.value = leaveCount;
   lateUsers.value = lateUserList; // 지각 사용자 리스트 저장
   earlyLeaveUsers.value = earlyLeaveUserList; // 조퇴 사용자 리스트 저장
-
   // 출근율 계산
   attendanceRate.value =
     totalScheduled.value > 0
       ? (totalAttended.value / totalScheduled.value) * 100
       : 0;
-
-  ("통계 결과:");
-  ("출근:", attendedCount);
-  ("출근 전:", notStartedCount);
-  ("지각:", tardyCount, "지각자:", lateUserList);
-  ("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
-  ("휴무:", leaveCount);
+  console.log("통계 결과:");
+  console.log("출근:", attendedCount);
+  console.log("총 출근:");
+  console.log("출근 전:", notYetStartedCount);
+  console.log("지각:", tardyCount, "지각자:", lateUserList);
+  console.log("조퇴:", earlyLeaveCount, "조퇴자:", earlyLeaveUserList);
+  console.log("휴무:", leaveCount);
 }
-
 onMounted(fetchAttendanceData);
 </script>
-
-
-
-
 <style scoped>
 .status-container {
   padding: 20px;
   max-width: 720px;
   margin: 0 auto;
 }
-
 .status-title {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 12px;
 }
-
 .status-grid {
   display: grid;
   grid-template-columns: 45fr 55fr 20fr;
@@ -277,7 +253,6 @@ onMounted(fetchAttendanceData);
   gap: 10px;
   align-items: stretch;
 }
-
 .status-card {
   background: white;
   border-radius: 20px;
@@ -285,7 +260,6 @@ onMounted(fetchAttendanceData);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   font-size: 110%;
 }
-
 .attendance-rate {
   background: #2196f3;
   color: white;
@@ -299,24 +273,20 @@ onMounted(fetchAttendanceData);
   min-height: 100px;
   position: relative; /* 자식의 절대 위치를 기준으로 설정 */
 }
-
 .progress-ring {
   position: relative; /* 절대 위치 대신 상대 위치를 사용 */
   width: 120px;
   height: 120px;
 }
-
 .progress-ring__circle--bg {
   stroke-dasharray: 327.2;
   stroke-dashoffset: 0;
 }
-
 .progress-ring__circle {
   transition: stroke-dashoffset 0.5s ease;
   stroke-dasharray: 327.2;
   stroke-dashoffset: 327.2;
 }
-
 .circle-content {
   position: absolute; /* 텍스트를 SVG 위에 배치 */
   top: 50%;
@@ -324,24 +294,20 @@ onMounted(fetchAttendanceData);
   transform: translate(-50%, -50%);
   text-align: center;
 }
-
 .label {
   font-size: 12px;
   font-weight: bold;
 }
-
 .percentage {
   font-size: 16px;
   font-weight: bold;
   margin-top: 4px;
 }
-
 .count {
   font-size: 10px;
   margin-top: 4px;
   opacity: 0.9;
 }
-
 .attendance-stats {
   display: flex;
   flex-direction: column;
@@ -352,7 +318,6 @@ onMounted(fetchAttendanceData);
   grid-row: 1 / 3;
   min-height: 100px;
 }
-
 .stat-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -361,27 +326,22 @@ onMounted(fetchAttendanceData);
   padding-bottom: 12px;
   margin-bottom: 12px;
 }
-
 .stat-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .stat-label,
 .stat-comparison {
   font-weight: 500;
 }
-
 .stat-label {
   font-size: 20px;
 }
-
 .stat-comparison {
   color: #ff5252;
   font-size: 20px;
 }
-
 .bar-track {
   height: 8px;
   background: #f5f5f5;
@@ -389,24 +349,20 @@ onMounted(fetchAttendanceData);
   overflow: hidden;
   margin-bottom: 4px;
 }
-
 .bar-progress {
   height: 100%;
   background: #2196f3;
   width: 0;
   transition: width 0.5s ease-in-out;
 }
-
 .bar-progress.red {
   background: #ff5252;
 }
-
 .stat-value {
   color: #2196f3;
   font-weight: 500;
   font-size: 10px;
 }
-
 .employee-count {
   display: flex;
   align-items: center;
@@ -416,12 +372,10 @@ onMounted(fetchAttendanceData);
   color: #666;
   font-size: 16px;
 }
-
 .employee-count .count {
   margin-left: auto;
   font-weight: 500;
 }
-
 .late-card,
 .early-leave-card {
   aspect-ratio: 1;
@@ -432,30 +386,25 @@ onMounted(fetchAttendanceData);
   justify-content: center;
   align-items: center;
 }
-
 .late-card {
   background: #4caf50;
   color: white;
   grid-column: 3 / 4;
   grid-row: 1 / 2;
 }
-
 .early-leave-card {
   background: #ffc107;
   color: white;
   grid-column: 3 / 4;
   grid-row: 2 / 3;
 }
-
 .status-label {
   font-size: 27px;
 }
-
 .status-value {
   font-size: 16px;
   font-weight: bold;
 }
-
 .icon {
   font-size: 8px;
 }

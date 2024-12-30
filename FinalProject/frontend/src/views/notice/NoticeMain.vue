@@ -61,7 +61,6 @@
             </button>
           </div>
           <button
-            v-if="forEmployer"
             class="create-notice-button"
             @click="createNotice"
           >
@@ -148,10 +147,10 @@ import { axiosAddress } from "@/stores/axiosAddress";
 const router = useRouter();
 const userStore = useUserStore(); // Pinia 스토어 호출
 
-console.log("userStore 객체:", userStore); // userStore 전체 구조 확인
-console.log("현재 workId:", userStore.workId); // workId를 명시적으로 확인
-console.log("현재 userId:", userStore.userId); // userId가 있는지 확인
-console.log("현재 컴퍼니 아이디 ", userStore.company.companyId);
+// console.log("userStore 객체:", userStore); // userStore 전체 구조 확인
+// console.log("현재 workId:", userStore.workId); // workId를 명시적으로 확인
+// console.log("현재 userId:", userStore.userId); // userId가 있는지 확인
+// console.log("현재 컴퍼니 아이디 ", userStore.company.companyId);
 
 // 활성화된 탭 상태 ('all' 또는 'my')
 const activeTab = ref("all");
@@ -230,7 +229,7 @@ const fetchNotices = async () => {
     currentPage.value = 1; // 페이지 초기화
   } catch (error) {
     alert(error);
-    console.error("공지사항을 가져오는 중 오류 발생:", error);
+    // console.error("공지사항을 가져오는 중 오류 발생:", error);
     alert("공지사항을 가져오는 중 오류가 발생했습니다.");
   }
 };
@@ -326,7 +325,7 @@ const deleteSelected = async () => {
       // 공지사항 목록을 다시 가져옵니다.
       fetchNotices();
     } catch (error) {
-      console.error("공지사항 삭제 중 오류 발생:", error);
+      // console.error("공지사항 삭제 중 오류 발생:", error);
       alert("공지사항 삭제 중 오류가 발생했습니다.");
     }
   }
@@ -340,12 +339,12 @@ const createNotice = async () => {
     `${axiosAddress}/notice/getWorkIdToGoCreateNotice?companyId=${userStore.company.companyId}`,
     { withCredentials: true }
   );
-  console.log("workId : " + res.data.workId);
+  // console.log("workId : " + res.data.workId);
   //alert(res.data.workId);
 
   const workId = res.data.workId;
   // 여기서 workId 찍히는거 확인.
-  console.log("workId : " + res.data.workId);
+  // console.log("workId : " + res.data.workId);
 
   if (!workId) {
     alert("회사 정보가 없습니다. 다시 로그인해주세요.");
@@ -363,7 +362,7 @@ const createNotice = async () => {
 // };
 
 // 공지 작성 권한 확인
-const forEmployer = userStore.roles.includes("employer");
+//const forEmployer = userStore.roles.includes("employer");
 
 // 컴포넌트가 마운트될 때 공지사항을 가져옵니다.
 onMounted(() => {
@@ -413,7 +412,7 @@ const getStatusLabel = (status) => {
  * @param noticeId 이동할 공지사항의 ID
  */
 const goToDetail = (noticeId) => {
-  console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
+  // console.log("Navigating to notice detail with ID:", noticeId); // 디버깅 로그
   router.push({ name: "noticedetail", params: { id: noticeId } });
 };
 

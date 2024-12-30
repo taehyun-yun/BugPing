@@ -25,7 +25,7 @@
         <div class="input-group">
             <img src="/src/assets/Loginimg/envelope-regular.svg">
             <div class="email-container">
-                <input type="email" class="input-field" placeholder="계정 분실시 사용할 이메일(선택)" maxlength="20" v-model="inputEmail">
+                <input type="email" class="input-field" placeholder="계정 분실시 사용할 이메일(선택)" maxlength="30" v-model="inputEmail">
                 <button type="button" @click="sendCode">
                     <img v-show="wait" style="margin : 0 ;"src="/src/assets/Loginimg/Dual Ring.svg">
                     <div v-show="!wait">{{sendButtonMsg}}</div>
