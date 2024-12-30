@@ -159,7 +159,7 @@ const router = createRouter({
           path: "adminMainPage",
           name: "AdministratorDailyCommuting",
           component: AdministratorDailyCommuting,
-          meta: { title: "근무자 메인 페이지" },
+          meta: { title: "근태" },
         },
         //이 안에 넣으시면 됩니다.
       ],

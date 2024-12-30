@@ -52,7 +52,7 @@
         </div>
         </button>
     </div>
-        <p class="message">{{ message }}</p>
+        <p class="message" v-show="showWhat">{{ message }}</p>
     </div>
 </template>
 
@@ -137,27 +137,29 @@ const showWhole = () =>{
     showWhat.value = false;
 }
 const commuteCheck = async(id,type) =>{
-    const payload = type=="scheduleId" ? { scheduleId : id, type : type } : { workChangeId : id, type : type };
-    try{
-        const res = await axios.post(`${axiosAddress}/commuteCheck`,payload,{withCredentials : true});
-        // 출근하자.
-        if(res.data.step==1){
-            // 출근처리되었습니다
-            return alert(res.data.msg);
-        }
-        // 퇴근하자. 이미 출근찍었으면 출근 못함.
-        if( res.data.step==2){
-            if(confirm(res.data.msg)){
-                const res2 = await axios.post(`${axiosAddress}/leaveCheck`, res.data.attendance , {withCredentials : true});
-                return alert(`퇴근처리되었습니다.\n${now.value.toISOString("en-CA").split("T")[0]}\n${now.value.toLocaleTimeString()}`);
+    if(showWhat.value){
+        const payload = type=="scheduleId" ? { scheduleId : id, type : type } : { workChangeId : id, type : type };
+        try{
+            const res = await axios.post(`${axiosAddress}/commuteCheck`,payload,{withCredentials : true});
+            // 출근하자.
+            if(res.data.step==1){
+                // 출근처리되었습니다
+                return alert(res.data.msg);
             }
-        }
-        // 이미 퇴근함.
-        if(res.data.step==3){
-            return alert(res.data.msg);
-        }
-    } catch (err) {
-        alert(err);
+            // 퇴근하자. 이미 출근찍었으면 출근 못함.
+            if( res.data.step==2){
+                if(confirm(res.data.msg)){
+                    const res2 = await axios.post(`${axiosAddress}/leaveCheck`, res.data.attendance , {withCredentials : true});
+                    return alert(`퇴근처리되었습니다.\n${now.value.toISOString("en-CA").split("T")[0]}\n${now.value.toLocaleTimeString()}`);
+                }
+            }
+            // 이미 퇴근함.
+            if(res.data.step==3){
+                return alert(res.data.msg);
+            }
+        } catch (err) {
+            alert(err);
+        }           
     }
 }
 const showWhat = ref(true);
