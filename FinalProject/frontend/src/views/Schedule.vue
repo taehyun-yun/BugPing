@@ -215,7 +215,6 @@ const calendarOptions = ref({
     },
     events: async (fetchInfo, successCallback, failureCallback) => {
         try {
-            console.log("FullCalendar 요청 시 companyId:", selectedCompanyId.value); // companyid 확ㅇ인
             const startFormatted = format(new Date(fetchInfo.start), 'yyyy-MM-dd');
             const endFormatted = format(new Date(fetchInfo.end), 'yyyy-MM-dd');
             const serverResponse = await axios.get(`${axiosAddress}/api/calendar`, {
@@ -226,8 +225,6 @@ const calendarOptions = ref({
                     companyId: selectedCompanyId.value,
                 },
             });
-
-            console.log("서버 응답 데이터:", serverResponse.data);
 
             const holidaysResponse = axios.get(`https://www.googleapis.com/calendar/v3/calendars/${holidayCalendarId}/events`, {
                 params: {
@@ -306,7 +303,6 @@ const calendarOptions = ref({
                 newDate: format(new Date(event.start.toISOString()), 'yyyy-MM-dd'), // 새로운 날짜
             };
 
-            console.log("전송 데이터:", JSON.stringify(updatedEvent, null, 2)); // 디버깅용
 
             // 서버에서 계약 기간 확인 요청
             const contractValidationResponse = await axios.get(
@@ -330,13 +326,10 @@ const calendarOptions = ref({
             await axios.post(`${axiosAddress}/api/workchange`, updatedEvent);
 
             calendarRef.value.getApi().refetchEvents(); // FullCalendar 이벤트 새로고침
-            console.log('일정이 성공적으로 변경되었습니다.', updatedEvent);
 
             // 성공 메시지 표시
             alert('근무 변경이 완료되었습니다.');
         } catch (error) {
-            console.error('일정 변경 중 오류 발생:', error);
-            console.error('서버 응답 데이터:', error.response?.data); // 서버 응답 데이터 확인
             alert('근무 변경 중 오류가 발생했습니다. 다시 시도해주세요.');
             info.revert(); // 변경 취소
         }
