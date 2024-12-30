@@ -214,7 +214,7 @@ const goToLoginPage = async() => {
   .get(axiosAddress+"/logout",{withCredentials : true})
   .then(()=>{
     //pinia persist true로 인해 localstorage에 저장된 데이터 삭제
-    userStore.$reset();
+    localStorage.clear();
     alert("로그아웃되었습니다.")
   })
   router.push("/login");

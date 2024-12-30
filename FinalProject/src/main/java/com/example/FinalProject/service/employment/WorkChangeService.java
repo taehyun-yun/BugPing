@@ -49,7 +49,7 @@ public class WorkChangeService {
             } else {
                 change.setChangeStartTime(date.atTime(schedule.getOfficialStart()));
                 change.setChangeEndTime(date.atTime(schedule.getOfficialEnd()));
-                change.setStatus(inOut.equals("IN") ? "입력됨" : "출력됨");
+                change.setStatus(inOut.equals("IN") ? "T" : "F");
                 workChangeRepository.save(change);
                 return;
             }

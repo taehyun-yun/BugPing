@@ -151,10 +151,10 @@ const commonOptions = {
             info.el.style.backgroundColor = '#F3E5F5'; // 연한 분홍색
         }
 
-        // 오늘 날짜 배경색 설정
+       /*  // 오늘 날짜 배경색 설정
         if (info.date.toISOString().split('T')[0] === formattedToday) {
             info.el.style.backgroundColor = '#FFFFE0'; // 연한 노란색
-        }
+        } */
     },
 };
 
@@ -462,14 +462,6 @@ watch(buttonText, () => {
     font-weight: 500;
 }
 
-/* 토요일, 일요일 스타일 */
-.fc-day-sat {
-    color: #4a90e2;
-}
-
-.fc-day-sun {
-    color: #e25a5a;
-}
 
 /* 모달 스타일 */
 .modal-overlay {
