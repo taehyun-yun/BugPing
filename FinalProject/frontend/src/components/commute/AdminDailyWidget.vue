@@ -50,9 +50,9 @@
           <div class="stat-group">
             <div class="stat-comparison">휴무</div>
             <div class="bar-track">
-              <div class="bar-progress red" :style="{ width: `${onLeavePercentage}%` }"></div>
+              <div class="bar-progress red" :style="{ width: `${0}%` }"></div>
             </div>
-            <div class="stat-value red">{{ onLeave }}</div>
+            <div class="stat-value red">{{ 0 }}</div>
           </div>
         </div>
 

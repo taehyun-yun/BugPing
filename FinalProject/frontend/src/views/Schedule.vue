@@ -153,9 +153,9 @@ const commonOptions = {
         }
 
         // 오늘 날짜 배경색 설정
-        if (info.date.toISOString().split('T')[0] === formattedToday) {
+       /*  if (info.date.toISOString().split('T')[0] === formattedToday) {
             info.el.style.backgroundColor = '#FFFFE0'; // 연한 노란색
-        }
+        } */
     },
 };
 
